@@ -37,16 +37,39 @@ async function submitOrder(event) {
 
   const ok = await sendToTelegram(ORDER_BOT_TOKEN, text);
 
-  btn.disabled = false; btn.textContent = "Оплатить";
+  btn.disabled = false; btn.textContent = "Заказать";
   if (ok) {
     form.reset();
-    form.nextElementSibling.style.display = "block";
-    // Редирект на оплату через 1 секунду
-    setTimeout(() => {
-      window.open("https://pay.trybit.com/YVU2HPHC", "_blank");
-    }, 1000);
+    // Показываем блок оплаты с QR
+    document.getElementById("payment-block").style.display = "block";
+    document.getElementById("payment-block").scrollIntoView({behavior: "smooth"});
   } else {
     alert("Ошибка отправки. Напишите нам напрямую: @workadultpro");
+  }
+}
+
+// Отправка подтверждения транзакции
+async function submitTxConfirm(event) {
+  event.preventDefault();
+  const form = event.target;
+  const btn = form.querySelector("button[type=submit]");
+  btn.disabled = true; btn.textContent = "Отправляем...";
+
+  const data = Object.fromEntries(new FormData(form));
+  const text = `✅ <b>ПОДТВЕРЖДЕНИЕ ОПЛАТЫ</b>\n\n` +
+    `💰 Сумма: ${data.amount} USDT\n` +
+    `🔗 TxID: <code>${data.txid}</code>\n` +
+    `📱 Telegram: ${data.telegram}\n` +
+    `📦 Тариф: ${data.product}`;
+
+  const ok = await sendToTelegram(ORDER_BOT_TOKEN, text);
+  btn.disabled = false; btn.textContent = "Подтвердить оплату";
+  if (ok) {
+    form.reset();
+    document.getElementById("payment-block").style.display = "none";
+    document.getElementById("payment-success").style.display = "block";
+  } else {
+    alert("Ошибка. Напишите нам: @workadultpro");
   }
 }
 
