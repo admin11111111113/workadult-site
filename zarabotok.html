@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Работа вебкам моделью — Workadult.pro</title>
+<link rel="icon" href="favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="style.css">
+<link href="https://fonts.googleapis.com/css2?family=Google+Sans:wght@400;500;700&family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+  .g-hero { background: #fff; padding: 80px 0 60px; border-bottom: 1px solid #e8eaed; }
+  .g-hero h1 { font-size: 48px; font-weight: 400; color: #202124; margin-bottom: 16px; line-height: 1.2; }
+  .g-hero h1 span { color: #1a73e8; }
+  .g-hero p { font-size: 18px; color: #5f6368; max-width: 600px; }
+  .g-chips { display: flex; gap: 12px; flex-wrap: wrap; margin-top: 32px; }
+  .g-chip { background: #f1f3f4; border-radius: 20px; padding: 8px 20px; font-size: 14px; font-weight: 500; color: #202124; }
+  .g-section { padding: 80px 0; }
+  .g-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 24px; margin-top: 48px; }
+  .g-card {
+    background: #fff; border: 1px solid #e8eaed; border-radius: 12px;
+    padding: 32px; transition: box-shadow 0.2s;
+  }
+  .g-card:hover { box-shadow: 0 4px 20px rgba(0,0,0,0.12); }
+  .g-card-icon { width: 52px; height: 52px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 24px; margin-bottom: 20px; }
+  .g-card h3 { font-size: 18px; font-weight: 600; color: #202124; margin-bottom: 10px; }
+  .g-card p { font-size: 14px; color: #5f6368; line-height: 1.7; }
+  .g-btn { display: inline-flex; align-items: center; gap: 8px; padding: 12px 28px; border-radius: 24px; font-size: 15px; font-weight: 500; cursor: pointer; border: none; transition: all 0.2s; text-decoration: none; }
+  .g-btn-blue { background: #1a73e8; color: #fff; }
+  .g-btn-blue:hover { background: #1557b0; box-shadow: 0 2px 8px rgba(26,115,232,0.4); }
+  .g-btn-outline { background: #fff; color: #1a73e8; border: 1px solid #dadce0; }
+  .g-btn-outline:hover { background: #f8f9fa; }
+  .g-cta { background: linear-gradient(135deg, #1a73e8 0%, #0d47a1 100%); padding: 80px 0; text-align: center; }
+  .g-cta h2 { font-size: 36px; font-weight: 400; color: #fff; margin-bottom: 16px; }
+  .g-cta p { font-size: 18px; color: rgba(255,255,255,0.85); margin-bottom: 40px; }
+  .g-cta .g-btn-white { background: #fff; color: #1a73e8; font-weight: 600; padding: 16px 40px; border-radius: 28px; font-size: 16px; display: inline-flex; }
+  .g-cta .g-btn-white:hover { box-shadow: 0 4px 20px rgba(0,0,0,0.2); }
+  @media (max-width:768px) { .g-hero h1 { font-size: 32px; } .g-grid { grid-template-columns: 1fr; } }
+</style>
+</head>
+<body style="background:#f8f9fa;">
+
+<nav>
+  <a href="/" class="nav-logo">WORKADULT.PRO</a>
+  <div class="nav-links">
+    <a href="/#pricing">Тарифы</a>
+    <a href="/#app">Приложение</a>
+    <a href="/zarabotok.html" style="color:#ffea00">Работа</a>
+    <a href="vopros.html">Поддержка</a>
+    <div class="nav-lang"><a href="/zarabotok.html" class="active">RU</a><a href="/en/">EN</a></div>
+  </div>
+  <button class="burger"><span></span><span></span><span></span></button>
+</nav>
+
+<!-- HERO -->
+<div style="padding-top:70px;">
+  <div class="g-hero">
+    <div class="container">
+      <div style="font-size:13px;color:#1a73e8;font-weight:600;letter-spacing:2px;text-transform:uppercase;margin-bottom:16px;">Карьера в вебкам</div>
+      <h1>Стань <span>ТОП моделью</span><br>с нашей поддержкой</h1>
+      <p>Мы не просто агентство — мы технические партнёры. Работаем на рынке более 10 лет. Выводим в ТОП своими мощностями, чтобы ты зарабатывала от $2000 в месяц.</p>
+      <div class="g-chips">
+        <span class="g-chip">💰 До 60% выплаты</span>
+        <span class="g-chip">🚀 Буст на Chaturbate и Stripchat</span>
+        <span class="g-chip">🔒 Полная анонимность</span>
+        <span class="g-chip">✈️ Помощь с переездом</span>
+      </div>
+      <div style="display:flex;gap:16px;margin-top:40px;flex-wrap:wrap;">
+        <a href="anketa.html" class="g-btn g-btn-blue">📋 Подать анкету</a>
+        <a href="https://t.me/hiwebcam" target="_blank" class="g-btn g-btn-outline">💬 Наша группа в Telegram</a>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- BENEFITS -->
+<section class="g-section" style="background:#f8f9fa;">
+  <div class="container">
+    <div style="font-size:13px;color:#1a73e8;font-weight:600;letter-spacing:2px;text-transform:uppercase;margin-bottom:12px;">Что мы предлагаем</div>
+    <div style="font-size:32px;font-weight:400;color:#202124;">Всё что нужно для успешного старта</div>
+    <div class="g-grid">
+      <div class="g-card">
+        <div class="g-card-icon" style="background:#e8f0fe;">💰</div>
+        <h3>Высокий доход</h3>
+        <p>Выплачиваем до 60% от баланса. Четкие и прозрачные условия без скрытых комиссий. Еженедельные выплаты.</p>
+      </div>
+      <div class="g-card">
+        <div class="g-card-icon" style="background:#e6f4ea;">🚀</div>
+        <h3>Технический буст</h3>
+        <p>Твоя анкета всегда на 1-х страницах Stripchat и Chaturbate. BongaCams — всегда доступна кнопка Буст. Используем 4 сайта-копилки для большего заработка.</p>
+      </div>
+      <div class="g-card">
+        <div class="g-card-icon" style="background:#fce8e6;">🔒</div>
+        <h3>Полная анонимность</h3>
+        <p>Блокируем СНГ и любые страны по желанию. Используем DMCA защиту твоего контента от несанкционированного копирования.</p>
+      </div>
+      <div class="g-card">
+        <div class="g-card-icon" style="background:#fff3e0;">📋</div>
+        <h3>Помощь в регистрации для граждан РФ</h3>
+        <p>Поможем быстро зайти на платформы и начать зарабатывать даже с российским паспортом. Полное сопровождение.</p>
+      </div>
+      <div class="g-card">
+        <div class="g-card-icon" style="background:#f3e8fd;">🛠️</div>
+        <h3>Помощь с организацией</h3>
+        <p>Поможем правильно подобрать оборудование и комплектующие для стриминга. Камера, свет, микрофон — всё по делу.</p>
+      </div>
+      <div class="g-card">
+        <div class="g-card-icon" style="background:#e8f5e9;">✈️</div>
+        <h3>Помощь с переездом</h3>
+        <p>Трансфер, аренда жилья, покупка оборудования для граждан РФ и стран СНГ. Работаем в Нха Транге, Вьетнам.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- CTA -->
+<div class="g-cta">
+  <div class="container">
+    <h2>Готова начать?</h2>
+    <p>Заполни анкету — мы свяжемся в течение дня и расскажем об условиях</p>
+    <a href="anketa.html" class="g-btn-white" style="text-decoration:none;color:#1a73e8;font-weight:600;padding:16px 40px;border-radius:28px;background:#fff;font-size:16px;display:inline-flex;">📋 Подать анкету</a>
+  </div>
+</div>
+
+<footer>
+  <div class="container">
+    <div class="footer-grid">
+      <div class="footer-brand">
+        <div class="footer-logo">WORKADULT.PRO</div>
+        <div class="footer-desc">Продвижение вебкам моделей на Stripchat, Chaturbate и BongaCams. Работаем с 2022 года.</div>
+      </div>
+      <div class="footer-col">
+        <h4>Услуги</h4>
+        <a href="/#pricing">Буст Chaturbate</a>
+        <a href="/#pricing">Буст Stripchat</a>
+        <a href="/#pricing">Буст BongaCams</a>
+        <a href="/#app">Script Assistant</a>
+      </div>
+      <div class="footer-col">
+        <h4>Контакты</h4>
+        <a href="https://t.me/Workadult_feedback_bot" target="_blank">💬 Поддержка</a>
+        <a href="https://t.me/hiwebcam" target="_blank">👥 Группа моделей</a>
+        <a href="vopros.html">❓ Задать вопрос</a>
+        <a href="anketa.html">📋 Работа с нами</a>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <span>© 2024 Workadult.pro</span>
+      <span>@workadultpro</span>
+    </div>
+  </div>
+</footer>
+
+<script src="bot.js"></script>
+</body>
+</html>
