@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Support — Workadult.pro</title>
+<link rel="icon" href="../favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="../style.css">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+</head>
+<body>
+<nav>
+  <a href="/en/" class="nav-logo">WORKADULT.PRO</a>
+  <div class="nav-links">
+    <a href="/en/#pricing">Pricing</a>
+    <a href="/en/#app">App</a>
+    <a href="/en/#model">Work with us</a>
+    <a href="vopros.html" style="color:#ffea00">Support</a>
+    <div class="nav-lang"><a href="/vopros.html">RU</a><a href="/en/vopros.html" class="active">EN</a></div>
+  </div>
+  <button class="burger"><span></span><span></span><span></span></button>
+</nav>
+<section style="padding-top:120px;background:#f5f5f5;min-height:100vh;">
+  <div class="container">
+    <div class="section-label">Support</div>
+    <div class="section-title">Ask a question</div>
+    <div class="section-desc" style="margin-bottom:48px;">Write to us — we'll reply within the day. Or contact us directly on Telegram.</div>
+    <div style="display:flex;gap:16px;margin-bottom:48px;flex-wrap:wrap;">
+      <a href="https://t.me/Workadult_feedback_bot" target="_blank" class="btn btn-black">💬 Write on Telegram</a>
+    </div>
+    <div class="form-wrap" style="margin:0;max-width:680px;">
+      <form onsubmit="submitQuestion(event)">
+        <div class="form-group"><label>Your name</label><input type="text" name="name" placeholder="How should we address you"></div>
+        <div class="form-group"><label>Chaturbate link</label><input type="text" name="chaturbate" placeholder="https://chaturbate.com/yourname"></div>
+        <div class="form-group"><label>Stripchat link</label><input type="text" name="stripchat" placeholder="https://stripchat.com/yourname"></div>
+        <div class="form-group"><label>Your Telegram username *</label><input type="text" name="telegram" placeholder="@yourname" required></div>
+        <div class="form-group"><label>Your question *</label><textarea name="question" placeholder="Describe your question in detail..." required></textarea></div>
+        <button type="submit" class="btn btn-black" style="width:100%;justify-content:center;padding:18px;">Send</button>
+      </form>
+      <div class="form-success">✅ Question received! We'll reply on Telegram within the day.</div>
+    </div>
+  </div>
+</section>
+<footer><div class="container"><div class="footer-bottom"><a href="/en/" style="color:rgba(255,255,255,0.5);">← Workadult.pro</a><span>@workadultpro</span></div></div></footer>
+<script src="../bot.js"></script>
+</body>
+</html>
