@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Work as a webcam model — Workadult.pro</title>
+<link rel="icon" href="../favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="../style.css">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+</head>
+<body>
+<nav>
+  <a href="/en/" class="nav-logo">WORKADULT.PRO</a>
+  <div class="nav-links">
+    <a href="/en/#pricing">Pricing</a>
+    <a href="/en/#app">App</a>
+    <a href="/en/#model">Work with us</a>
+    <a href="vopros.html">Support</a>
+    <div class="nav-lang"><a href="/anketa.html">RU</a><a href="/en/anketa.html" class="active">EN</a></div>
+  </div>
+  <button class="burger"><span></span><span></span><span></span></button>
+</nav>
+<section style="padding-top:120px;background:#f5f5f5;min-height:100vh;">
+  <div class="container">
+    <div class="section-label">Work with us</div>
+    <div class="section-title">Join the team</div>
+    <div class="section-desc" style="margin-bottom:48px;">Fill out the form — we'll get back to you within the day and explain the terms.</div>
+    <div style="display:flex;gap:24px;margin-bottom:48px;flex-wrap:wrap;">
+      <a href="https://t.me/hiwebcam" target="_blank" class="btn btn-black">💬 Our Telegram group</a>
+      <a href="https://t.me/Workadult_feedback_bot" target="_blank" class="btn btn-white" style="background:#0088cc;color:#fff;border:none;">📱 Write directly</a>
+    </div>
+    <div class="form-wrap" style="margin:0;max-width:680px;">
+      <form onsubmit="submitAnketa(event)">
+        <div class="form-group"><label>Your Telegram username *</label><input type="text" name="telegram" placeholder="@yourname" required></div>
+        <div class="form-group"><label>Country of residence</label><input type="text" name="country" placeholder="e.g. Russia, Vietnam, Ukraine"></div>
+        <div class="form-group">
+          <label>Webcam experience</label>
+          <select name="experience">
+            <option value="">Select...</option>
+            <option value="No experience — just starting">No experience — just starting</option>
+            <option value="Less than 6 months">Less than 6 months</option>
+            <option value="6-12 months">6-12 months</option>
+            <option value="More than a year">More than a year</option>
+          </select>
+        </div>
+        <div class="form-group"><label>Additional info</label><textarea name="note" placeholder="Tell us about yourself, questions, wishes..."></textarea></div>
+        <button type="submit" class="btn btn-black" style="width:100%;justify-content:center;padding:18px;">Send application</button>
+      </form>
+      <div class="form-success">✅ Application received! We'll contact you on Telegram within the day.</div>
+    </div>
+  </div>
+</section>
+<footer><div class="container"><div class="footer-bottom"><a href="/en/" style="color:rgba(255,255,255,0.5);">← Workadult.pro</a><span>@workadultpro</span></div></div></footer>
+<script src="../bot.js"></script>
+</body>
+</html>
