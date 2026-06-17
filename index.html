@@ -16,11 +16,11 @@ a{text-decoration:none;color:inherit;}
 nav{
   position:fixed;top:0;left:0;right:0;z-index:999;
   background:#2c0000;
-  display:flex;align-items:center;justify-content:space-between;
+  display:flex;align-items:flex-end;justify-content:space-between;
   padding:0 40px;height:70px;
 }
 .nav-logo{color:#fff;font-size:17px;font-weight:700;letter-spacing:1.5px;}
-.nav-right{display:flex;align-items:center;gap:4px;}
+.nav-right{display:flex;align-items:flex-end;gap:4px;}
 .nav-right a{color:rgba(255,255,255,0.85);font-size:14px;font-weight:500;padding:8px 16px;transition:color 0.2s;}
 .nav-right a:hover{color:#fff;}
 .nav-lang{display:flex;gap:2px;margin-left:8px;}
@@ -32,7 +32,7 @@ nav{
 /* HERO — полноэкранный с фото */
 .hero{
   min-height:100vh;position:relative;
-  display:flex;align-items:center;
+  display:flex;align-items:flex-end;
   overflow:hidden;
 }
 .hero-bg{
@@ -43,11 +43,11 @@ nav{
 }
 .hero-overlay{
   position:absolute;inset:0;
-  background:linear-gradient(to right,rgba(0,0,0,0.55) 55%,rgba(0,0,0,0.15));
+  background:linear-gradient(to bottom,rgba(0,0,0,0.15) 0%,rgba(0,0,0,0.45) 100%);
 }
 .hero-content{
   position:relative;z-index:1;
-  padding:130px 80px 80px;
+  padding:130px 80px 100px;
   max-width:750px;
 }
 .hero h1{
@@ -99,7 +99,7 @@ nav{
 .about-ico{
   width:70px;height:70px;border-radius:50%;
   background:#f2f2f2;border:1px solid #e0e0e0;
-  display:flex;align-items:center;justify-content:center;
+  display:flex;align-items:flex-end;justify-content:center;
   font-size:28px;flex-shrink:0;
 }
 .about-row h3{font-size:16px;font-weight:700;margin-bottom:10px;color:#000;}
