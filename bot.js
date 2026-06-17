@@ -1,13 +1,12 @@
-const ORDER_BOT_TOKEN = "8874558070:AAFMJG4sm1tdw8JZJPpEH28vh7s7ovdfCvs";
-const FEEDBACK_BOT_TOKEN = "8543871731:AAFeNvBtPTg1H_N9gduzlRRedmlUlSFhrcs";
-const OWNER_ID = "7132111685";
+// Backend URL — токены хранятся безопасно на сервере
+const BACKEND = "https://workadult-orders.onrender.com";
 
-async function sendToTelegram(token, text) {
+async function sendToTelegram(type, text) {
   try {
-    const resp = await fetch(`https://api.telegram.org/bot${token}/sendMessage`, {
+    const resp = await fetch(`${BACKEND}/send`, {
       method: "POST",
       headers: {"Content-Type": "application/json"},
-      body: JSON.stringify({chat_id: OWNER_ID, text, parse_mode: "HTML"})
+      body: JSON.stringify({type, text})
     });
     return resp.ok;
   } catch(e) { return false; }
@@ -36,7 +35,7 @@ async function submitOrder(event) {
     `💰 Сумма оплаты: ${data.amount} USDT\n` +
     `🔗 TxID: <code>${data.txid}</code>`;
 
-  const ok = await sendToTelegram(ORDER_BOT_TOKEN, text);
+  const ok = await sendToTelegram("order", text);
   btn.disabled = false; btn.textContent = "Отправить заказ";
 
   if (ok) {
@@ -63,7 +62,7 @@ async function submitAnketa(event) {
     `🌍 Страна: ${data.country || "—"}\n` +
     `💬 Опыт: ${data.experience || "—"}\n` +
     `📝 Примечание: ${data.note || "—"}`;
-  const ok = await sendToTelegram(FEEDBACK_BOT_TOKEN, text);
+  const ok = await sendToTelegram("feedback", text);
   btn.disabled = false; btn.textContent = "Отправить анкету";
   if (ok) { form.reset(); form.nextElementSibling.style.display = "block"; }
   else alert("Ошибка. Напишите: @workadultpro");
@@ -80,7 +79,7 @@ async function submitQuestion(event) {
     `👤 Имя: ${data.name || "—"}\n` +
     `📱 Telegram: ${data.telegram}\n` +
     `💬 Вопрос: ${data.question}`;
-  const ok = await sendToTelegram(FEEDBACK_BOT_TOKEN, text);
+  const ok = await sendToTelegram("feedback", text);
   btn.disabled = false; btn.textContent = "Отправить";
   if (ok) { form.reset(); form.nextElementSibling.style.display = "block"; }
   else alert("Ошибка. Напишите: @workadultpro");
