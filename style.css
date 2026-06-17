@@ -111,7 +111,7 @@ section { padding: 100px 0; }
   font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 2px;
   color: var(--gray-mid); margin-bottom: 16px;
 }
-.price-amount { font-size: 56px; font-weight: 900; color: var(--black); line-height: 1; }
+.price-amount { font-size: 52px; font-weight: 400; color: var(--black); line-height: 1; letter-spacing: -1px; font-family: Georgia, serif; }
 .price-desc { font-size: 14px; color: var(--gray-mid); margin: 12px 0 28px; min-height: 60px; }
 .price-card .btn { width: 100%; justify-content: center; }
 
