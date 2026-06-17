@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Оформить заказ — Workadult.pro</title>
+<link rel="icon" href="favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="style.css">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+</head>
+<body>
+
+<nav>
+  <a href="/" class="nav-logo">WORKADULT.PRO</a>
+  <div class="nav-links">
+    <a href="/#pricing">Тарифы</a>
+    <a href="/#app">Приложение</a>
+    <a href="/#model">Работа</a>
+    <a href="vopros.html">Поддержка</a>
+    <div class="nav-lang"><a href="/order.html" class="active">RU</a><a href="/en/order.html">EN</a></div>
+  </div>
+  <button class="burger"><span></span><span></span><span></span></button>
+</nav>
+
+<section style="padding-top:100px;background:#f5f5f5;min-height:100vh;">
+  <div class="container">
+    <div class="section-label">Оформить заказ</div>
+    <div class="section-title">Форма заказа</div>
+
+    <!-- Выбранный тариф -->
+    <div id="selectedPlan" style="display:none;background:#fff;border-radius:8px;padding:24px 32px;margin-bottom:32px;border-left:4px solid var(--green);box-shadow:0 2px 12px rgba(0,0,0,0.06);max-width:680px;">
+      <div style="font-size:12px;color:#888;text-transform:uppercase;letter-spacing:2px;margin-bottom:8px;">Выбранный тариф</div>
+      <div id="planName" style="font-size:22px;font-weight:700;"></div>
+    </div>
+
+    <div class="form-wrap" style="margin:0;max-width:680px;">
+      <form onsubmit="submitOrder(event)" id="orderForm">
+        <input type="hidden" name="product" id="orderProduct">
+
+        <div class="form-group">
+          <label>Ссылка на страницу Chaturbate</label>
+          <input type="text" name="chaturbate" placeholder="https://chaturbate.com/yourname">
+        </div>
+        <div class="form-group">
+          <label>Ссылка на страницу Stripchat</label>
+          <input type="text" name="stripchat" placeholder="https://stripchat.com/yourname">
+        </div>
+        <div class="form-group">
+          <label>Ваш ник в Telegram *</label>
+          <input type="text" name="telegram" placeholder="@yourname" required>
+        </div>
+        <div class="form-group">
+          <label>Время старта (МСК) *</label>
+          <input type="text" name="time" placeholder="Например: 14:00" required>
+          <div class="form-note">Заказывайте за 2 часа до буста. Будьте в эфире 30 мин когда трафик польётся.</div>
+        </div>
+        <div class="form-group">
+          <label>Нужная дата *</label>
+          <input type="date" name="date" required>
+        </div>
+
+        <hr style="border:none;border-top:1px solid #eee;margin:32px 0;">
+
+        <div style="text-align:center;margin-bottom:24px;">
+          <div style="font-size:13px;font-weight:700;text-transform:uppercase;letter-spacing:2px;color:#888;margin-bottom:16px;">Оплата USDT TRC20</div>
+          <img src="images/usdt_qr.png" alt="QR USDT TRC20" style="width:180px;height:180px;border:1px solid #eee;border-radius:8px;display:block;margin:0 auto 16px;">
+          <div style="font-size:12px;color:#888;margin-bottom:8px;">Адрес кошелька:</div>
+          <div style="font-family:monospace;font-size:13px;background:#f5f5f5;padding:12px;border-radius:6px;word-break:break-all;cursor:pointer;" onclick="navigator.clipboard.writeText('TG8568ZR6nUDKp6k6yHLYbUYLPKZyP1z9c');this.textContent='✅ Скопировано!';setTimeout(()=>this.textContent='TG8568ZR6nUDKp6k6yHLYbUYLPKZyP1z9c',2000)">TG8568ZR6nUDKp6k6yHLYbUYLPKZyP1z9c</div>
+          <div style="font-size:12px;color:#aaa;margin-top:8px;">Нажмите на адрес чтобы скопировать</div>
+        </div>
+
+        <div class="form-group">
+          <label>Сумма оплаты (USDT) *</label>
+          <input type="number" name="amount" id="orderAmount" placeholder="Например: 17" required>
+        </div>
+        <div class="form-group">
+          <label>TxID транзакции *</label>
+          <input type="text" name="txid" placeholder="Вставьте хэш транзакции после оплаты" required>
+          <div class="form-note">Найдите TxID в вашем крипто-кошельке после отправки платежа</div>
+        </div>
+
+        <button type="submit" class="btn btn-black" style="width:100%;justify-content:center;padding:18px;margin-top:8px;">✅ Отправить заказ с подтверждением оплаты</button>
+      </form>
+      <div class="form-success">🎉 Заказ и оплата получены! Свяжемся в Telegram в течение часа.</div>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="container">
+    <div class="footer-bottom">
+      <a href="/" style="color:rgba(255,255,255,0.5);">← Назад к тарифам</a>
+      <span>@workadultpro</span>
+    </div>
+  </div>
+</footer>
+
+<script src="bot.js"></script>
+<script>
+// Берём тариф из URL параметра
+const params = new URLSearchParams(window.location.search);
+const product = params.get('plan') || '';
+if (product) {
+  document.getElementById('orderProduct').value = product;
+  document.getElementById('planName').textContent = product;
+  document.getElementById('selectedPlan').style.display = 'block';
+  // Автозаполняем сумму
+  const priceMatch = product.match(/\$(\d+)/);
+  if (priceMatch) document.getElementById('orderAmount').value = priceMatch[1];
+}
+</script>
+</body>
+</html>
