@@ -37,11 +37,14 @@ async function submitOrder(event) {
 
   const ok = await sendToTelegram(ORDER_BOT_TOKEN, text);
 
-  btn.disabled = false; btn.textContent = "Заказать";
+  btn.disabled = false; btn.textContent = "Оплатить";
   if (ok) {
     form.reset();
     form.nextElementSibling.style.display = "block";
-    setTimeout(() => { form.nextElementSibling.style.display = "none"; }, 5000);
+    // Редирект на оплату через 1 секунду
+    setTimeout(() => {
+      window.open("https://pay.trybit.com/YVU2HPHC", "_blank");
+    }, 1000);
   } else {
     alert("Ошибка отправки. Напишите нам напрямую: @workadultpro");
   }
