@@ -1,4 +1,11 @@
 User-agent: *
 Allow: /
 
+# Закрыть от индексации технические файлы и дубли
+Disallow: /order.html
+Disallow: /en/order.html
+Disallow: /bot.js
+Disallow: /style.css
+Disallow: /images/
+
 Sitemap: https://workadult.pro/sitemap.xml
