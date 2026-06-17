@@ -135,8 +135,8 @@
     <div class="section-label">Оформить заказ</div>
     <div class="section-title">Форма заказа</div>
     <div class="form-wrap">
-      <form onsubmit="submitOrder(event)" data-product="Заказ буста" id="orderForm">
-        <input type="hidden" name="product" id="orderProduct" value="Заказ буста">
+      <div id="orderProductLabel" style="display:inline-block;background:#000;color:#ffea00;padding:8px 16px;border-radius:4px;font-weight:700;margin-bottom:24px;min-height:36px;"></div>
+      <form onsubmit="submitOrder(event)" id="orderForm">
 
         <div class="form-group">
           <label>Ссылка на страницу Chaturbate</label>
@@ -160,9 +160,29 @@
           <input type="date" name="date" required>
         </div>
 
-        <button type="submit" class="btn btn-black" style="width:100%;justify-content:center;padding:18px;">Отправить заказ</button>
+        <hr style="border:none;border-top:1px solid #eee;margin:32px 0;">
+
+        <div style="text-align:center;margin-bottom:24px;">
+          <div style="font-size:13px;font-weight:700;text-transform:uppercase;letter-spacing:2px;color:#888;margin-bottom:16px;">Оплата USDT TRC20</div>
+          <img src="images/usdt_qr.png" alt="QR USDT TRC20" style="width:180px;height:180px;border:1px solid #eee;border-radius:8px;display:block;margin:0 auto 16px;">
+          <div style="font-size:12px;color:#888;margin-bottom:8px;">Адрес кошелька:</div>
+          <div style="font-family:monospace;font-size:13px;background:#f5f5f5;padding:12px;border-radius:6px;word-break:break-all;cursor:pointer;" onclick="navigator.clipboard.writeText('TG8568ZR6nUDKp6k6yHLYbUYLPKZyP1z9c');this.textContent='✅ Скопировано!';setTimeout(()=>this.textContent='TG8568ZR6nUDKp6k6yHLYbUYLPKZyP1z9c',2000)">TG8568ZR6nUDKp6k6yHLYbUYLPKZyP1z9c</div>
+          <div style="font-size:12px;color:#aaa;margin-top:8px;">Нажмите на адрес чтобы скопировать</div>
+        </div>
+
+        <div class="form-group">
+          <label>Сумма оплаты (USDT) *</label>
+          <input type="number" name="amount" placeholder="Например: 17" required>
+        </div>
+        <div class="form-group">
+          <label>TxID транзакции *</label>
+          <input type="text" name="txid" placeholder="Вставьте хэш транзакции после оплаты" required>
+          <div class="form-note">Найдите TxID в вашем крипто-кошельке после отправки платежа</div>
+        </div>
+
+        <button type="submit" class="btn btn-black" style="width:100%;justify-content:center;padding:18px;margin-top:8px;">✅ Отправить заказ с подтверждением</button>
       </form>
-      <div class="form-success">✅ Заказ получен! Мы свяжемся с вами в Telegram в течение часа.</div>
+      <div class="form-success">🎉 Заказ и оплата получены! Мы свяжемся с вами в Telegram в течение часа.</div>
     </div>
   </div>
 </section>
