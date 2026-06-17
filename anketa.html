@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Работа вебкам моделью — Workadult.pro</title>
+<link rel="icon" href="images/tildafavicon.ico">
+<link rel="stylesheet" href="style.css">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+</head>
+<body>
+
+<nav>
+  <a href="/" class="nav-logo">WORKADULT.PRO</a>
+  <div class="nav-links" id="navLinks">
+    <a href="/#pricing">Тарифы</a>
+    <a href="/#app">Приложение</a>
+    <a href="/#model">Работа</a>
+    <a href="vopros.html">Поддержка</a>
+    <div class="nav-lang">
+      <a href="/anketa.html" class="active">RU</a>
+      <a href="/en/anketa.html">EN</a>
+    </div>
+  </div>
+  <button class="burger"><span></span><span></span><span></span></button>
+</nav>
+
+<section style="padding-top:120px;background:#f5f5f5;min-height:100vh;">
+  <div class="container">
+    <div class="section-label">Работа с нами</div>
+    <div class="section-title">Стань частью команды</div>
+    <div class="section-desc" style="margin-bottom:48px;">Заполни анкету — мы свяжемся в течение дня и расскажем об условиях сотрудничества.</div>
+
+    <div style="display:flex;gap:24px;margin-bottom:48px;flex-wrap:wrap;">
+      <a href="https://t.me/hiwebcam" target="_blank" class="btn btn-black">
+        💬 Наша группа в Telegram
+      </a>
+      <a href="https://t.me/Workadult_feedback_bot" target="_blank" class="btn btn-white" style="background:#0088cc;color:#fff;border:none;">
+        📱 Написать напрямую
+      </a>
+    </div>
+
+    <div class="form-wrap" style="margin:0;max-width:680px;">
+      <form onsubmit="submitAnketa(event)">
+        <div class="form-group">
+          <label>Ваш ник в Telegram *</label>
+          <input type="text" name="telegram" placeholder="@yourname" required>
+        </div>
+        <div class="form-group">
+          <label>Страна проживания</label>
+          <input type="text" name="country" placeholder="Например: Россия, Вьетнам, Украина">
+        </div>
+        <div class="form-group">
+          <label>Опыт работы в вебкам</label>
+          <select name="experience">
+            <option value="">Выберите...</option>
+            <option value="Нет опыта — только начинаю">Нет опыта — только начинаю</option>
+            <option value="Менее 6 месяцев">Менее 6 месяцев</option>
+            <option value="6-12 месяцев">6-12 месяцев</option>
+            <option value="Более года">Более года</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Дополнительно</label>
+          <textarea name="note" placeholder="Расскажи о себе, вопросы, пожелания..."></textarea>
+        </div>
+        <button type="submit" class="btn btn-black" style="width:100%;justify-content:center;padding:18px;">Отправить анкету</button>
+      </form>
+      <div class="form-success">✅ Анкета получена! Мы свяжемся с вами в Telegram в течение дня.</div>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="container">
+    <div class="footer-bottom">
+      <a href="/" style="color:rgba(255,255,255,0.5);">← Workadult.pro</a>
+      <span>@workadultpro</span>
+    </div>
+  </div>
+</footer>
+
+<script src="bot.js"></script>
+</body>
+</html>
