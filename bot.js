@@ -35,7 +35,14 @@ async function submitOrder(event) {
     `💰 Сумма оплаты: ${data.amount} USDT\n` +
     `🔗 TxID: <code>${data.txid}</code>`;
 
-  const ok = await sendToTelegram("order", text);
+  // Передаём txid и amount для проверки блокчейна
+  const payload = {type: "order", text, txid: data.txid || "", amount: data.amount || "0"};
+  const resp = await fetch(`${BACKEND}/send`, {
+    method: "POST",
+    headers: {"Content-Type": "application/json"},
+    body: JSON.stringify(payload)
+  });
+  const ok = resp.ok;
   btn.disabled = false; btn.textContent = "Отправить заказ";
 
   if (ok) {
