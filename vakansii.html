@@ -57,7 +57,7 @@
   .post-card .tag { font-size:12px;color:#c9a800;font-weight:700;text-transform:uppercase;letter-spacing:1px; }
   .post-card h3 { font-size:18px;margin:10px 0 8px;color:#111;line-height:1.3; }
   .post-card p { font-size:14px;color:#666;line-height:1.6;margin:0; }
-.hero{min-height:auto;padding:120px 0 70px;position:relative;overflow:hidden;background:#0a0a0a;}.hero-bg{position:absolute;inset:0;background-image:url('images/tild3736-3562-4332-b962-656163346463__kolosova-cover-dtf-m.jpg');background-size:cover;background-position:center;opacity:0.28;}.hero-overlay{position:absolute;inset:0;background:linear-gradient(to bottom,rgba(10,10,10,0.5),rgba(10,10,10,0.8));}.hero-content{position:relative;z-index:1;max-width:760px;}.hero h1{color:#fff;font-size:clamp(30px,3.4vw,46px);font-weight:800;line-height:1.18;margin:14px 0 18px;}.hero h1 span{color:#ffea00;}.hero p{color:rgba(255,255,255,0.82);font-size:18px;line-height:1.6;max-width:600px;}.hero-tag{display:inline-block;background:rgba(255,255,255,0.12);color:#fff;font-size:12px;font-weight:600;letter-spacing:1px;text-transform:uppercase;padding:5px 12px;border-radius:4px;}</style>
+.hero{min-height:auto;padding:120px 0 70px;position:relative;overflow:hidden;background:#0a0a0a;}.hero-bg{position:absolute;inset:0;background-image:url('images/tild3736-3562-4332-b962-656163346463__kolosova-cover-dtf-m.jpg');background-size:cover;background-position:center;opacity:0.55;filter:brightness(1.15);}.hero-overlay{position:absolute;inset:0;background:linear-gradient(to bottom,rgba(10,10,10,0.25),rgba(10,10,10,0.55));}.hero-content{position:relative;z-index:1;max-width:760px;}.hero h1{color:#fff;font-size:clamp(30px,3.4vw,46px);font-weight:800;line-height:1.18;margin:14px 0 18px;}.hero h1 span{color:#ffea00;}.hero p{color:rgba(255,255,255,0.82);font-size:18px;line-height:1.6;max-width:600px;}.hero-tag{display:inline-block;background:rgba(255,255,255,0.12);color:#fff;font-size:12px;font-weight:600;letter-spacing:1px;text-transform:uppercase;padding:5px 12px;border-radius:4px;}</style>
 <script type="application/ld+json">
 {
   "@context": "https://schema.org",
@@ -306,6 +306,96 @@
   <a href="anketa.html" class="btn btn-gold">Подать анкету</a>
 </div>
 </div></section>
+
+
+<section class="article" style="background:#f7f7f7;padding:56px 0;border-top:1px solid #eee;">
+  <div class="container" style="max-width:760px;">
+    <div class="section-label">Студиям и работодателям</div>
+    <h2 class="section-title" style="color:#111;margin-bottom:10px;">Предложить вакансию</h2>
+    <p style="color:#555;font-size:16px;line-height:1.7;margin-bottom:24px;">
+      Ищете моделей, операторов или администраторов? Разместите вакансию у нас.
+      Чтобы отсеять спам, вход через Telegram — так мы видим, кто отправляет заявку.
+      После проверки вакансия публикуется на сайте.
+    </p>
+
+    <div id="tg-login-box">
+      <p style="color:#888;font-size:14px;margin-bottom:12px;">Войдите через Telegram, чтобы открыть форму:</p>
+      <script async src="https://telegram.org/js/telegram-widget.js?22"
+        data-telegram-login="Workadult_feedback_bot"
+        data-size="large"
+        data-radius="8"
+        data-onauth="onTelegramAuth(user)"
+        data-request-access="write"></script>
+    </div>
+
+    <form id="vacancy-form" style="display:none;margin-top:8px;">
+      <div id="tg-user-badge" style="background:#e8f5e9;border:1px solid #c8e6c9;border-radius:8px;padding:10px 14px;margin-bottom:18px;font-size:14px;color:#2e7d32;"></div>
+      <div style="display:grid;gap:14px;">
+        <label style="display:block;">
+          <span style="display:block;font-size:13px;font-weight:600;color:#444;margin-bottom:6px;">Студия / компания *</span>
+          <input name="studio" required maxlength="80" style="width:100%;padding:12px 14px;border:1px solid #ddd;border-radius:8px;font-size:15px;box-sizing:border-box;">
+        </label>
+        <label style="display:block;">
+          <span style="display:block;font-size:13px;font-weight:600;color:#444;margin-bottom:6px;">Какая вакансия *</span>
+          <input name="role" required maxlength="80" placeholder="Например: вебкам-модель, оператор, администратор" style="width:100%;padding:12px 14px;border:1px solid #ddd;border-radius:8px;font-size:15px;box-sizing:border-box;">
+        </label>
+        <label style="display:block;">
+          <span style="display:block;font-size:13px;font-weight:600;color:#444;margin-bottom:6px;">Город / формат</span>
+          <input name="city" maxlength="80" placeholder="Удалённо, или город студии" style="width:100%;padding:12px 14px;border:1px solid #ddd;border-radius:8px;font-size:15px;box-sizing:border-box;">
+        </label>
+        <label style="display:block;">
+          <span style="display:block;font-size:13px;font-weight:600;color:#444;margin-bottom:6px;">Условия</span>
+          <textarea name="terms" maxlength="500" rows="3" placeholder="Выплаты, график, требования" style="width:100%;padding:12px 14px;border:1px solid #ddd;border-radius:8px;font-size:15px;box-sizing:border-box;resize:vertical;"></textarea>
+        </label>
+        <label style="display:block;">
+          <span style="display:block;font-size:13px;font-weight:600;color:#444;margin-bottom:6px;">Контакт для связи *</span>
+          <input name="contact" required maxlength="80" placeholder="Telegram, email или телефон" style="width:100%;padding:12px 14px;border:1px solid #ddd;border-radius:8px;font-size:15px;box-sizing:border-box;">
+        </label>
+        <button type="submit" class="btn btn-gold" style="margin-top:6px;">Отправить заявку</button>
+        <p id="vacancy-status" style="font-size:14px;margin:0;"></p>
+      </div>
+    </form>
+  </div>
+</section>
+
+<script>
+var TG_AUTH = null;
+function onTelegramAuth(user) {
+  TG_AUTH = user;
+  document.getElementById('tg-login-box').style.display = 'none';
+  var f = document.getElementById('vacancy-form');
+  f.style.display = 'block';
+  var nm = (user.first_name||'') + (user.last_name? ' '+user.last_name:'');
+  var un = user.username? ' (@'+user.username+')' : '';
+  document.getElementById('tg-user-badge').textContent = '✓ Вход выполнен: ' + nm + un;
+}
+document.addEventListener('submit', function(e){
+  if (e.target.id !== 'vacancy-form') return;
+  e.preventDefault();
+  if (!TG_AUTH) return;
+  var fd = new FormData(e.target);
+  var form = {};
+  fd.forEach(function(v,k){ form[k]=v; });
+  var status = document.getElementById('vacancy-status');
+  status.textContent = 'Отправляю…'; status.style.color='#888';
+  fetch('https://workadult-bots.onrender.com/submit-vacancy', {
+    method:'POST', headers:{'Content-Type':'application/json'},
+    body: JSON.stringify({ auth: TG_AUTH, form: form })
+  }).then(function(r){return r.json();}).then(function(d){
+    if (d.ok) {
+      status.textContent = '✓ Заявка отправлена! Мы проверим и опубликуем вакансию.';
+      status.style.color='#2e7d32';
+      e.target.reset();
+    } else {
+      status.textContent = 'Ошибка отправки. Проверьте поля и попробуйте снова.';
+      status.style.color='#c62828';
+    }
+  }).catch(function(){
+    status.textContent = 'Сервис недоступен, попробуйте позже.';
+    status.style.color='#c62828';
+  });
+});
+</script>
 
 <footer>
   <div class="container">
