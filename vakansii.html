@@ -351,6 +351,21 @@
           <span style="display:block;font-size:13px;font-weight:600;color:#444;margin-bottom:6px;">Контакт для связи *</span>
           <input name="contact" required maxlength="80" placeholder="Telegram, email или телефон" style="width:100%;padding:12px 14px;border:1px solid #ddd;border-radius:8px;font-size:15px;box-sizing:border-box;">
         </label>
+        <div style="border:1px solid #ffe08a;background:#fffdf2;border-radius:10px;padding:16px;margin-top:4px;">
+          <label style="display:flex;align-items:flex-start;gap:10px;cursor:pointer;">
+            <input type="checkbox" id="pin-toggle" style="margin-top:3px;width:18px;height:18px;flex-shrink:0;">
+            <span style="font-size:14px;color:#444;"><b>💎 Закрепить вакансию вверху</b> — подсветка и первое место в списке на <b id="pin-days">7</b> дней за <b id="pin-price">5</b> USDT (TRC-20).</span>
+          </label>
+          <div id="pin-pay" style="display:none;margin-top:14px;border-top:1px dashed #ffe08a;padding-top:14px;">
+            <p style="font-size:13px;color:#555;margin:0 0 8px;">1. Переведите <b id="pin-amount">5 USDT</b> в сети <b>TRC-20 (Tron)</b> на адрес:</p>
+            <div style="display:flex;gap:8px;align-items:center;margin-bottom:12px;">
+              <code id="pin-addr" style="flex:1;background:#fff;border:1px solid #ddd;border-radius:6px;padding:8px 10px;font-size:13px;word-break:break-all;">загрузка…</code>
+              <button type="button" id="pin-copy" style="background:#ffd400;border:none;border-radius:6px;padding:8px 12px;font-size:13px;font-weight:600;cursor:pointer;white-space:nowrap;">Копировать</button>
+            </div>
+            <p style="font-size:13px;color:#555;margin:0 0 6px;">2. Вставьте <b>хэш транзакции (TxID)</b> для проверки оплаты:</p>
+            <input name="txid" id="pin-txid" maxlength="64" placeholder="64 символа из вашего кошелька" style="width:100%;padding:12px 14px;border:1px solid #ddd;border-radius:8px;font-size:14px;box-sizing:border-box;">
+          </div>
+        </div>
         <button type="submit" class="btn btn-gold" style="margin-top:6px;">Отправить заявку</button>
         <p id="vacancy-status" style="font-size:14px;margin:0;"></p>
       </div>
@@ -360,15 +375,35 @@
 
 <script>
 var TG_AUTH = null;
+var API = 'https://workadult-bots.onrender.com';
 function onTelegramAuth(user) {
   TG_AUTH = user;
   document.getElementById('tg-login-box').style.display = 'none';
-  var f = document.getElementById('vacancy-form');
-  f.style.display = 'block';
+  document.getElementById('vacancy-form').style.display = 'block';
   var nm = (user.first_name||'') + (user.last_name? ' '+user.last_name:'');
   var un = user.username? ' (@'+user.username+')' : '';
   document.getElementById('tg-user-badge').textContent = '✓ Вход выполнен: ' + nm + un;
 }
+// Закреп: тумблер показывает оплату и тянет адрес с сервера
+document.addEventListener('change', function(e){
+  if (e.target.id !== 'pin-toggle') return;
+  var pay = document.getElementById('pin-pay');
+  pay.style.display = e.target.checked ? 'block' : 'none';
+  if (e.target.checked && document.getElementById('pin-addr').textContent === 'загрузка…') {
+    fetch(API + '/pin-info').then(function(r){return r.json();}).then(function(d){
+      document.getElementById('pin-addr').textContent = d.address || 'адрес не задан — напишите в поддержку';
+      document.getElementById('pin-amount').textContent = d.price + ' USDT';
+      document.getElementById('pin-price').textContent = d.price;
+      document.getElementById('pin-days').textContent = d.days;
+    }).catch(function(){ document.getElementById('pin-addr').textContent='ошибка загрузки'; });
+  }
+});
+document.addEventListener('click', function(e){
+  if (e.target.id !== 'pin-copy') return;
+  var t = document.getElementById('pin-addr').textContent;
+  navigator.clipboard.writeText(t); e.target.textContent='✓';
+  setTimeout(function(){ e.target.textContent='Копировать'; }, 1500);
+});
 document.addEventListener('submit', function(e){
   if (e.target.id !== 'vacancy-form') return;
   e.preventDefault();
@@ -376,16 +411,33 @@ document.addEventListener('submit', function(e){
   var fd = new FormData(e.target);
   var form = {};
   fd.forEach(function(v,k){ form[k]=v; });
+  var pinned = document.getElementById('pin-toggle').checked;
+  var txid = (form.txid||'').trim();
+  delete form.txid;
   var status = document.getElementById('vacancy-status');
-  status.textContent = 'Отправляю…'; status.style.color='#888';
-  fetch('https://workadult-bots.onrender.com/submit-vacancy', {
+  if (pinned && txid.length !== 64) {
+    status.textContent = 'Для закрепа вставьте корректный хэш транзакции (64 символа).';
+    status.style.color='#c62828'; return;
+  }
+  status.textContent = pinned ? 'Проверяю оплату в блокчейне…' : 'Отправляю…';
+  status.style.color='#888';
+  fetch(API + '/submit-vacancy', {
     method:'POST', headers:{'Content-Type':'application/json'},
-    body: JSON.stringify({ auth: TG_AUTH, form: form })
+    body: JSON.stringify({ auth: TG_AUTH, form: form, pinned: pinned, txid: txid })
   }).then(function(r){return r.json();}).then(function(d){
-    if (d.ok) {
+    if (d.ok && d.pinned) {
+      status.textContent = '💎 Оплата подтверждена! Вакансия закреплена вверху.';
+      status.style.color='#2e7d32'; e.target.reset();
+      document.getElementById('pin-pay').style.display='none';
+    } else if (d.ok) {
       status.textContent = '✓ Заявка отправлена! Мы проверим и опубликуем вакансию.';
-      status.style.color='#2e7d32';
-      e.target.reset();
+      status.style.color='#2e7d32'; e.target.reset();
+    } else if (d.error === 'payment') {
+      status.textContent = 'Оплата не прошла проверку: ' + (d.reason||'') ;
+      status.style.color='#c62828';
+    } else if (d.error === 'txid_used') {
+      status.textContent = 'Этот хэш транзакции уже использован.';
+      status.style.color='#c62828';
     } else {
       status.textContent = 'Ошибка отправки. Проверьте поля и попробуйте снова.';
       status.style.color='#c62828';
