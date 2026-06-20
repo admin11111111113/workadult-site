@@ -392,6 +392,7 @@ footer{
           <h3 style="font-size:18px;color:#111;font-weight:800;margin:0 0 6px;line-height:1.25;">Хочешь попасть на главную страницу?</h3>
           <p style="font-size:13px;color:#666;line-height:1.55;margin:0 0 14px;">Твоё объявление увидят все, кто заходит на сайт. Размещение на главной — <b>50&nbsp;$</b>, держится <b>2&nbsp;недели</b>.</p>
           <a href="vakansii.html#post-box" class="btn-yellow" style="display:inline-block;text-decoration:none;">Хочу</a>
+          <p id="spot-status" style="font-size:12px;font-weight:600;margin:12px 0 0;line-height:1.5;"></p>
           <p style="font-size:11px;color:#999;margin:12px 0 0;line-height:1.5;">Вход через Telegram · модерация · оплата в USDT · 2 недели на главной</p>
         </div>
         <div>
@@ -615,11 +616,26 @@ footer{
   function esc(s){var d=document.createElement('div');d.textContent=(s==null?'':String(s));return d.innerHTML;}
   fetch('/board.json?t='+Date.now()).then(function(r){return r.json();}).then(function(d){
     var el=document.getElementById('home-board'); if(!el)return;
-    var v=(d.vacancies||[]).slice().sort(function(x,y){
-      var px=x.pinned?1:0, py=y.pinned?1:0; if(px!==py)return py-px;
+    var v=(d.vacancies||[]).filter(function(x){return x.pinned;}).sort(function(x,y){
       return String(y.date||'').localeCompare(String(x.date||''));
     }).slice(0,5);
-    if(v.length===0){el.innerHTML='<div style="color:#aaa;font-size:13px;">Пока вакансий нет</div>';return;}
+    // статус мест в топе (5 закрепов)
+    var st=document.getElementById('spot-status');
+    if(st){
+      var pinned=(d.vacancies||[]).filter(function(x){return x.pinned;});
+      var vakLink=' <a href="vakansii.html#post-box" style="color:#1a6dff;font-weight:600;text-decoration:none;">В «Вакансии» ›</a>';
+      if(pinned.length>=5){
+        var dates=pinned.map(function(x){return x.pin_until;}).filter(Boolean).sort();
+        var near=dates.length?dates[0]:'';
+        var human=near?near.split('-').reverse().join('.'):'';
+        st.style.color='#c0392b';
+        st.innerHTML='🔴 Все 5 мест в топе заняты'+(human?(', ближайшее освободится <b>'+human+'</b>'):'')+'.<br><span style="color:#555;font-weight:500;">В разделе «Вакансии» есть свободные платные и бесплатные места.</span>'+vakLink;
+      } else {
+        st.style.color='#1e7e34';
+        st.innerHTML='🟢 Свободно мест в топе: <b>'+(5-pinned.length)+' из 5</b>.<br><span style="color:#555;font-weight:500;">В «Вакансиях» — и платные закрепы, и бесплатные объявления.</span>';
+      }
+    }
+    if(v.length===0){el.innerHTML='<div style="color:#aaa;font-size:13px;">Топ пока свободен — будь первым</div>';return;}
     el.innerHTML=v.map(function(it){
       var box=it.pinned?'border:2px solid #ffd400;background:#fffdf2;':'border:1px solid #eee;background:#fff;';
       var star=it.pinned?'★ ':'';
