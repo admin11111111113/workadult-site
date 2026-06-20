@@ -395,12 +395,8 @@ footer{
           <p style="font-size:11px;color:#999;margin:12px 0 0;line-height:1.5;">Вход через Telegram · модерация · оплата в USDT · 2 недели на главной</p>
         </div>
         <div>
-          <div class="cta-badge" style="margin-bottom:10px;">📋 Доска вакансий</div>
-          <div style="border:1px solid #eee;border-radius:10px;padding:14px 16px;background:#fff;">
-            <div style="font-size:11px;font-weight:700;color:#9a7d00;text-transform:uppercase;letter-spacing:.5px;margin-bottom:5px;">Студия Аделина</div>
-            <div style="font-size:16px;font-weight:800;color:#111;margin-bottom:4px;">Ищу чаттера</div>
-            <div style="font-size:13px;color:#555;">Зарплата: 20% от заработанного</div>
-          </div>
+          <div class="cta-badge" style="margin-bottom:10px;">📋 Доска вакансий — топ</div>
+          <div id="home-board" style="display:flex;flex-direction:column;gap:8px;"></div>
           <a href="vakansii.html" style="display:inline-block;margin-top:10px;font-size:13px;color:#c9a800;font-weight:600;text-decoration:none;">Все вакансии &rsaquo;</a>
         </div>
       </div>
@@ -614,5 +610,27 @@ footer{
 </footer>
 
 <script src="bot.js"></script>
+<script>
+(function(){
+  function esc(s){var d=document.createElement('div');d.textContent=(s==null?'':String(s));return d.innerHTML;}
+  fetch('/board.json?t='+Date.now()).then(function(r){return r.json();}).then(function(d){
+    var el=document.getElementById('home-board'); if(!el)return;
+    var v=(d.vacancies||[]).slice().sort(function(x,y){
+      var px=x.pinned?1:0, py=y.pinned?1:0; if(px!==py)return py-px;
+      return String(y.date||'').localeCompare(String(x.date||''));
+    }).slice(0,5);
+    if(v.length===0){el.innerHTML='<div style="color:#aaa;font-size:13px;">Пока вакансий нет</div>';return;}
+    el.innerHTML=v.map(function(it){
+      var box=it.pinned?'border:2px solid #ffd400;background:#fffdf2;':'border:1px solid #eee;background:#fff;';
+      var star=it.pinned?'★ ':'';
+      return '<div style="'+box+'border-radius:10px;padding:12px 14px;">'+
+        (it.org?'<div style="font-size:11px;font-weight:700;color:#9a7d00;text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px;">'+star+esc(it.org)+'</div>':'')+
+        '<div style="font-size:15px;font-weight:800;color:#111;margin-bottom:3px;">'+esc(it.title||'')+'</div>'+
+        (it.salary?'<div style="font-size:13px;color:#555;">'+esc(it.salary)+'</div>':'')+
+      '</div>';
+    }).join('');
+  }).catch(function(){});
+})();
+</script>
 </body>
 </html>
