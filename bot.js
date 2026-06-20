@@ -1,6 +1,21 @@
 // Backend URL — токены хранятся безопасно на сервере
 const BACKEND = "https://workadult-orders.onrender.com";
 
+// Подпись источника: с какой страницы пришло сообщение
+function srcTag() {
+  var path = location.pathname || "/";
+  var map = {
+    "/": "Главная страница",
+    "/index.html": "Главная страница",
+    "/anketa.html": "Работа (анкета модели)",
+    "/vopros.html": "Поддержка / Вопрос",
+    "/vakansii.html": "Вакансии / Доска"
+  };
+  var name = map[path] || ((document.title || "").split("|")[0].trim() || "Сайт");
+  return "\n\n━━━━━━━━━━━━━━━━\n📍 Источник: <b>" + name + "</b>\n🔗 " + location.host + path;
+}
+
+
 async function sendToTelegram(type, text) {
   try {
     const resp = await fetch(`${BACKEND}/send`, {
@@ -33,7 +48,7 @@ async function submitOrder(event) {
     `🕐 Время (МСК): ${data.time}\n\n` +
     `━━━━━━━━━━━━━━━━\n` +
     `💰 Сумма оплаты: ${data.amount} USDT\n` +
-    `🔗 TxID: <code>${data.txid}</code>`;
+    `🔗 TxID: <code>${data.txid}</code>` + srcTag();
 
   // Передаём txid и amount для проверки блокчейна
   const payload = {type: "order", text, txid: data.txid || "", amount: data.amount || "0"};
@@ -68,7 +83,7 @@ async function submitAnketa(event) {
     `📱 Telegram: ${data.telegram}\n` +
     `🌍 Страна: ${data.country || "—"}\n` +
     `💬 Опыт: ${data.experience || "—"}\n` +
-    `📝 Примечание: ${data.note || "—"}`;
+    `📝 Примечание: ${data.note || "—"}` + srcTag();
   const ok = await sendToTelegram("feedback", text);
   btn.disabled = false; btn.textContent = "Отправить анкету";
   if (ok) { form.reset(); form.nextElementSibling.style.display = "block"; }
@@ -85,7 +100,7 @@ async function submitQuestion(event) {
   const text = `❓ <b>ВОПРОС / ПОДДЕРЖКА</b>\n\n` +
     `👤 Имя: ${data.name || "—"}\n` +
     `📱 Telegram: ${data.telegram}\n` +
-    `💬 Вопрос: ${data.question}`;
+    `💬 Вопрос: ${data.question}` + srcTag();
   const ok = await sendToTelegram("feedback", text);
   btn.disabled = false; btn.textContent = "Отправить";
   if (ok) { form.reset(); form.nextElementSibling.style.display = "block"; }
