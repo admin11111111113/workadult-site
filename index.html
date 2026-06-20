@@ -271,7 +271,7 @@ footer{
   .hero-btns{flex-direction:column;}
   .btn-yellow,.btn-outline-w{width:100%;justify-content:center;}
 }
-</style>
+.cta-two{display:grid;grid-template-columns:1fr 1fr;gap:24px;}.cta-card{background:#fff;border:1px solid #eee;border-radius:16px;padding:32px 28px;text-align:center;box-shadow:0 2px 12px rgba(0,0,0,0.04);}.cta-badge{display:inline-block;background:rgba(255,212,0,0.18);border:1px solid rgba(212,170,0,0.5);color:#9a7d00;font-size:12px;font-weight:700;letter-spacing:1px;text-transform:uppercase;padding:5px 14px;border-radius:20px;margin-bottom:16px;}.cta-h2{color:#111;font-size:clamp(22px,2.2vw,28px);font-weight:800;line-height:1.2;margin:0 0 12px;}.cta-p{color:#555;font-size:15px;line-height:1.6;margin:0 0 22px;}@media(max-width:720px){.cta-two{grid-template-columns:1fr;gap:18px;}}</style>
 <script type="application/ld+json">
 {
   "@context": "https://schema.org",
@@ -369,13 +369,23 @@ footer{
   </div>
 </section>
 
-<!-- О НАС -->
+<!-- СТУДИЯМ И СОИСКАТЕЛЯМ -->
 <section style="background:#f7f7f7;padding:48px 0;border-bottom:1px solid #eee;">
-  <div class="container" style="max-width:780px;text-align:center;">
-    <div style="display:inline-block;background:rgba(255,212,0,0.18);border:1px solid rgba(212,170,0,0.5);color:#9a7d00;font-size:12px;font-weight:700;letter-spacing:1px;text-transform:uppercase;padding:5px 14px;border-radius:20px;margin-bottom:16px;">💼 Студиям и работодателям</div>
-    <h2 style="color:#111;font-size:clamp(24px,2.6vw,32px);font-weight:800;line-height:1.2;margin:0 0 12px;">Ищете моделей или операторов?</h2>
-    <p style="color:#555;font-size:16px;line-height:1.6;max-width:580px;margin:0 auto 22px;">Разместите вакансию у нас — её увидят модели по всей России и СНГ. Вход через Telegram, чтобы отсеять спам. После проверки публикуем на сайте.</p>
-    <a href="vakansii.html" class="btn-yellow" style="display:inline-block;text-decoration:none;">Предложить вакансию</a>
+  <div class="container" style="max-width:980px;">
+    <div class="cta-two">
+      <div class="cta-card">
+        <div class="cta-badge">💼 Студиям и работодателям</div>
+        <h2 class="cta-h2">Ищете моделей или операторов?</h2>
+        <p class="cta-p">Разместите вакансию у нас — её увидят модели по всей России и СНГ. Вход через Telegram, чтобы отсеять спам. После проверки публикуем на сайте.</p>
+        <a href="vakansii.html" class="btn-yellow" style="display:inline-block;text-decoration:none;">Предложить вакансию</a>
+      </div>
+      <div class="cta-card">
+        <div class="cta-badge">🔎 Соискателям</div>
+        <h2 class="cta-h2">Ищете работу в вебкам?</h2>
+        <p class="cta-p">Разместите резюме — студии увидят вас и напишут напрямую. Вход через Telegram, заполняете анкету: опыт и желаемая зарплата.</p>
+        <a href="vakansii.html" class="btn-yellow" style="display:inline-block;text-decoration:none;">Разместить резюме</a>
+      </div>
+    </div>
   </div>
 </section>
 
