@@ -129,4 +129,16 @@ document.addEventListener("DOMContentLoaded", () => {
   if (burger && navLinks) {
     burger.addEventListener("click", () => navLinks.classList.toggle("open"));
   }
+
+  // Видео-фон героя: половинная скорость + плавное появление, откат на Ken Burns при сбое
+  const hv = document.getElementById("heroVideo");
+  if (hv) {
+    const slow = () => { try { hv.playbackRate = 0.5; } catch (e) {} };
+    hv.addEventListener("loadedmetadata", slow);
+    hv.addEventListener("loadeddata", () => { slow(); hv.classList.add("playing"); });
+    hv.addEventListener("play", slow);
+    slow();
+    const src = hv.querySelector("source");
+    if (src) src.addEventListener("error", () => { hv.style.display = "none"; });
+  }
 });

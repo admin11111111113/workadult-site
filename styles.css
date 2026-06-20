@@ -383,9 +383,17 @@ footer { border-top: 1px solid var(--stroke); background: rgba(7,5,12,0.6); back
   .footer-bottom { flex-direction: column; }
 }
 
+/* ── Video hero (shared) ─────────────────────────────── */
+@keyframes hero-zoom { 0% { transform: scale(1); } 100% { transform: scale(1.08); } }
+.hero-fallback { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; z-index: 0; animation: hero-zoom 20s ease infinite alternate; }
+.hero-video { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; z-index: 0; opacity: 0; transition: opacity .8s ease; }
+.hero-video.playing { opacity: 1; }
+.hero-veil { position: absolute; inset: 0; z-index: 0; background: linear-gradient(105deg, rgba(7,4,15,.82) 0%, rgba(10,8,22,.55) 45%, rgba(60,0,80,.32) 100%); }
+.hero > .container { position: relative; z-index: 2; }
+
 @media (prefers-reduced-motion: reduce) {
   html { scroll-behavior: auto; }
-  .bg-aurora i, .btn-gold, .hero-badge .dot { animation: none; }
+  .bg-aurora i, .btn-gold, .hero-badge .dot, .hero-fallback { animation: none; }
   .reveal { opacity: 1; transform: none; transition: none; }
   .card:hover, .btn:hover, .post-card:hover { transform: none; }
 }
