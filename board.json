@@ -1,16 +1,4 @@
 {
-  "vacancies": [
-    {
-      "id": "v-adelina-001",
-      "org": "Студия Аделина",
-      "title": "Ищу чаттера",
-      "salary": "20% от заработанного",
-      "desc": "Работа чаттером от лица моделей студии. График свободный, обучение на месте. Опыт приветствуется, но не обязателен.",
-      "contact": "@Workadult_feedback_bot",
-      "pinned": false,
-      "highlighted": false,
-      "date": "2026-06-20"
-    }
-  ],
+  "vacancies": [],
   "resumes": []
 }
