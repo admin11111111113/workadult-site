@@ -31,16 +31,20 @@
 <noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap"></noscript>
 <style>
   .geo-badge { display:inline-flex;align-items:center;gap:8px;background:rgba(255,234,0,0.15);border:1px solid rgba(255,234,0,0.4);color:#ffea00;font-size:13px;font-weight:700;letter-spacing:1px;text-transform:uppercase;padding:6px 14px;border-radius:20px;margin-bottom:20px; }
-  .faq { background:#fff;padding:80px 0; }
+  .faq { background:transparent;padding:80px 0; }
   .faq-list { max-width:760px;margin:0 auto;display:flex;flex-direction:column;gap:16px; }
-  .faq-item { border:1px solid #eee;border-radius:12px;overflow:hidden; }
-  .faq-q { padding:20px 24px;font-weight:700;font-size:16px;cursor:pointer;display:flex;justify-content:space-between;align-items:center; }
-  .faq-q::after { content:"+";font-size:22px;color:#aaa; }
-  .faq-a { padding:0 24px 20px;color:#555;font-size:15px;line-height:1.7; }
-  .breadcrumb { padding:16px 0;font-size:13px;color:#aaa; }
-  .breadcrumb a { color:#aaa;text-decoration:none; }
-  .breadcrumb a:hover { color:#000; }
+  .faq-item { border:1px solid var(--glass-brd);border-radius:12px;overflow:hidden;background:var(--glass-bg);backdrop-filter:var(--blur); }
+  .faq-q { padding:20px 24px;font-weight:700;font-size:16px;cursor:pointer;display:flex;justify-content:space-between;align-items:center;color:var(--text); }
+  .faq-q::after { content:"+";font-size:22px;color:var(--accent-3); }
+  .faq-a { padding:0 24px 20px;color:var(--muted);font-size:15px;line-height:1.7; }
+  .breadcrumb { padding:16px 0;font-size:13px;color:var(--muted); }
+  .breadcrumb a { color:var(--muted);text-decoration:none; }
+  .breadcrumb a:hover { color:var(--accent-3); }
   .breadcrumb span { margin:0 6px; }
+  /* kill leftover light strips on dark theme */
+  div[style*="background:#f5f5f5"], section[style*="background:#f5f5f5"] { background:transparent !important; border-color:var(--glass-brd) !important; }
+  .city-crosslink { border-top-color:var(--glass-brd) !important; color:var(--muted) !important; }
+  .city-crosslink a { color:var(--muted) !important; }
 </style>
 <script type="application/ld+json">
 {
@@ -96,7 +100,9 @@
 </div>
 
 <section class="hero">
-  <div class="hero-bg"></div>
+  <img class="hero-fallback" src="images/hero-cover.jpg" alt="" aria-hidden="true">
+  <video class="hero-video" id="heroVideo" autoplay muted loop playsinline poster="images/hero-cover.jpg" aria-hidden="true"><source src="images/hero-video.mp4" type="video/mp4"></video>
+  <div class="hero-veil"></div>
   <div class="hero-content">
     <div class="geo-badge">🎓 Обучение</div>
     <div class="hero-tag">Обучение вебкам моделей</div>
