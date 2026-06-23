@@ -396,12 +396,45 @@ footer { border-top: 1px solid var(--stroke); background: rgba(7,5,12,0.6); back
   .nav-lang { margin: 6px 0 0; padding: 8px 0 0; border-left: 0; border-top: 1px solid var(--stroke); }
   .burger { display: flex; }
   .section { padding: 64px 0; }
-  .hero { padding: 130px 0 64px; }
+  .hero { padding: 130px 0 64px; min-height: auto; }
   .grid-2, .grid-3, .vac-columns { grid-template-columns: 1fr; }
   .form-wrap { padding: 26px 20px; }
   .btn-group { flex-direction: column; }
   .btn-group .btn { width: 100%; }
   .footer-bottom { flex-direction: column; }
+  /* hero text + chips fit small screens */
+  .hero h1 { font-size: clamp(28px, 8vw, 40px); line-height: 1.15; }
+  .hero p { font-size: 15px; }
+  .hero-chips { gap: 8px; }
+  .stats { flex-wrap: wrap; gap: 10px; }
+  .stat { flex: 1 1 40%; }
+  /* marquee smaller + faster on mobile */
+  .marquee-track { font-size: 16px; gap: 36px; animation-duration: 18s; }
+  .marquee-track span::after { margin-left: 36px; }
+  /* lighter hero overlay so text stays readable */
+  nav { padding: 0 16px; }
+}
+
+/* ── Very small phones ─────────────────────────────── */
+@media (max-width: 480px) {
+  .container { padding-left: 16px; padding-right: 16px; }
+  .grid-auto, .grid-2, .grid-3 { grid-template-columns: 1fr; }
+  .section { padding: 48px 0; }
+  .hero h1 { font-size: clamp(24px, 8.5vw, 34px); }
+  .stat { flex: 1 1 100%; }
+  .stat b { font-size: 26px; }
+  .card { padding: 22px 18px; }
+  .price-amount { font-size: 38px; }
+  .section-title { font-size: clamp(22px, 6vw, 30px); }
+  .nav-logo { font-size: 15px; }
+  .marquee-track { font-size: 14px; gap: 28px; }
+  .marquee-track span::after { margin-left: 28px; }
+}
+
+/* ── Save battery/data: lighter motion on small touch screens ── */
+@media (max-width: 760px) {
+  .hero-fallback { animation-duration: 28s; }
+  #model .feat-card .card-ico, #about .about-card .card-ico { animation-duration: 4s; }
 }
 
 /* ── Video hero (shared) ─────────────────────────────── */
