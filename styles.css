@@ -33,6 +33,7 @@
   --radius: 20px;
   --maxw: 1200px;
   --ease: cubic-bezier(.22, .8, .3, 1);
+  --ease-soft: cubic-bezier(.16, 1, .3, 1);
 
   --display: 'Sora', 'Inter', system-ui, sans-serif;
   --body: 'Inter', system-ui, -apple-system, 'Segoe UI', sans-serif;
@@ -355,9 +356,10 @@ footer { border-top: 1px solid var(--stroke); background: rgba(7,5,12,0.6); back
 .footer-cities .cities a:hover { color: var(--c3); }
 
 /* ===== Scroll reveal ===== */
-.reveal { opacity: 0; transform: translateY(30px); transition: opacity .8s var(--ease), transform .8s var(--ease); }
-.reveal.in { opacity: 1; transform: none; }
-.reveal.d1 { transition-delay: .08s; } .reveal.d2 { transition-delay: .16s; } .reveal.d3 { transition-delay: .24s; } .reveal.d4 { transition-delay: .32s; }
+.reveal { opacity: 0; transform: translateY(18px); filter: blur(6px);
+  transition: opacity 1.1s var(--ease-soft), transform 1.1s var(--ease-soft), filter 1.1s var(--ease-soft); }
+.reveal.in { opacity: 1; transform: none; filter: blur(0); }
+.reveal.d1 { transition-delay: .10s; } .reveal.d2 { transition-delay: .20s; } .reveal.d3 { transition-delay: .30s; } .reveal.d4 { transition-delay: .40s; }
 
 /* ===== Responsive ===== */
 @media (max-width: 940px) {
@@ -394,6 +396,6 @@ footer { border-top: 1px solid var(--stroke); background: rgba(7,5,12,0.6); back
 @media (prefers-reduced-motion: reduce) {
   html { scroll-behavior: auto; }
   .bg-aurora i, .btn-gold, .hero-badge .dot, .hero-fallback { animation: none; }
-  .reveal { opacity: 1; transform: none; transition: none; }
+  .reveal { opacity: 1; transform: none; filter: none; transition: none; }
   .card:hover, .btn:hover, .post-card:hover { transform: none; }
 }

@@ -33,10 +33,10 @@
 .hero{min-height:100vh;display:flex;align-items:center;padding:96px 0 80px;}
 .hero-media{position:absolute;inset:0;z-index:0;overflow:hidden;}
 .hero-fallback{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;
-  filter:saturate(112%) brightness(.9);animation:kenburns 20s ease-in-out infinite alternate;}
-@keyframes kenburns{from{transform:scale(1.06) translate(0,0);}to{transform:scale(1.2) translate(-2.5%,-2%);}}
+  filter:saturate(112%) brightness(.9);animation:kenburns 30s ease-in-out infinite alternate;}
+@keyframes kenburns{from{transform:scale(1.08) translate(0,0);}to{transform:scale(1.16) translate(-1.8%,-1.4%);}}
 .hero-video{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;
-  opacity:0;transition:opacity .8s var(--ease);filter:saturate(115%) contrast(104%);}
+  opacity:0;transition:opacity 1.4s cubic-bezier(.16,1,.3,1);filter:saturate(115%) contrast(104%);}
 .hero-video.playing{opacity:1;}
 .hero-veil{position:absolute;inset:0;background:
   linear-gradient(90deg, rgba(7,6,13,.93) 0%, rgba(7,6,13,.68) 42%, rgba(7,6,13,.24) 72%, rgba(7,6,13,.05) 100%),
@@ -129,13 +129,13 @@
 @keyframes scan-zoom{0%{transform:translateX(-9px) scale(1);}35%{transform:translateX(9px) scale(1);}50%{transform:translateX(9px) scale(1.28);}66%{transform:translateX(9px) scale(1);}100%{transform:translateX(-9px) scale(1);}}
 @media (prefers-reduced-motion:reduce){#board .board-card .card-ico,#board .board-card .card-ico::before,#board .board-card .card-ico::after{animation:none!important;}#board .board-card:hover{transform:none;}}
 
-/* staggered hero entrance (animation wins even before reveal observer fires) */
-.hero-inner>*{animation:heroUp .9s var(--ease) both;}
-.hero-inner>*:nth-child(2){animation-delay:.08s;}
-.hero-inner>*:nth-child(3){animation-delay:.16s;}
-.hero-inner>*:nth-child(4){animation-delay:.24s;}
-.hero-inner>.stats{animation-delay:.32s;}
-@keyframes heroUp{from{opacity:0;transform:translateY(30px);}to{opacity:1;transform:none;}}
+/* staggered hero entrance — soft cinematic fade-up with blur */
+.hero-inner>*{animation:heroUp 1.25s cubic-bezier(.16,1,.3,1) both;}
+.hero-inner>*:nth-child(2){animation-delay:.14s;}
+.hero-inner>*:nth-child(3){animation-delay:.28s;}
+.hero-inner>*:nth-child(4){animation-delay:.42s;}
+.hero-inner>.stats{animation-delay:.56s;}
+@keyframes heroUp{from{opacity:0;transform:translateY(20px);filter:blur(8px);}to{opacity:1;transform:none;filter:blur(0);}}
 
 /* scroll cue */
 .scroll-cue{position:absolute;left:50%;bottom:26px;transform:translateX(-50%);z-index:2;
