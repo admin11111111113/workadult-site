@@ -180,6 +180,63 @@
   </div>
 </section>
 
+<!-- TOP PLACEMENT -->
+<section class="section" id="top-placement" style="padding-top:56px;padding-bottom:24px;">
+  <div class="container" style="max-width:1200px;">
+    <div class="card reveal" style="text-align:center;">
+      <div class="promo-star">&#11088;</div>
+      <h2 class="section-title" style="font-size:clamp(22px,2.8vw,32px);">Want to get on the <span class="grad">homepage?</span></h2>
+      <div class="btn-group" style="justify-content:center;margin-top:20px;">
+        <a href="/en/vakansii.html#post-box" class="btn btn-gold btn-lg">Claim a TOP spot &#8594;</a>
+      </div>
+    </div>
+    <div class="reveal d1" style="margin-top:28px;">
+      <div class="board-head"><span class="eyebrow" style="margin:0;">&#128293; Top 5 featured jobs</span></div>
+      <div id="home-board" class="board-row"></div>
+    </div>
+  </div>
+</section>
+<script>
+(function(){
+  function esc(s){var d=document.createElement('div');d.textContent=(s==null?'':String(s));return d.innerHTML;}
+  var DEMO=[
+    {org:'Adelina Studio',title:'Looking for a chatter',salary:'20% of earnings',contact:'@Workadult_feedback_bot'},
+    {org:'Vita Studio',title:'Webcam model (remote)',salary:'up to 60% of balance',contact:'@Workadult_feedback_bot'},
+    {org:'NovaCam Agency',title:'Chat operator',salary:'base pay + % of sales',contact:'@Workadult_feedback_bot'},
+    {org:'Aurora Studio',title:'Studio manager',salary:'base pay + bonuses',contact:'@Workadult_feedback_bot'},
+    {org:'WebStar Agency',title:'Webcam model, training from scratch',salary:'up to 60%, daily payouts',contact:'@Workadult_feedback_bot'}
+  ];
+  function card(it){
+    var contact='';
+    if(it.contact){
+      var c=String(it.contact);
+      var url=c.charAt(0)==='@'?('https://t.me/'+c.slice(1)):(/^https?:\/\//.test(c)?c:'');
+      contact=url?('<a class="ct" href="'+esc(url)+'" target="_blank" rel="noopener nofollow">Message &#8594;</a>'):('<span class="ct">'+esc(c)+'</span>');
+    }
+    return '<div class="vboard-card"><span class="pin">&#9733; TOP</span>'+
+      (it.org?'<div class="org">'+esc(it.org)+'</div>':'')+
+      '<div class="title">'+esc(it.title||'')+'</div>'+
+      (it.salary?'<div class="sal">'+esc(it.salary)+'</div>':'')+
+      contact+'</div>';
+  }
+  function renderBoard(items){
+    var el=document.getElementById('home-board'); if(!el)return;
+    var list=(items&&items.length)?items:DEMO;
+    el.innerHTML=list.slice(0,5).map(card).join('');
+  }
+  function setStatus(free){
+    var st=document.getElementById('spot-status'); if(!st)return;
+    if(free<=0){ st.style.color='#ff8da3'; st.innerHTML='&#128308; <b>0 of 5</b> spots left'; }
+    else { st.style.color='#7ee0a6'; st.innerHTML='&#128994; <b>'+free+' of 5</b> spots left'; }
+  }
+  fetch('/board.json?t='+Date.now()).then(function(r){return r.json();}).then(function(d){
+    var pinned=(d.vacancies||[]).filter(function(x){return x.pinned;});
+    var top=pinned.slice().sort(function(x,y){return String(y.date||'').localeCompare(String(x.date||''));}).slice(0,5);
+    setStatus(Math.max(0,5-pinned.length));
+    renderBoard(top);
+  }).catch(function(){ setStatus(0); renderBoard(DEMO); });
+})();
+</script>
 <!-- ABOUT -->
 <section class="section" id="about">
   <div class="container">
