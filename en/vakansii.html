@@ -565,7 +565,7 @@ document.addEventListener('change', function(e){
   pay.style.display = e.target.checked ? 'block' : 'none';
   if (e.target.checked) { fillPay('sk'); }
 });
-// Отправка резюме
+// Submit resume
 document.addEventListener('submit', function(e){
   if (e.target.id !== 'seeker-form') return;
   e.preventDefault();
@@ -602,7 +602,7 @@ document.addEventListener('submit', function(e){
     }
   }).catch(function(){ status.textContent='Service unavailable, please try again later.'; status.style.color='#c62828'; });
 });
-// Закреп: тумблер показывает оплату и тянет адрес с сервера
+// pin toggle
 document.addEventListener('change', function(e){
   if (e.target.id !== 'pin-toggle') return;
   var pay = document.getElementById('pin-pay');
@@ -622,7 +622,7 @@ document.addEventListener('click', function(e){
   navigator.clipboard.writeText(t); e.target.textContent='✓';
   setTimeout(function(){ e.target.textContent='Copy'; }, 1500);
 });
-// pin-toggle подгрузка адреса теперь через fillPay
+// pin-toggle via fillPay
 
 document.addEventListener('submit', function(e){
   if (e.target.id !== 'vacancy-form') return;
@@ -718,7 +718,7 @@ document.querySelector('.burger').addEventListener('click', () => {
   });}
   function card(it){
     var pinned=it.pinned?' pinned':'';
-    var badge=it.pinned?'<span class="pin-badge">★ Закреп</span>':'';
+    var badge=it.pinned?'<span class="pin-badge">★ TOP</span>':'';
     var org=it.org?'<div class="vac-org">'+esc(it.org)+'</div>':'';
     var sal=it.salary?'<div class="vac-sal">'+esc(it.salary)+'</div>':'';
     var desc=it.desc?'<div class="vac-desc">'+esc(it.desc)+'</div>':'';
@@ -726,7 +726,7 @@ document.querySelector('.burger').addEventListener('click', () => {
     if(it.contact){
       var c=String(it.contact);
       var url=c.charAt(0)==='@'?('https://t.me/'+c.slice(1)):(/^https?:\/\//.test(c)?c:'');
-      contact=url?('<a class="vac-contact" href="'+esc(url)+'" target="_blank" rel="noopener nofollow">Написать ›</a>'):('<div class="vac-contact">'+esc(c)+'</div>');
+      contact=url?('<a class="vac-contact" href="'+esc(url)+'" target="_blank" rel="noopener nofollow">Message ›</a>'):('<div class="vac-contact">'+esc(c)+'</div>');
     }
     return '<div class="post-card'+pinned+'">'+badge+org+'<div class="vac-title">'+esc(it.title||'')+'</div>'+sal+desc+contact+'</div>';
   }
