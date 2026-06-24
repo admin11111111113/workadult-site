@@ -417,7 +417,7 @@ div[style*="background:#fffdf2"] { background: rgba(245,166,35,0.07) !important;
     <div style="font-size:13px;letter-spacing:1px;color:#f5a623;font-weight:700;text-transform:uppercase;margin-bottom:8px;">&#11088; Featured</div>
     <h2 class="section-title" style="margin:0 0 6px;">&#128293; Top 5 Featured Jobs</h2>
     <p style="color:#666;font-size:15px;margin:0 0 16px;">Want to get featured at the top of the board? Pin your listing for higher visibility.</p>
-    <a href="#post-box" class="btn btn-gold" style="display:inline-block;">Claim a TOP spot &#8594;</a>
+    <a href="#pin" class="btn btn-gold" style="display:inline-block;">Claim a TOP spot &#8594;</a>
   </div>
 </div></section>
 <section class="article" style="padding-top:48px;"><div class="container" style="max-width:1080px;">
@@ -475,6 +475,7 @@ div[style*="background:#fffdf2"] { background: rgba(245,166,35,0.07) !important;
 
 
 <script>
+if(location.hash==='#pin'){window.__WANT_PIN=true;}
 var TG_AUTH = null;
 var API = 'https://workadult-bots.onrender.com';
 function onTelegramAuth(user) {
@@ -486,6 +487,19 @@ function onTelegramAuth(user) {
   var badge = '✓ Signed in: ' + nm + un;
   document.getElementById('tg-user-badge2').textContent = badge;
   document.getElementById('tg-user-badge').textContent = badge;
+
+  // auto-pin: open vacancy form with pin enabled when coming from TOP button (#pin)
+  if (location.hash === '#pin' || window.__WANT_PIN) {
+    var rc = document.getElementById('role-choice'); if (rc) rc.style.display='none';
+    var vf = document.getElementById('vacancy-form'); if (vf) vf.style.display='block';
+    var pt = document.getElementById('pin-toggle');
+    if (pt && !pt.checked) {
+      pt.checked = true;
+      pt.dispatchEvent(new Event('change', {bubbles:true}));
+    }
+    var pb = document.getElementById('post-box');
+    if (pb) pb.scrollIntoView({behavior:'smooth'});
+  }
 }
 function fillPay(prefix){
   fetch(API + '/pin-info').then(function(r){return r.json();}).then(function(d){

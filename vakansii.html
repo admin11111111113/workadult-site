@@ -470,6 +470,7 @@ div[style*="background:#fffdf2"] { background: rgba(245,166,35,0.07) !important;
 
 
 <script>
+if(location.hash==='#pin'){window.__WANT_PIN=true;}
 var TG_AUTH = null;
 var API = 'https://workadult-bots.onrender.com';
 function onTelegramAuth(user) {
@@ -481,6 +482,19 @@ function onTelegramAuth(user) {
   var badge = '✓ Вход выполнен: ' + nm + un;
   document.getElementById('tg-user-badge2').textContent = badge;
   document.getElementById('tg-user-badge').textContent = badge;
+
+  // auto-pin: open vacancy form with pin enabled when coming from TOP button (#pin)
+  if (location.hash === '#pin' || window.__WANT_PIN) {
+    var rc = document.getElementById('role-choice'); if (rc) rc.style.display='none';
+    var vf = document.getElementById('vacancy-form'); if (vf) vf.style.display='block';
+    var pt = document.getElementById('pin-toggle');
+    if (pt && !pt.checked) {
+      pt.checked = true;
+      pt.dispatchEvent(new Event('change', {bubbles:true}));
+    }
+    var pb = document.getElementById('post-box');
+    if (pb) pb.scrollIntoView({behavior:'smooth'});
+  }
 }
 function fillPay(prefix){
   fetch(API + '/pin-info').then(function(r){return r.json();}).then(function(d){
