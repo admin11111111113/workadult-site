@@ -125,6 +125,14 @@
 .hero{min-height:100vh;}
 .hero-calc{align-self:flex-start;}
 @media(max-height:760px){.hero-calc{transform:scale(.92);transform-origin:center right;}}
+
+/* stats under calc (injected) */
+.hero-inner{flex-wrap:wrap;}
+.hero-calc{flex:0 0 220px;order:2;}
+.hero-stats-right{flex:0 0 220px;max-width:220px;display:flex;flex-direction:column;gap:8px;margin-top:10px;align-self:flex-start;order:3;}
+.hero-stats-right .stat{width:100%;box-sizing:border-box;}
+.hero-text{flex:1 1 360px;order:1;}
+@media(max-width:900px){.hero-stats-right{flex:1 1 100%;max-width:340px;flex-direction:row;flex-wrap:wrap;}}
 </style>
 <script type="application/ld+json">
 {
@@ -190,11 +198,7 @@
       <a href="/en/vopros.html" class="btn btn-gold btn-lg">Traffic for studios</a>
       <a href="/en/anketa.html" class="btn btn-white btn-lg">Work as a webcam model</a>
     </div>
-    <div class="stats">
-      <div class="stat glass"><b><span data-count="3200">0</span>$</b><span>avg. model income / month</span></div>
-      <div class="stat glass"><b><span data-count="190">0</span>+</b><span>ready phrases in the app</span></div>
-      <div class="stat glass"><b><span data-count="0">0</span></b><span>bans, ever</span></div>
-    </div>
+    
     </div>
     <div class="hero-calc glass" style="flex:0 0 220px;max-width:220px;background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.14);border-radius:14px;padding:11px 12px;backdrop-filter:blur(10px);align-self:flex-start;">
       <div style="font-size:12px;font-weight:700;color:#ff6fae;text-transform:uppercase;letter-spacing:.5px;margin-bottom:9px;">&#128176; Income calculator</div>
@@ -213,7 +217,12 @@
         <div style="font-size:23px;font-weight:800;color:#fff;" id="hcResult">$1,650</div>
       </div>
     </div>
-  </div>
+<div class="stats hero-stats-right">
+      <div class="stat glass"><b><span data-count="3200">0</span>$</b><span>avg. model income / month</span></div>
+      <div class="stat glass"><b><span data-count="190">0</span>+</b><span>ready phrases in the app</span></div>
+      <div class="stat glass"><b><span data-count="0">0</span></b><span>bans, ever</span></div>
+    </div>
+    </div>
   <div class="scroll-cue" aria-hidden="true"><span class="mouse"></span>Scroll down</div>
 </header>
 
