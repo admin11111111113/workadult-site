@@ -254,9 +254,11 @@
 }
 
 /* hero with calculator (injected) */
-.hero-inner{display:flex;gap:32px;align-items:flex-start;flex-wrap:wrap;}
-.hero-inner > .hero-text{flex:1;min-width:300px;}
-@media(max-width:880px){.hero-inner{flex-direction:column;}.hero-calc{margin-top:8px;width:100%;max-width:100%!important;flex-basis:auto!important;}}
+.hero-inner{display:flex;gap:40px;align-items:center;flex-wrap:nowrap;justify-content:space-between;}
+.hero-inner > .hero-text{flex:1 1 auto;min-width:0;}
+.hero-inner > .hero-text .stats{display:flex;gap:16px;flex-wrap:wrap;}
+.hero-calc{flex:0 0 240px;}
+@media(max-width:900px){.hero-inner{flex-wrap:wrap;}.hero-calc{flex:1 1 100%;max-width:340px;margin-top:8px;}}
 </style>
 <script type="application/ld+json">
 {
@@ -318,7 +320,7 @@
       <span class="viewers glass">👁 <b id="liveViewers">1 247</b> зрителей в эфире</span>
     </div>
     <h1>Выводим моделей в <span class="grad">ТОП Stripchat</span> и Chaturbate</h1>
-    <p>Поднимаем анкету на первые страницы реальными зрителями с мобильных IP. Больше охвата, больше дохода — пока конкуренты висят внизу списка.</p>
+    <p>Поднимаем анкету на первые страницы реальными зрителями с мобильных IP. Больше охвата, больше дохода — пока конкуренты висят внизу списка. Работаем только на площадках, где реально идёт доход.</p>
     <div class="btn-group">
       <a href="/vopros.html" class="btn btn-gold btn-lg">Трафик для студий</a>
       <a href="/anketa.html" class="btn btn-white btn-lg">Работа вебкам моделью</a>
@@ -326,7 +328,7 @@
     <div class="stats">
       <div class="stat glass"><b><span data-count="3200">0</span>$</b><span>средний доход модели/мес</span></div>
       <div class="stat glass"><b><span data-count="190">0</span>+</b><span>готовых фраз в приложении</span></div>
-      <div class="stat glass"><b><span data-count="0">0</span></b><span>банов с 2022 года</span></div>
+      <div class="stat glass"><b><span data-count="0">0</span></b><span>банов за всё время</span></div>
     </div>
     </div>
     <div class="hero-calc glass" style="flex:0 0 250px;max-width:250px;background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.14);border-radius:14px;padding:16px;backdrop-filter:blur(10px);align-self:center;">
