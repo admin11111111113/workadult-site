@@ -68,6 +68,12 @@ div[style*="background:#fffdf2"] { background: rgba(245,166,35,0.07) !important;
 #post-box .rules-info{color:#ffd400!important;border-color:#ffd400!important;}
 #post-box [style*="background:#fffdf2"]{background:rgba(255,224,138,.08)!important;}
 #post-box [style*="border:1px solid #ffe08a"]{border-color:rgba(255,224,138,.35)!important;}
+
+/* fix rules-pop tooltip (injected) */
+#post-box .rules-info{position:relative;display:inline-flex;align-items:center;justify-content:center;width:22px;height:22px;border-radius:50%;font-size:12px;cursor:help;vertical-align:middle;margin-left:8px;}
+#post-box .rules-info .rules-pop{visibility:hidden!important;opacity:0!important;position:absolute!important;top:130%;left:50%;transform:translateX(-50%);width:300px;max-width:78vw;background:rgba(14,7,28,.97)!important;border:1px solid rgba(255,255,255,.15);border-radius:14px;padding:14px 16px;font-size:12.5px;font-weight:400;color:#c9c3da!important;line-height:1.6;text-align:left;z-index:30;transition:.15s;}
+#post-box .rules-info:hover .rules-pop,#post-box .rules-info:focus .rules-pop{visibility:visible!important;opacity:1!important;}
+#post-box .rules-info .rules-pop b{color:#fff!important;}
 </style>
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="preload" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" as="style" onload="this.onload=null;this.rel='stylesheet'">
