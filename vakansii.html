@@ -397,16 +397,21 @@ div[style*="background:#fffdf2"] { background: rgba(245,166,35,0.07) !important;
           <input name="contact" required maxlength="80" placeholder="Telegram, email или телефон" style="width:100%;padding:12px 14px;border:1px solid #ddd;border-radius:8px;font-size:15px;box-sizing:border-box;">
         </label>
         <div style="border:1px solid #ffe08a;background:#fffdf2;border-radius:10px;padding:16px;">
-          <p style="font-size:14px;color:#444;margin:0 0 10px;"><b>🔎 Размещение резюме</b> — публикуется в разделе «Ищут работу» на <b id="sk-days">14</b> дней за <b id="sk-price">4</b> USDT (TRC-20).</p>
-          <p style="font-size:13px;color:#555;margin:0 0 8px;">1. Переведите <b id="sk-amount">4 USDT</b> в сети <b>TRC-20 (Tron)</b> на адрес:</p>
-          <div style="display:flex;gap:8px;align-items:center;margin-bottom:12px;">
-            <code id="sk-addr" style="flex:1;background:#fff;border:1px solid #ddd;border-radius:6px;padding:8px 10px;font-size:13px;word-break:break-all;">загрузка…</code>
-            <button type="button" id="sk-copy" style="background:#ffd400;border:none;border-radius:6px;padding:8px 12px;font-size:13px;font-weight:600;cursor:pointer;white-space:nowrap;">Копировать</button>
+          <label style="display:flex;align-items:flex-start;gap:10px;cursor:pointer;">
+            <input type="checkbox" id="sk-toggle" style="margin-top:3px;width:18px;height:18px;flex-shrink:0;">
+            <span style="font-size:14px;color:#444;"><b>⭐ Выделить резюме</b> — поднять вверх раздела «Ищут работу» и подсветить на <b id="sk-days">14</b> дней за <b id="sk-price">4</b> USDT (TRC-20). Без выделения резюме размещается <b>бесплатно</b>.</span>
+          </label>
+          <div id="sk-pay" style="display:none;margin-top:14px;border-top:1px dashed #ffe08a;padding-top:14px;">
+            <p style="font-size:13px;color:#555;margin:0 0 8px;">1. Переведите <b id="sk-amount">4 USDT</b> в сети <b>TRC-20 (Tron)</b> на адрес:</p>
+            <div style="display:flex;gap:8px;align-items:center;margin-bottom:12px;">
+              <code id="sk-addr" style="flex:1;background:#fff;border:1px solid #ddd;border-radius:6px;padding:8px 10px;font-size:13px;word-break:break-all;">загрузка…</code>
+              <button type="button" id="sk-copy" style="background:#ffd400;border:none;border-radius:6px;padding:8px 12px;font-size:13px;font-weight:600;cursor:pointer;white-space:nowrap;">Копировать</button>
+            </div>
+            <p style="font-size:13px;color:#555;margin:0 0 6px;">2. Вставьте <b>хэш транзакции (TxID)</b>:</p>
+            <input name="txid" id="sk-txid" maxlength="64" placeholder="64 символа из вашего кошелька" style="width:100%;padding:12px 14px;border:1px solid #ddd;border-radius:8px;font-size:14px;box-sizing:border-box;">
           </div>
-          <p style="font-size:13px;color:#555;margin:0 0 6px;">2. Вставьте <b>хэш транзакции (TxID)</b>:</p>
-          <input name="txid" id="sk-txid" maxlength="64" placeholder="64 символа из вашего кошелька" style="width:100%;padding:12px 14px;border:1px solid #ddd;border-radius:8px;font-size:14px;box-sizing:border-box;">
         </div>
-        <button type="submit" class="btn btn-gold" style="margin-top:6px;">Оплатить и разместить резюме</button>
+        <button type="submit" class="btn btn-gold" style="margin-top:6px;">Разместить резюме</button>
         <p id="seeker-status" style="font-size:14px;margin:0;"></p>
       </div>
     </form>
@@ -532,19 +537,20 @@ document.addEventListener('submit', function(e){
   if (!TG_AUTH) return;
   var fd=new FormData(e.target); var form={};
   fd.forEach(function(v,k){ form[k]=v; });
+  var pinned = document.getElementById('sk-toggle') && document.getElementById('sk-toggle').checked;
   var txid=(form.txid||'').trim(); delete form.txid;
   var status=document.getElementById('seeker-status');
-  if (txid.length !== 64){
-    status.textContent='Вставьте корректный хэш транзакции (64 символа).';
+  if (pinned && txid.length !== 64){
+    status.textContent='Для выделения вставьте корректный хэш транзакции (64 символа).';
     status.style.color='#c62828'; return;
   }
-  status.textContent='Проверяю оплату в блокчейне…'; status.style.color='#888';
+  status.textContent = pinned ? 'Проверяю оплату в блокчейне…' : 'Отправляю…'; status.style.color='#888';
   fetch(API + '/submit-vacancy', {
     method:'POST', headers:{'Content-Type':'application/json'},
-    body: JSON.stringify({ auth:TG_AUTH, form:form, kind:'seeker', txid:txid })
+    body: JSON.stringify({ auth:TG_AUTH, form:form, kind:'seeker', pinned:pinned, txid:txid })
   }).then(function(r){return r.json();}).then(function(d){
     if (d.ok){
-      status.textContent='✓ Оплата подтверждена! Резюме размещено в разделе «Ищут работу».';
+      status.textContent = pinned ? '✓ Оплата подтверждена! Резюме выделено в разделе «Ищут работу».' : '✓ Резюме размещено в разделе «Ищут работу»!';
       status.style.color='#2e7d32'; e.target.reset();
     } else if (d.error==='payment'){
       status.textContent='Оплата не прошла проверку: '+(d.reason||'');
