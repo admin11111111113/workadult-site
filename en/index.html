@@ -120,6 +120,11 @@
 .hero-inner > .hero-text .stats{display:flex;gap:16px;flex-wrap:wrap;}
 .hero-calc{flex:0 0 240px;}
 @media(max-width:900px){.hero-inner{flex-wrap:wrap;}.hero-calc{flex:1 1 100%;max-width:340px;margin-top:8px;}}
+
+/* hero one-screen fix (injected) */
+.hero{min-height:100vh;}
+.hero-calc{align-self:center;}
+@media(max-height:760px){.hero-calc{transform:scale(.92);transform-origin:center right;}}
 </style>
 <script type="application/ld+json">
 {
@@ -191,21 +196,21 @@
       <div class="stat glass"><b><span data-count="0">0</span></b><span>bans, ever</span></div>
     </div>
     </div>
-    <div class="hero-calc glass" style="flex:0 0 250px;max-width:250px;background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.14);border-radius:14px;padding:16px;backdrop-filter:blur(10px);align-self:center;">
-      <div style="font-size:12px;font-weight:700;color:#ff6fae;text-transform:uppercase;letter-spacing:.5px;margin-bottom:12px;">&#128176; Income calculator</div>
-      <label style="display:block;font-size:11px;color:#c9c3da;margin-bottom:4px;">Hours per day: <b id="hcHrsv" style="color:#fff;">5</b></label>
-      <input id="hcHrs" type="range" min="2" max="10" value="5" step="1" style="width:100%;margin-bottom:12px;accent-color:#ff4d8d;">
-      <label style="display:block;font-size:11px;color:#c9c3da;margin-bottom:4px;">Days per week: <b id="hcDaysv" style="color:#fff;">5</b></label>
-      <input id="hcDays" type="range" min="2" max="7" value="5" step="1" style="width:100%;margin-bottom:12px;accent-color:#ff4d8d;">
-      <label style="display:block;font-size:11px;color:#c9c3da;margin-bottom:4px;">Experience</label>
-      <select id="hcExp" style="width:100%;padding:7px;border-radius:8px;background:rgba(40,25,60,.9);color:#fff;border:1px solid rgba(255,255,255,.2);font-size:12px;margin-bottom:14px;">
+    <div class="hero-calc glass" style="flex:0 0 250px;max-width:250px;background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.14);border-radius:14px;padding:12px 13px;backdrop-filter:blur(10px);align-self:center;">
+      <div style="font-size:12px;font-weight:700;color:#ff6fae;text-transform:uppercase;letter-spacing:.5px;margin-bottom:9px;">&#128176; Income calculator</div>
+      <label style="display:block;font-size:11px;color:#c9c3da;margin-bottom:2px;">Hours per day: <b id="hcHrsv" style="color:#fff;">5</b></label>
+      <input id="hcHrs" type="range" min="2" max="10" value="5" step="1" style="width:100%;margin-bottom:8px;accent-color:#ff4d8d;">
+      <label style="display:block;font-size:11px;color:#c9c3da;margin-bottom:2px;">Days per week: <b id="hcDaysv" style="color:#fff;">5</b></label>
+      <input id="hcDays" type="range" min="2" max="7" value="5" step="1" style="width:100%;margin-bottom:8px;accent-color:#ff4d8d;">
+      <label style="display:block;font-size:11px;color:#c9c3da;margin-bottom:2px;">Experience</label>
+      <select id="hcExp" style="width:100%;padding:7px;border-radius:8px;background:rgba(40,25,60,.9);color:#fff;border:1px solid rgba(255,255,255,.2);font-size:12px;margin-bottom:10px;">
         <option value="1">Beginner</option>
         <option value="1.5">3-6 months</option>
         <option value="2.2">1 year+</option>
       </select>
-      <div style="background:linear-gradient(120deg,#ff2d55,#a855f7);border-radius:10px;padding:12px;text-align:center;">
+      <div style="background:linear-gradient(120deg,#ff2d55,#a855f7);border-radius:10px;padding:9px;text-align:center;">
         <div style="font-size:10px;color:#ffd6e6;text-transform:uppercase;letter-spacing:.5px;">Monthly income &#8776;</div>
-        <div style="font-size:26px;font-weight:800;color:#fff;" id="hcResult">$1,650</div>
+        <div style="font-size:23px;font-weight:800;color:#fff;" id="hcResult">$1,650</div>
       </div>
     </div>
   </div>
