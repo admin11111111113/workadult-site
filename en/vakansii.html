@@ -727,5 +727,15 @@ document.querySelector('.burger').addEventListener('click', () => {
   }).catch(function(){});
 })();
 </script>
+<script>
+(function(){
+  // TOP button (#pin): scroll straight to the Telegram login form
+  if (location.hash === '#pin') {
+    function go(){ var pb=document.getElementById('post-box'); if(pb) pb.scrollIntoView({behavior:'smooth'}); }
+    if (document.readyState !== 'loading') setTimeout(go,300);
+    else document.addEventListener('DOMContentLoaded', function(){ setTimeout(go,300); });
+  }
+})();
+</script>
 </body>
 </html>
