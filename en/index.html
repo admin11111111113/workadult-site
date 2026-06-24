@@ -115,15 +115,15 @@
 @media(max-width:820px){.board-row{justify-content:flex-start;}}
 
 /* hero with calculator (injected) */
-.hero-inner{display:flex;gap:40px;align-items:center;flex-wrap:nowrap;justify-content:space-between;}
+.hero-inner{display:flex;gap:40px;align-items:flex-start;flex-wrap:nowrap;justify-content:space-between;}
 .hero-inner > .hero-text{flex:1 1 auto;min-width:0;}
 .hero-inner > .hero-text .stats{display:flex;gap:16px;flex-wrap:wrap;}
-.hero-calc{flex:0 0 240px;}
+.hero-calc{flex:0 0 220px;align-self:flex-start;}
 @media(max-width:900px){.hero-inner{flex-wrap:wrap;}.hero-calc{flex:1 1 100%;max-width:340px;margin-top:8px;}}
 
 /* hero one-screen fix (injected) */
 .hero{min-height:100vh;}
-.hero-calc{align-self:center;}
+.hero-calc{align-self:flex-start;}
 @media(max-height:760px){.hero-calc{transform:scale(.92);transform-origin:center right;}}
 </style>
 <script type="application/ld+json">
@@ -196,7 +196,7 @@
       <div class="stat glass"><b><span data-count="0">0</span></b><span>bans, ever</span></div>
     </div>
     </div>
-    <div class="hero-calc glass" style="flex:0 0 250px;max-width:250px;background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.14);border-radius:14px;padding:12px 13px;backdrop-filter:blur(10px);align-self:center;">
+    <div class="hero-calc glass" style="flex:0 0 220px;max-width:220px;background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.14);border-radius:14px;padding:11px 12px;backdrop-filter:blur(10px);align-self:flex-start;">
       <div style="font-size:12px;font-weight:700;color:#ff6fae;text-transform:uppercase;letter-spacing:.5px;margin-bottom:9px;">&#128176; Income calculator</div>
       <label style="display:block;font-size:11px;color:#c9c3da;margin-bottom:2px;">Hours per day: <b id="hcHrsv" style="color:#fff;">5</b></label>
       <input id="hcHrs" type="range" min="2" max="10" value="5" step="1" style="width:100%;margin-bottom:8px;accent-color:#ff4d8d;">
