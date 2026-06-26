@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="ru">
 <head>
 <meta charset="UTF-8">
@@ -149,5 +149,21 @@ ym(109925310,'init',{ssr:true,webvisor:true,clickmap:true,accurateTrackBounce:tr
 </div><div class="footer-bottom"><span>© 2022 Workadult.pro</span><span>@workadultpro</span></div></div></footer>
 <script src="bot.js"></script>
 <script>document.querySelector('.burger').addEventListener('click',()=>{document.getElementById('navLinks').classList.toggle('open');});</script>
+
+<script>
+(function(){
+  var p = new URLSearchParams(window.location.search);
+  var cid = p.get('clickid');
+  if (!cid) return;
+  document.querySelectorAll('a[href*="anketa"]').forEach(function(a){
+    try {
+      var u = new URL(a.href, location.origin);
+      u.searchParams.set('clickid', cid);
+      a.href = u.toString();
+    } catch(e){}
+  });
+})();
+</script>
+<!-- patch_clickid_done -->
 </body>
 </html>

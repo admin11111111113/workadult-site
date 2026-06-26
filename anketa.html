@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="ru">
 <head>
 <meta charset="UTF-8">
@@ -162,5 +162,27 @@
 
 <script src="bot.js"></script>
 <script src="fx.js"></script>
+
+<script>
+/* ts_postback_workadult */
+(function(){
+  function fireTS() {
+    var cid = new URLSearchParams(window.location.search).get('clickid');
+    if (!cid) return;
+    var url = 'https://tsyndicate.com/api/v1/cpa/action'
+            + '?clickid=' + encodeURIComponent(cid)
+            + '&goalid=4810'
+            + '&key=qJvqKxD1hhE7SMUxBycrXghQz3cOuGFJg1ZS';
+    var img = new Image();
+    img.src = url;
+  }
+  var form = document.getElementById('anketa-form') || document.querySelector('form');
+  if (form) { form.addEventListener('submit', function(){ fireTS(); }); }
+  var btn = document.querySelector('button[type=submit], input[type=submit]');
+  if (btn) { btn.addEventListener('click', function(){ fireTS(); }); }
+  if (window.location.href.indexOf('clickid') !== -1 &&
+      window.location.href.indexOf('thank') !== -1) { fireTS(); }
+})();
+</script>
 </body>
 </html>
