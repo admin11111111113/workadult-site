@@ -1,0 +1,488 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Каталог вебкам студий России и СНГ — рейтинг, отзывы, вакансии | Workadult.pro</title>
+<meta property="og:image" content="https://workadult.pro/images/og-cover.jpg">
+<meta property="og:site_name" content="Workadult.pro">
+<meta name="twitter:image" content="https://workadult.pro/images/og-cover.jpg">
+<meta http-equiv="X-Content-Type-Options" content="nosniff">
+<meta name="referrer" content="strict-origin-when-cross-origin">
+<meta name="description" content="Каталог вебкам студий России и СНГ по городам. Условия, проценты, отзывы моделей. Разместите свою студию бесплатно — регистрация через Telegram.">
+<link rel="canonical" href="https://workadult.pro/studii-katalog.html">
+<link rel="icon" href="favicon.svg" type="image/svg+xml">
+<link rel="icon" href="/favicon.ico" sizes="any">
+<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+<link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png">
+<link rel="stylesheet" href="style.css">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="preload" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" as="style" onload="this.onload=null;this.rel='stylesheet'">
+<noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap"></noscript>
+
+<script type="application/ld+json">
+{"@context":"https://schema.org","@graph":[
+  {"@type":"WebPage","name":"Каталог вебкам студий России и СНГ","description":"Каталог вебкам студий по городам. Условия, проценты, отзывы моделей. Размещение студии через Telegram.","url":"https://workadult.pro/studii-katalog.html","isPartOf":{"@id":"https://workadult.pro/#website"}},
+  {"@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"Главная","item":"https://workadult.pro/"},{"@type":"ListItem","position":2,"name":"Каталог студий","item":"https://workadult.pro/studii-katalog.html"}]},
+  {"@type":"FAQPage","mainEntity":[
+    {"@type":"Question","name":"Какие требования чтобы работать в вебкам студии?","acceptedAnswer":{"@type":"Answer","text":"Главное требование — возраст от 18 лет. Опыт не нужен: почти все студии проводят начальное обучение и дают наставника. Уровень английского любой — многие используют переводчик. Работать можно как в студии, так и из дома."}},
+    {"@type":"Question","name":"Сколько процентов платят в вебкам студии?","acceptedAnswer":{"@type":"Answer","text":"В среднем от 50 до 70% от дохода. В первый стажировочный месяц процент обычно выше, так как нет опыта. Точные условия каждой студии смотрите в её карточке в каталоге."}},
+    {"@type":"Question","name":"Как выбрать студию и не нарваться на обман?","acceptedAnswer":{"@type":"Answer","text":"Читайте отзывы других моделей в карточке студии, обращайте внимание на метку «проверено», уточняйте условия и процент до начала работы. Не платите студии предоплат — настоящая студия зарабатывает с вашего дохода, а не берёт деньги вперёд."}},
+    {"@type":"Question","name":"Как разместить свою студию в каталоге?","acceptedAnswer":{"@type":"Answer","text":"Нажмите «Разместить студию», войдите через Telegram (это отсеивает спам), заполните название, город, условия и контакты. После короткой модерации студия появится в каталоге бесплатно."}}
+  ]}
+]}
+</script>
+
+<style>
+/* ===== Catalog — native dark-neon theme (uses style.css vars) ===== */
+.cat-hero{padding:120px 0 40px;text-align:center;}
+.cat-hero .hero-tag{display:inline-block;font-family:var(--display,'Inter');font-weight:800;font-size:12px;letter-spacing:1.5px;text-transform:uppercase;color:#fff;background:linear-gradient(90deg,var(--accent-3),var(--accent));padding:7px 16px;border-radius:999px;margin-bottom:20px;}
+.cat-hero h1{font-size:clamp(30px,5vw,52px);font-weight:900;line-height:1.08;margin-bottom:16px;color:var(--text);}
+.cat-hero h1 span{background:linear-gradient(100deg,#ff4d8d,#a855f7,#38bdf8);-webkit-background-clip:text;background-clip:text;color:transparent;}
+.cat-hero p{max-width:640px;margin:0 auto 28px;color:var(--muted);font-size:17px;line-height:1.7;}
+.cat-actions{display:flex;gap:12px;justify-content:center;flex-wrap:wrap;}
+
+/* city filter */
+.city-bar{max-width:var(--maxw);margin:20px auto 0;padding:0 20px;}
+.city-search{width:100%;max-width:480px;margin:0 auto 18px;display:block;background:var(--glass-bg);border:1px solid var(--glass-brd);border-radius:14px;padding:14px 18px;color:var(--text);font-size:15px;font-family:var(--font);}
+.city-search::placeholder{color:var(--faint);}
+.city-chips{display:flex;flex-wrap:wrap;gap:9px;justify-content:center;}
+.city-chip{background:var(--glass-bg);border:1px solid var(--glass-brd);color:var(--muted);border-radius:999px;padding:8px 16px;font-size:13.5px;font-weight:600;cursor:pointer;transition:.18s var(--ease);}
+.city-chip:hover{border-color:var(--accent);color:var(--text);}
+.city-chip.active{background:linear-gradient(90deg,var(--accent),var(--accent-2));color:#fff;border-color:transparent;}
+
+/* studio grid */
+.studio-wrap{max-width:var(--maxw);margin:36px auto 0;padding:0 20px;}
+.studio-count{color:var(--faint);font-size:13.5px;text-align:center;margin-bottom:20px;}
+.studio-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(310px,1fr));gap:18px;}
+.studio-card{background:var(--glass-bg);border:1px solid var(--glass-brd);border-radius:var(--radius);padding:22px;backdrop-filter:var(--blur);transition:.2s var(--ease);position:relative;display:flex;flex-direction:column;}
+.studio-card:hover{transform:translateY(-3px);border-color:var(--glass-hi);box-shadow:var(--shadow);}
+.studio-card.premium{border-color:rgba(245,166,35,.5);box-shadow:0 0 0 1px rgba(245,166,35,.25),0 8px 40px rgba(245,166,35,.08);}
+.studio-top{display:flex;justify-content:space-between;align-items:flex-start;gap:10px;margin-bottom:6px;}
+.studio-name{font-size:19px;font-weight:800;color:var(--text);line-height:1.25;}
+.studio-city{color:var(--accent-3);font-size:13px;font-weight:700;margin-bottom:12px;}
+.badge-ver{flex-shrink:0;display:inline-flex;align-items:center;gap:4px;background:rgba(43,213,118,.13);color:var(--green);border:1px solid rgba(43,213,118,.3);border-radius:999px;padding:3px 9px;font-size:11px;font-weight:700;}
+.badge-prem{flex-shrink:0;background:rgba(245,166,35,.14);color:var(--gold);border:1px solid rgba(245,166,35,.35);border-radius:999px;padding:3px 9px;font-size:11px;font-weight:700;}
+.studio-fmt{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:12px;}
+.fmt-tag{background:rgba(255,255,255,.05);border:1px solid var(--glass-brd);color:var(--muted);border-radius:8px;padding:4px 10px;font-size:12px;font-weight:600;}
+.studio-pct{font-size:14px;color:var(--text);margin-bottom:10px;}
+.studio-pct b{color:var(--green);}
+.studio-desc{color:var(--muted);font-size:13.5px;line-height:1.6;margin-bottom:14px;flex-grow:1;}
+.studio-rating{display:flex;align-items:center;gap:8px;margin-bottom:14px;font-size:13px;color:var(--muted);}
+.stars{color:var(--gold);letter-spacing:1px;}
+.studio-foot{display:flex;gap:8px;flex-wrap:wrap;margin-top:auto;}
+.studio-foot .btn{flex:1;min-width:120px;text-align:center;font-size:13.5px;padding:11px 12px;}
+.contact-rev{display:none;margin-top:10px;background:rgba(106,75,255,.12);border:1px solid rgba(106,75,255,.3);border-radius:10px;padding:10px 14px;font-size:14px;color:var(--text);word-break:break-all;}
+
+/* reviews */
+.reviews-box{display:none;margin-top:14px;border-top:1px solid var(--glass-brd);padding-top:14px;}
+.review{background:rgba(255,255,255,.03);border-radius:10px;padding:11px 13px;margin-bottom:9px;}
+.review-head{display:flex;justify-content:space-between;font-size:12.5px;margin-bottom:4px;}
+.review-author{color:var(--accent-3);font-weight:700;}
+.review-stars{color:var(--gold);font-size:12px;}
+.review-text{color:var(--muted);font-size:13px;line-height:1.55;}
+.review-empty{color:var(--faint);font-size:13px;font-style:italic;}
+
+/* generic section */
+.cat-section{max-width:var(--maxw);margin:70px auto 0;padding:0 20px;}
+.cat-section h2{font-size:clamp(24px,4vw,38px);font-weight:900;text-align:center;color:var(--text);margin-bottom:14px;}
+.cat-section .sub{text-align:center;color:var(--muted);max-width:600px;margin:0 auto 36px;font-size:16px;line-height:1.7;}
+
+/* register / review forms */
+.form-card{max-width:560px;margin:0 auto;background:var(--glass-bg);border:1px solid var(--glass-brd);border-radius:var(--radius);padding:30px;backdrop-filter:var(--blur);}
+.lbl{display:block;font-size:13.5px;font-weight:600;color:var(--muted);margin-bottom:6px;}
+.req{color:var(--accent-3);}
+.fld{width:100%;background:rgba(255,255,255,.04);border:1px solid var(--glass-brd);border-radius:12px;padding:13px 15px;color:var(--text);font-size:15px;font-family:var(--font);margin-bottom:16px;}
+.fld::placeholder{color:var(--faint);}
+.fmt-pick{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:16px;}
+.fmt-pick label{background:rgba(255,255,255,.04);border:1px solid var(--glass-brd);border-radius:10px;padding:8px 13px;font-size:13px;color:var(--muted);cursor:pointer;user-select:none;}
+.fmt-pick input{margin-right:6px;}
+.fmt-pick input:checked+span{color:var(--text);}
+.form-note{color:var(--faint);font-size:12.5px;line-height:1.6;margin-top:6px;}
+.form-status{text-align:center;font-size:14px;margin-top:14px;min-height:20px;}
+
+/* FAQ */
+.faq-list{max-width:760px;margin:0 auto;display:flex;flex-direction:column;gap:14px;}
+.faq-item{background:var(--glass-bg);border:1px solid var(--glass-brd);border-radius:14px;overflow:hidden;}
+.faq-q{padding:18px 22px;font-weight:700;font-size:15.5px;color:var(--text);cursor:pointer;display:flex;justify-content:space-between;align-items:center;gap:12px;}
+.faq-q::after{content:"+";font-size:22px;color:var(--accent);flex-shrink:0;}
+.faq-item.open .faq-q::after{content:"−";}
+.faq-a{max-height:0;overflow:hidden;transition:max-height .25s var(--ease);padding:0 22px;color:var(--muted);font-size:14.5px;line-height:1.7;}
+.faq-item.open .faq-a{max-height:300px;padding:0 22px 20px;}
+
+.breadcrumb{padding:12px 0;color:var(--faint);font-size:13px;}
+.breadcrumb a{color:var(--muted);}
+.breadcrumb span{margin:0 7px;}
+
+@media(max-width:640px){
+  .cat-hero{padding:96px 0 30px;}
+  .studio-grid{grid-template-columns:1fr;}
+}
+</style>
+</head>
+
+<body><nav>
+  <a href="/" class="nav-logo">WORKADULT.PRO</a>
+  <div class="nav-links" id="navLinks">
+    <a href="/#pricing">Тарифы</a>
+    <a href="/#app">Приложение</a>
+    <a href="/#model">Работа</a>
+    <a href="studii-katalog.html" class="active">Каталог студий</a>
+    <a href="vopros.html">Поддержка</a>
+    <div class="nav-lang">
+      <a href="/" class="active">RU</a>
+      <a href="/en/">EN</a>
+    </div>
+  </div>
+  <button class="burger" aria-label="Меню"><span></span><span></span><span></span></button>
+</nav>
+
+<div class="container"><div class="breadcrumb"><a href="/">Главная</a><span>›</span>Каталог студий</div></div>
+
+<!-- HERO -->
+<header class="cat-hero">
+  <div class="container">
+    <div class="hero-tag">Каталог · Россия и СНГ</div>
+    <h1>Вебкам студии <span>твоего города</span></h1>
+    <p>Все проверенные вебкам студии в одном месте. Условия, проценты, реальные отзывы моделей. Выбирай студию рядом — или работай из дома. Студиям — бесплатное размещение.</p>
+    <div class="cat-actions">
+      <a href="#register" class="btn btn-gold">Разместить студию</a>
+      <a href="#catalog" class="btn btn-black">Смотреть каталог</a>
+    </div>
+  </div>
+</header>
+
+<!-- CITY FILTER -->
+<div class="city-bar" id="catalog">
+  <input type="text" class="city-search" id="citySearch" placeholder="🔍 Введите свой город…" autocomplete="off">
+  <div class="city-chips" id="cityChips"></div>
+</div>
+
+<!-- STUDIO GRID -->
+<div class="studio-wrap">
+  <div class="studio-count" id="studioCount"></div>
+  <div class="studio-grid" id="studioGrid"></div>
+</div>
+
+<!-- REGISTER STUDIO -->
+<section class="cat-section" id="register">
+  <h2>Разместить свою студию</h2>
+  <p class="sub">Ищете моделей? Добавьте студию в каталог — её увидят соискатели по всей России и СНГ. Вход через Telegram отсеивает спам, объявление проходит модерацию. Базовое размещение бесплатно.</p>
+  <div class="form-card">
+    <div id="tg-login-box">
+      <script async src="https://telegram.org/js/telegram-widget.js?22"
+        data-telegram-login="Workadult_feedback_bot"
+        data-size="large"
+        data-radius="8"
+        data-onauth="onTelegramAuth(user)"
+        data-request-access="write"></script>
+      <p class="form-note" style="margin-top:12px;">Нажмите кнопку Telegram выше — это подтверждает что вы не бот. Данные не публикуются.</p>
+    </div>
+
+    <form id="studio-form" style="display:none;">
+      <div id="tg-badge" style="background:rgba(43,213,118,.12);border:1px solid rgba(43,213,118,.3);border-radius:10px;padding:10px 14px;margin-bottom:18px;font-size:13.5px;color:var(--green);"></div>
+
+      <label class="lbl">Название студии <span class="req">*</span></label>
+      <input class="fld" type="text" name="name" placeholder="Например: Neon Studio" required>
+
+      <label class="lbl">Город <span class="req">*</span></label>
+      <input class="fld" type="text" name="city" placeholder="Москва" required>
+
+      <label class="lbl">Формат работы</label>
+      <div class="fmt-pick">
+        <label><input type="checkbox" name="fmt" value="studio"><span>В студии</span></label>
+        <label><input type="checkbox" name="fmt" value="home"><span>Из дома</span></label>
+        <label><input type="checkbox" name="fmt" value="pair"><span>Парой</span></label>
+        <label><input type="checkbox" name="fmt" value="guys"><span>Для парней</span></label>
+        <label><input type="checkbox" name="fmt" value="nonnude"><span>Non Nude</span></label>
+      </div>
+
+      <label class="lbl">Условия / процент <span class="req">*</span></label>
+      <input class="fld" type="text" name="percent" placeholder="Например: 50–70% от дохода, обучение, наставник" required>
+
+      <label class="lbl">Описание (коротко)</label>
+      <input class="fld" type="text" name="desc" placeholder="График, оборудование, что предлагаете">
+
+      <label class="lbl">Контакт для связи <span class="req">*</span></label>
+      <input class="fld" type="text" name="contact" placeholder="@telegram или ссылка" required>
+
+      <button type="submit" class="btn btn-gold" style="width:100%;">Отправить на модерацию</button>
+      <p class="form-note">После проверки студия появится в каталоге. Без обмана и предоплат с моделей — иначе снимаем.</p>
+      <div class="form-status" id="studioStatus"></div>
+    </form>
+  </div>
+</section>
+
+<!-- FAQ -->
+<section class="cat-section">
+  <h2>Частые вопросы</h2>
+  <p class="sub">Коротко о том, что чаще всего спрашивают новички перед выбором студии.</p>
+  <div class="faq-list" id="faqList">
+    <div class="faq-item"><div class="faq-q">Какие требования, чтобы работать в вебкам студии?</div><div class="faq-a">Главное — возраст от 18 лет. Опыт не нужен: почти все студии проводят начальное обучение и дают наставника. Английский любого уровня — многие пользуются переводчиком. Работать можно как в студии, так и из дома.</div></div>
+    <div class="faq-item"><div class="faq-q">Сколько процентов платят?</div><div class="faq-a">В среднем 50–70% от дохода. В первый стажировочный месяц процент обычно выше, потому что нет опыта. Точные условия каждой студии смотрите в её карточке.</div></div>
+    <div class="faq-item"><div class="faq-q">Как не нарваться на обман?</div><div class="faq-a">Читайте отзывы в карточке, смотрите на метку «проверено», уточняйте процент до старта. Настоящая студия зарабатывает с вашего дохода — она не берёт предоплату вперёд. Просят деньги заранее — это повод насторожиться.</div></div>
+    <div class="faq-item"><div class="faq-q">Как разместить свою студию?</div><div class="faq-a">Нажмите «Разместить студию», войдите через Telegram, заполните название, город, условия и контакт. После короткой модерации студия появится в каталоге бесплатно.</div></div>
+  </div>
+</section>
+
+<div style="height:80px;"></div>
+
+<footer>
+  <div class="container">
+    <div class="footer-grid">
+      <div class="footer-brand">
+        <div class="footer-logo">WORKADULT.PRO</div>
+        <div class="footer-desc">Каталог вебкам студий России и СНГ — условия, отзывы, вакансии. Продвижение и буст для моделей.</div>
+      </div>
+      <div class="footer-col">
+        <h4>Каталог</h4>
+        <a href="studii-katalog.html">Все студии</a>
+        <a href="#register">Разместить студию</a>
+        <a href="vakansii.html">Вакансии и резюме</a>
+        <a href="anketa.html">Работа с нами</a>
+      </div>
+      <div class="footer-col">
+        <h4>Контакты</h4>
+        <a href="https://t.me/Workadult_feedback_bot" target="_blank" rel="noopener noreferrer">💬 Поддержка</a>
+        <a href="https://t.me/hiwebcam" target="_blank" rel="noopener noreferrer">👥 Группа моделей</a>
+        <a href="vopros.html">❓ Задать вопрос</a>
+      </div>
+      <div class="footer-col">
+        <h4>Наши партнёры</h4>
+        <a href="https://go.mavrtracktor.com?userId=4cdc7f4732985b54cb7dc35e2646b8f5e80f0d80b17824d18e4b85fb67bfbb4b&p1=site&p2=workadult" target="_blank" rel="nofollow noopener">🚀 Stripchat</a>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <span>© 2024 Workadult.pro</span>
+      <span>@workadultpro</span>
+    </div>
+  </div>
+</footer>
+
+<script>
+var API = 'https://workadult-bots.onrender.com';
+var TG_AUTH = null;
+var STUDIOS = [];
+var REVIEWS = {};      // studio_id -> [reviews]
+var activeCity = 'all';
+
+/* ---------- Telegram auth ---------- */
+function onTelegramAuth(user){
+  TG_AUTH = user;
+  var box = document.getElementById('tg-login-box');
+  var form = document.getElementById('studio-form');
+  if(box) box.style.display='none';
+  if(form){
+    form.style.display='block';
+    var nm = (user.first_name||'') + (user.last_name? ' '+user.last_name : '');
+    document.getElementById('tg-badge').textContent = '✓ Вход выполнен: ' + nm + (user.username? ' (@'+user.username+')':'');
+  }
+}
+
+/* ---------- Format labels ---------- */
+var FMT = {studio:'В студии',home:'Из дома',pair:'Парой',guys:'Для парней',nonnude:'Non Nude'};
+
+/* ---------- Demo studios (shown only if catalog empty) ---------- */
+var DEMO = [
+  {id:'demo1',name:'Neon Studio',city:'Москва',formats:['studio','home'],percent:'50–70%, обучение, наставник',desc:'Уютные кабинеты в центре, новое оборудование, поддержка 24/7.',contact:'@neon_studio',verified:true,premium:true,demo:true},
+  {id:'demo2',name:'Aurora Webcam',city:'Санкт-Петербург',formats:['studio','pair'],percent:'от 55%',desc:'Работа парами и соло, гибкий график, помощь новичкам.',contact:'@aurora_cam',verified:true,demo:true},
+  {id:'demo3',name:'HomeWork CAM',city:'Новосибирск',formats:['home'],percent:'до 65% из дома',desc:'Полностью удалённая работа, обучение онлайн.',contact:'@homework_cam',verified:false,demo:true}
+];
+
+/* ---------- Cities (key + dynamic from studios) ---------- */
+var KEY_CITIES = ['Москва','Санкт-Петербург','Новосибирск','Екатеринбург','Казань','Нижний Новгород','Краснодар','Ростов-на-Дону','Самара','Челябинск','Сочи'];
+
+function buildCityChips(){
+  var set = {};
+  STUDIOS.forEach(function(s){ if(s.city) set[s.city]=1; });
+  var cities = Object.keys(set);
+  // показываем ключевые города + те что есть в каталоге
+  var show = KEY_CITIES.slice();
+  cities.forEach(function(c){ if(show.indexOf(c)===-1) show.push(c); });
+  var html = '<button class="city-chip active" data-city="all">Все города</button>';
+  show.forEach(function(c){
+    html += '<button class="city-chip" data-city="'+c.replace(/"/g,'')+'">'+c+'</button>';
+  });
+  var box = document.getElementById('cityChips');
+  box.innerHTML = html;
+  box.querySelectorAll('.city-chip').forEach(function(ch){
+    ch.addEventListener('click', function(){
+      box.querySelectorAll('.city-chip').forEach(function(x){x.classList.remove('active');});
+      ch.classList.add('active');
+      activeCity = ch.getAttribute('data-city');
+      document.getElementById('citySearch').value = activeCity==='all'?'':activeCity;
+      renderStudios();
+    });
+  });
+}
+
+/* ---------- Render studios ---------- */
+function starStr(avg){
+  var full = Math.round(avg);
+  var s='';
+  for(var i=0;i<5;i++) s += i<full?'★':'☆';
+  return s;
+}
+function studioReviews(id){ return REVIEWS[id]||[]; }
+function avgRating(id){
+  var r = studioReviews(id);
+  if(!r.length) return 0;
+  var sum=0; r.forEach(function(x){sum+=(+x.rating||0);});
+  return sum/r.length;
+}
+
+function renderStudios(){
+  var grid = document.getElementById('studioGrid');
+  var q = (document.getElementById('citySearch').value||'').trim().toLowerCase();
+  var list = STUDIOS.length ? STUDIOS : DEMO;
+
+  var filtered = list.filter(function(s){
+    if(activeCity!=='all' && s.city!==activeCity) return false;
+    if(q && (s.city||'').toLowerCase().indexOf(q)===-1 && (s.name||'').toLowerCase().indexOf(q)===-1) return false;
+    return true;
+  });
+  // премиум вперёд
+  filtered.sort(function(a,b){ return (b.premium?1:0)-(a.premium?1:0); });
+
+  document.getElementById('studioCount').textContent =
+    filtered.length + (STUDIOS.length? '' : ' · показаны примеры — будьте первой настоящей студией в каталоге');
+
+  if(!filtered.length){
+    grid.innerHTML = '<div style="grid-column:1/-1;text-align:center;color:var(--faint);padding:40px;">В этом городе пока нет студий. <a href="#register" style="color:var(--accent-3);">Разместите первую →</a></div>';
+    return;
+  }
+
+  grid.innerHTML = filtered.map(function(s){
+    var fmt = (s.formats||[]).map(function(f){return '<span class="fmt-tag">'+(FMT[f]||f)+'</span>';}).join('');
+    var avg = avgRating(s.id), cnt = studioReviews(s.id).length;
+    var ratingHtml = cnt? '<span class="stars">'+starStr(avg)+'</span> <span>'+avg.toFixed(1)+' · '+cnt+' отз.</span>'
+                        : '<span class="stars">☆☆☆☆☆</span> <span>нет отзывов</span>';
+    var badge = s.premium? '<span class="badge-prem">★ Премиум</span>' : (s.verified? '<span class="badge-ver">✓ Проверено</span>':'');
+    return '<div class="studio-card'+(s.premium?' premium':'')+'">'
+      + '<div class="studio-top"><div><div class="studio-name">'+esc(s.name)+'</div><div class="studio-city">📍 '+esc(s.city)+'</div></div>'+badge+'</div>'
+      + (fmt?'<div class="studio-fmt">'+fmt+'</div>':'')
+      + '<div class="studio-pct">💰 <b>'+esc(s.percent||'')+'</b></div>'
+      + (s.desc?'<div class="studio-desc">'+esc(s.desc)+'</div>':'')
+      + '<div class="studio-rating">'+ratingHtml+'</div>'
+      + '<div class="studio-foot">'
+        + '<button class="btn btn-gold" onclick="showContact(this,\''+s.id+'\')">Показать контакты</button>'
+        + '<button class="btn btn-black" onclick="toggleReviews(this,\''+s.id+'\')">Отзывы ('+cnt+')</button>'
+      + '</div>'
+      + '<div class="contact-rev" data-c="'+s.id+'">📞 '+esc(s.contact||'—')+'</div>'
+      + '<div class="reviews-box" data-r="'+s.id+'"></div>'
+    + '</div>';
+  }).join('');
+}
+
+function esc(t){return String(t==null?'':t).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
+
+function showContact(btn,id){
+  var el = btn.closest('.studio-card').querySelector('[data-c="'+id+'"]');
+  el.style.display = el.style.display==='block'?'none':'block';
+}
+
+function toggleReviews(btn,id){
+  var box = btn.closest('.studio-card').querySelector('[data-r="'+id+'"]');
+  if(box.style.display==='block'){ box.style.display='none'; return; }
+  var rev = studioReviews(id);
+  var html = rev.length ? rev.map(function(r){
+    return '<div class="review"><div class="review-head"><span class="review-author">'+esc(r.author||'аноним')+'</span><span class="review-stars">'+starStr(r.rating)+'</span></div><div class="review-text">'+esc(r.text||'')+'</div></div>';
+  }).join('') : '<div class="review-empty">Пока нет отзывов. Работали тут? Оставьте первый — это поможет другим.</div>';
+  html += '<button class="btn btn-black" style="width:100%;margin-top:8px;font-size:13px;" onclick="openReview(\''+id+'\')">＋ Оставить отзыв</button>';
+  box.innerHTML = html;
+  box.style.display='block';
+}
+
+/* ---------- Leave a review (Telegram-gated) ---------- */
+function openReview(studioId){
+  if(!TG_AUTH){
+    alert('Чтобы оставить отзыв, сначала войдите через Telegram в блоке «Разместить студию» ниже — это защита от накрутки.');
+    location.hash='#register';
+    return;
+  }
+  var rating = prompt('Ваша оценка студии от 1 до 5:');
+  rating = parseInt(rating,10);
+  if(!(rating>=1 && rating<=5)){ alert('Введите число от 1 до 5.'); return; }
+  var text = prompt('Коротко опишите ваш опыт (условия, выплаты, отношение):');
+  if(!text || text.trim().length<5){ alert('Отзыв слишком короткий.'); return; }
+  fetch(API+'/submit-review',{
+    method:'POST', headers:{'Content-Type':'application/json'},
+    body: JSON.stringify({ auth:TG_AUTH, studio_id:studioId, rating:rating, text:text.trim() })
+  }).then(function(r){return r.json();}).then(function(d){
+    if(d.ok) alert('Спасибо! Отзыв отправлен на модерацию и появится после проверки.');
+    else alert('Не получилось отправить отзыв. Попробуйте позже.');
+  }).catch(function(){ alert('Ошибка сети. Попробуйте позже.'); });
+}
+
+/* ---------- Submit studio ---------- */
+document.addEventListener('submit', function(e){
+  if(e.target.id!=='studio-form') return;
+  e.preventDefault();
+  if(!TG_AUTH){ alert('Сначала войдите через Telegram.'); return; }
+  var fd = new FormData(e.target);
+  var form = {};
+  var fmts = [];
+  fd.forEach(function(v,k){ if(k==='fmt') fmts.push(v); else form[k]=v; });
+  form.formats = fmts;
+  var status = document.getElementById('studioStatus');
+  status.textContent='Отправляю…'; status.style.color='var(--faint)';
+  fetch(API+'/submit-studio',{
+    method:'POST', headers:{'Content-Type':'application/json'},
+    body: JSON.stringify({ auth:TG_AUTH, form:form })
+  }).then(function(r){return r.json();}).then(function(d){
+    if(d.ok){
+      status.textContent='✓ Студия отправлена на модерацию! Появится в каталоге после проверки.';
+      status.style.color='var(--green)';
+      e.target.reset();
+    } else {
+      status.textContent='Не удалось отправить ('+(d.error||'ошибка')+'). Попробуйте позже.';
+      status.style.color='var(--red)';
+    }
+  }).catch(function(){
+    status.textContent='Ошибка сети. Попробуйте позже.';
+    status.style.color='var(--red)';
+  });
+});
+
+/* ---------- Load catalog ---------- */
+function loadCatalog(){
+  fetch('/studios.json?t='+Date.now()).then(function(r){return r.json();}).then(function(d){
+    STUDIOS = (d.studios||[]).filter(function(s){return s.approved!==false;});
+    // index reviews by studio
+    REVIEWS = {};
+    (d.reviews||[]).filter(function(r){return r.approved!==false;}).forEach(function(r){
+      (REVIEWS[r.studio_id]=REVIEWS[r.studio_id]||[]).push(r);
+    });
+    buildCityChips();
+    renderStudios();
+  }).catch(function(){
+    STUDIOS=[]; REVIEWS={};
+    buildCityChips();
+    renderStudios();
+  });
+}
+
+/* ---------- City search ---------- */
+document.getElementById('citySearch').addEventListener('input', function(){
+  activeCity = this.value.trim() ? this.value.trim() : 'all';
+  document.querySelectorAll('.city-chip').forEach(function(x){x.classList.remove('active');});
+  if(!this.value.trim()){ var a=document.querySelector('.city-chip[data-city="all"]'); if(a)a.classList.add('active'); }
+  renderStudios();
+});
+
+/* ---------- FAQ accordion ---------- */
+document.getElementById('faqList').addEventListener('click', function(e){
+  var q = e.target.closest('.faq-q'); if(!q) return;
+  q.parentElement.classList.toggle('open');
+});
+
+/* ---------- burger ---------- */
+document.querySelector('.burger').addEventListener('click',function(){document.getElementById('navLinks').classList.toggle('open');});
+
+loadCatalog();
+</script>
+<script src="bot.js"></script>
+</body>
+</html>
