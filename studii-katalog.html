@@ -464,16 +464,25 @@ document.addEventListener('submit', function(e){
 });
 
 /* ---------- Load catalog ---------- */
+var ADMIN_API = 'https://workadult-server.onrender.com';
 function loadCatalog(){
   fetch('/studios.json?t='+Date.now()).then(function(r){return r.json();}).then(function(d){
-    STUDIOS = (d.studios||[]).filter(function(s){return s.approved!==false;});
+    var base = (d.studios||[]).filter(function(s){return s.approved!==false;});
     // index reviews by studio
     REVIEWS = {};
     (d.reviews||[]).filter(function(r){return r.approved!==false;}).forEach(function(r){
       (REVIEWS[r.studio_id]=REVIEWS[r.studio_id]||[]).push(r);
     });
-    buildCityChips();
-    renderStudios();
+    /* admin-панель добавляет студии отдельным слоем поверх самоподачи — подмешиваем */
+    fetch(ADMIN_API+'/api/catalog').then(function(r){return r.json();}).then(function(ad){
+      STUDIOS = base.concat(ad.studios||[]);
+      buildCityChips();
+      renderStudios();
+    }).catch(function(){
+      STUDIOS = base;
+      buildCityChips();
+      renderStudios();
+    });
   }).catch(function(){
     STUDIOS=[]; REVIEWS={};
     buildCityChips();
