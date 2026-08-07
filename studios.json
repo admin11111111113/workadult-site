@@ -1,4 +1,21 @@
 {
-  "studios": [],
-  "reviews": []
+ "studios": [
+  {
+   "id": "st20260807144540",
+   "name": "Supper",
+   "city": "Санкт петербург",
+   "formats": [
+    "studio",
+    "home"
+   ],
+   "percent": "35",
+   "desc": "Все с нас ",
+   "contact": "@workminer",
+   "verified": false,
+   "premium": false,
+   "approved": true,
+   "date": "2026-08-07"
+  }
+ ],
+ "reviews": []
 }
