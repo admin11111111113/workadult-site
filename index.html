@@ -629,11 +629,19 @@
     if(free<=0){ st.style.color='#ff8da3'; st.innerHTML='🔴 Свободно <b>0 из 5</b> мест — все заняты'; }
     else { st.style.color='#7ee0a6'; st.innerHTML='🟢 Свободно <b>'+free+' из 5</b> мест'; }
   }
-  fetch('/board.json?t='+Date.now()).then(function(r){return r.json();}).then(function(d){
-    var pinned=(d.vacancies||[]).filter(function(x){return x.pinned;});
+  var ADMIN_API='https://workadult-server.onrender.com';
+  function finish(all){
+    var pinned=all.filter(function(x){return x.pinned;});
     var top=pinned.slice().sort(function(x,y){return String(y.date||'').localeCompare(String(x.date||''));}).slice(0,5);
     setStatus(Math.max(0,5-pinned.length));
     renderBoard(top);
+  }
+  fetch('/board.json?t='+Date.now()).then(function(r){return r.json();}).then(function(d){
+    var base=d.vacancies||[];
+    /* admin-панель добавляет вакансии отдельным слоем поверх самоподачи — подмешиваем */
+    fetch(ADMIN_API+'/api/board').then(function(r){return r.json();}).then(function(ad){
+      finish(base.concat(ad.vacancies||[]));
+    }).catch(function(){ finish(base); });
   }).catch(function(){
     setStatus(0);
     renderBoard(DEMO);
