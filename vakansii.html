@@ -637,17 +637,25 @@ document.querySelector('.burger').addEventListener('click', () => {
     }
     draw();
   }
+  var DEMO_VAC=[
+    {org:'Neon Studio',title:'Вебкам-модель — новичкам',salary:'50–70%, обучение, наставник',desc:'Стажировка, помощь с оформлением, старт без опыта.',contact:'@neon_studio',demo:true},
+    {org:'Aurora Webcam',title:'Ищем модель для работы в паре',salary:'от 55%',desc:'Гибкий график, помощь новичкам с анкетой.',contact:'@aurora_cam',demo:true},
+    {org:'HomeWork CAM',title:'Удалённая работа из дома',salary:'до 65%',desc:'Полностью удалённая работа, обучение онлайн.',contact:'@homework_cam',demo:true}
+  ];
   var ADMIN_API='https://workadult-server.onrender.com';
   fetch('/board.json?t='+Date.now()).then(function(r){return r.json();}).then(function(d){
     var base=d.vacancies||[];
     render('res-list','res-pager',d.resumes,'Пока резюме нет — будьте первым, разместите своё.');
     /* admin-панель добавляет вакансии отдельным слоем поверх самоподачи — подмешиваем */
     fetch(ADMIN_API+'/api/board').then(function(r){return r.json();}).then(function(ad){
-      render('vac-list','vac-pager',base.concat(ad.vacancies||[]),'Пока вакансий от студий нет — они появятся здесь после модерации.');
+      var all=base.concat(ad.vacancies||[]);
+      render('vac-list','vac-pager',all.length?all:DEMO_VAC,'Пока вакансий от студий нет — они появятся здесь после модерации.');
     }).catch(function(){
-      render('vac-list','vac-pager',base,'Пока вакансий от студий нет — они появятся здесь после модерации.');
+      render('vac-list','vac-pager',base.length?base:DEMO_VAC,'Пока вакансий от студий нет — они появятся здесь после модерации.');
     });
-  }).catch(function(){});
+  }).catch(function(){
+    render('vac-list','vac-pager',DEMO_VAC,'Пока вакансий от студий нет — они появятся здесь после модерации.');
+  });
 })();
 </script>
 <script>

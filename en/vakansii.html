@@ -567,16 +567,24 @@ document.querySelector('.burger').addEventListener('click', () => {
     }
     draw();
   }
+  var DEMO_VAC=[
+    {org:'Neon Studio',title:'Webcam model - beginners welcome',salary:'50-70%, training, mentor',desc:'Paid trial, help with onboarding, no experience needed.',contact:'@neon_studio',demo:true},
+    {org:'Aurora Webcam',title:'Looking for a model to work in a pair',salary:'from 55%',desc:'Flexible schedule, help for newcomers.',contact:'@aurora_cam',demo:true},
+    {org:'HomeWork CAM',title:'Remote work from home',salary:'up to 65%',desc:'Fully remote, online training.',contact:'@homework_cam',demo:true}
+  ];
   var ADMIN_API='https://workadult-server.onrender.com';
   fetch('/board.json?t='+Date.now()).then(function(r){return r.json();}).then(function(d){
     var base=d.vacancies||[];
     render('res-list','res-pager',d.resumes,'No resumes yet - be the first to post yours.');
     fetch(ADMIN_API+'/api/board').then(function(r){return r.json();}).then(function(ad){
-      render('vac-list','vac-pager',base.concat(ad.vacancies||[]),'No studio jobs yet - they will appear here after moderation.');
+      var all=base.concat(ad.vacancies||[]);
+      render('vac-list','vac-pager',all.length?all:DEMO_VAC,'No studio jobs yet - they will appear here after moderation.');
     }).catch(function(){
-      render('vac-list','vac-pager',base,'No studio jobs yet - they will appear here after moderation.');
+      render('vac-list','vac-pager',base.length?base:DEMO_VAC,'No studio jobs yet - they will appear here after moderation.');
     });
-  }).catch(function(){});
+  }).catch(function(){
+    render('vac-list','vac-pager',DEMO_VAC,'No studio jobs yet - they will appear here after moderation.');
+  });
 })();
 </script>
 <script>
