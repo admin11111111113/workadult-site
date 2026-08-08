@@ -361,7 +361,7 @@ function renderStudios(){
 
   grid.innerHTML = filtered.map(function(s){
     var tierClass = (s.tier==='gold'||s.tier==='silver'||s.tier==='bronze') ? ' tier-'+s.tier : '';
-    var ribbon = TIER_ICON[s.tier] ? '<span class="tier-ribbon '+s.tier+'">'+TIER_ICON[s.tier]+'</span>' : '';
+    var ribbon = '';
     var photo = s.cover_photo || (s.photos&&s.photos[0]) || s.photo || '';
     var photoHtml = photo
       ? '<img class="card-photo" src="'+esc(photo)+'" alt="" loading="lazy">'
