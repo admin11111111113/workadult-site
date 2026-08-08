@@ -57,17 +57,18 @@
 
 .studio-card{background:var(--glass-bg);border:1px solid var(--glass-brd);border-radius:var(--radius);backdrop-filter:var(--blur);transition:.2s var(--ease);position:relative;display:flex;flex-direction:column;aspect-ratio:1/1.18;overflow:hidden;cursor:pointer;text-align:left;padding:0;}
 .studio-card:hover{transform:translateY(-3px);border-color:var(--glass-hi);box-shadow:var(--shadow);}
-.studio-card.tier-gold{border-color:rgba(245,166,35,.55);box-shadow:0 0 0 1px rgba(245,166,35,.22),0 8px 30px rgba(245,166,35,.12);}
-.studio-card.tier-silver{border-color:rgba(200,200,210,.55);box-shadow:0 0 0 1px rgba(200,200,210,.18);}
-.studio-card.tier-bronze{border-color:rgba(205,127,50,.55);box-shadow:0 0 0 1px rgba(205,127,50,.18);}
+.studio-card.tier-gold{border:2px solid #f5a623;box-shadow:0 0 0 1px rgba(245,166,35,.3),0 8px 30px rgba(245,166,35,.18);background:linear-gradient(160deg,rgba(245,166,35,.22),rgba(245,166,35,.03) 55%),var(--glass-bg);}
+.studio-card.tier-silver{border:2px solid #c9ccd6;box-shadow:0 0 0 1px rgba(200,200,210,.25),0 8px 26px rgba(200,200,210,.14);background:linear-gradient(160deg,rgba(200,200,210,.2),rgba(200,200,210,.03) 55%),var(--glass-bg);}
+.studio-card.tier-bronze{border:2px solid #cd7f32;box-shadow:0 0 0 1px rgba(205,127,50,.3),0 8px 26px rgba(205,127,50,.16);background:linear-gradient(160deg,rgba(205,127,50,.2),rgba(205,127,50,.03) 55%),var(--glass-bg);}
 .studio-card .card-photo{width:100%;height:44%;object-fit:cover;background:linear-gradient(135deg,rgba(255,255,255,.06),rgba(255,255,255,.02));flex-shrink:0;}
 .studio-card .card-photo.ph-empty{display:flex;align-items:center;justify-content:center;font-size:28px;opacity:.25;}
 .studio-card .card-body{padding:14px 14px 12px;display:flex;flex-direction:column;flex-grow:1;min-height:0;}
-.studio-card .tier-ribbon{position:absolute;top:10px;left:10px;font-size:10px;font-weight:800;padding:3px 9px;border-radius:999px;letter-spacing:.3px;z-index:2;}
-.tier-ribbon.gold{background:rgba(245,166,35,.85);color:#2a1e00;}
-.tier-ribbon.silver{background:rgba(200,200,210,.85);color:#20222a;}
-.tier-ribbon.bronze{background:rgba(205,127,50,.85);color:#2a1a08;}
+.studio-card .tier-ribbon{position:absolute;top:8px;left:8px;width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:14px;z-index:2;box-shadow:0 2px 8px rgba(0,0,0,.35);}
+.tier-ribbon.gold{background:#f5a623;}
+.tier-ribbon.silver{background:#c9ccd6;}
+.tier-ribbon.bronze{background:#cd7f32;}
 .studio-name{font-size:15px;font-weight:800;color:var(--text);line-height:1.22;margin-bottom:3px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;}
+.studio-badge-row{margin:-1px 0 4px;}
 .studio-city{color:var(--accent-3);font-size:12px;font-weight:700;margin-bottom:6px;}
 .badge-ver{flex-shrink:0;display:inline-flex;align-items:center;gap:4px;background:rgba(43,213,118,.13);color:var(--green);border:1px solid rgba(43,213,118,.3);border-radius:999px;padding:2px 7px;font-size:10px;font-weight:700;}
 .badge-prem{flex-shrink:0;background:rgba(245,166,35,.14);color:var(--gold);border:1px solid rgba(245,166,35,.35);border-radius:999px;padding:2px 7px;font-size:10px;font-weight:700;}
@@ -83,6 +84,9 @@
 .studio-modal .m-photo{width:100%;height:220px;object-fit:cover;background:linear-gradient(135deg,rgba(255,255,255,.06),rgba(255,255,255,.02));}
 .studio-modal .m-body{padding:26px 28px 30px;}
 .studio-modal .m-tier{display:inline-block;font-size:11px;font-weight:800;padding:4px 11px;border-radius:999px;margin-bottom:10px;}
+.m-tier-gold{background:#f5a623;color:#2a1e00;}
+.m-tier-silver{background:#c9ccd6;color:#20222a;}
+.m-tier-bronze{background:#cd7f32;color:#2a1a08;}
 .studio-modal .m-name{font-size:24px;font-weight:900;color:var(--text);margin-bottom:6px;}
 .studio-modal .m-city{color:var(--accent-3);font-weight:700;font-size:14px;margin-bottom:14px;}
 .studio-modal .m-fmt{display:flex;flex-wrap:wrap;gap:7px;margin-bottom:14px;}
@@ -216,6 +220,7 @@ var FMT = {studio:'В студии',home:'Из дома',pair:'Парой',guys:
 var FEAT = {weekly_pay:'Еженедельные выплаты',flexible_schedule:'Гибкий график',housing:'Предоставляем проживание',training:'Обучение новичков',city_center:'В центре города',near_metro:'Рядом с метро'};
 var TIER_RANK = {gold:0,silver:1,bronze:2,regular:3};
 var TIER_LABEL = {gold:'🥇 Золото',silver:'🥈 Серебро',bronze:'🥉 Бронза'};
+var TIER_ICON = {gold:'🥇',silver:'🥈',bronze:'🥉'};
 var DEMO = [
   {id:'d1',name:'Neon Studio',city:CITY,formats:['studio','home'],percent:'50–70%, обучение, наставник',desc:'Кабинеты в центре, новое оборудование, поддержка 24/7.',contact:'@neon_studio',verified:true,demo:true}
 ];
@@ -242,7 +247,7 @@ function renderStudios(){
   }
   grid.innerHTML = filtered.map(function(s){
     var tierClass = (s.tier==='gold'||s.tier==='silver'||s.tier==='bronze') ? ' tier-'+s.tier : '';
-    var ribbon = TIER_LABEL[s.tier] ? '<span class="tier-ribbon '+s.tier+'">'+TIER_LABEL[s.tier]+'</span>' : '';
+    var ribbon = TIER_ICON[s.tier] ? '<span class="tier-ribbon '+s.tier+'">'+TIER_ICON[s.tier]+'</span>' : '';
     var photo = s.cover_photo || (s.photos&&s.photos[0]) || s.photo || '';
     var photoHtml = photo ? '<img class="card-photo" src="'+esc(photo)+'" alt="" loading="lazy">' : '<div class="card-photo ph-empty">🏢</div>';
     var fmt = (s.formats||[]).slice(0,2).map(function(f){return '<span class="fmt-tag">'+(FMT[f]||f)+'</span>';}).join('');
@@ -250,7 +255,8 @@ function renderStudios(){
     return '<div class="studio-card'+tierClass+'" onclick="openStudioModal(\''+s.id+'\')">'
       + ribbon + photoHtml
       + '<div class="card-body">'
-        + '<div class="studio-name">'+esc(s.name)+' '+badge+'</div>'
+        + '<div class="studio-name">'+esc(s.name)+'</div>'
+        + (badge?'<div class="studio-badge-row">'+badge+'</div>':'')
         + '<div class="studio-city">📍 '+esc(s.city)+'</div>'
         + (fmt?'<div class="studio-fmt">'+fmt+'</div>':'')
         + (s.percent?'<div class="studio-pct">💰 <b>'+esc(s.percent)+'</b></div>':'')
@@ -266,7 +272,7 @@ function openStudioModal(id){
   var photo = s.cover_photo || (s.photos&&s.photos[0]) || s.photo || '';
   var fmt = (s.formats||[]).map(function(f){return '<span class="fmt-tag">'+(FMT[f]||f)+'</span>';}).join('');
   var feat = (s.features||[]).map(function(f){return '<div class="m-feature">'+(FEAT[f]||f)+'</div>';}).join('');
-  var tierChip = TIER_LABEL[s.tier] ? '<span class="m-tier tier-ribbon '+s.tier+'" style="position:static;display:inline-block;">'+TIER_LABEL[s.tier]+'</span><br>' : (s.verified? '<span class="badge-ver">✓ Проверено</span><br>':'');
+  var tierChip = TIER_LABEL[s.tier] ? '<span class="m-tier m-tier-'+s.tier+'">'+TIER_LABEL[s.tier]+'</span><br>' : (s.verified? '<span class="badge-ver">✓ Проверено</span><br>':'');
   var contacts = '';
   if(s.contact) contacts += '<span>📞 '+esc(s.contact)+'</span>';
   if(s.phone) contacts += '<a href="tel:'+esc(s.phone)+'">📱 '+esc(s.phone)+'</a>';
