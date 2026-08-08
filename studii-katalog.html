@@ -151,7 +151,7 @@
     <h1>Вебкам студии <span>твоего города</span></h1>
     <p>Все проверенные вебкам студии в одном месте. Условия, проценты, реальные отзывы моделей. Выбирай студию рядом — или работай из дома. Студиям — бесплатное размещение.</p>
     <div class="cat-actions">
-      <a href="#register" class="btn btn-gold">Разместить студию</a>
+      <a href="studii-podat.html" class="btn btn-gold">Разместить студию</a>
       <a href="#catalog" class="btn btn-black">Смотреть каталог</a>
     </div>
   </div>
@@ -183,55 +183,6 @@
   <div class="city-links"><a href="studii-belarus.html">Беларусь</a><a href="studii-ukraina.html">Украина</a><a href="studii-kazakhstan.html">Казахстан</a><a href="studii-kyrgyzstan.html">Кыргызстан</a><a href="studii-moldova.html">Молдова</a></div>
 </section>
 
-<!-- REGISTER STUDIO -->
-<section class="cat-section" id="register">
-  <h2>Разместить свою студию</h2>
-  <p class="sub">Ищете моделей? Добавьте студию в каталог — её увидят соискатели по всей России и СНГ. Вход через Telegram отсеивает спам, объявление проходит модерацию. Базовое размещение бесплатно.</p>
-  <div class="form-card">
-    <div id="tg-login-box">
-      <script async src="https://telegram.org/js/telegram-widget.js?22"
-        data-telegram-login="Workadult_feedback_bot"
-        data-size="large"
-        data-radius="8"
-        data-onauth="onTelegramAuth(user)"
-        data-request-access="write"></script>
-      <p class="form-note" style="margin-top:12px;">Нажмите кнопку Telegram выше — это подтверждает что вы не бот. Данные не публикуются.</p>
-    </div>
-
-    <form id="studio-form" style="display:none;">
-      <div id="tg-badge" style="background:rgba(43,213,118,.12);border:1px solid rgba(43,213,118,.3);border-radius:10px;padding:10px 14px;margin-bottom:18px;font-size:13.5px;color:var(--green);"></div>
-
-      <label class="lbl">Название студии <span class="req">*</span></label>
-      <input class="fld" type="text" name="name" placeholder="Например: Neon Studio" required>
-
-      <label class="lbl">Город <span class="req">*</span></label>
-      <input class="fld" type="text" name="city" placeholder="Москва" required>
-
-      <label class="lbl">Формат работы</label>
-      <div class="fmt-pick">
-        <label><input type="checkbox" name="fmt" value="studio"><span>В студии</span></label>
-        <label><input type="checkbox" name="fmt" value="home"><span>Из дома</span></label>
-        <label><input type="checkbox" name="fmt" value="pair"><span>Парой</span></label>
-        <label><input type="checkbox" name="fmt" value="guys"><span>Для парней</span></label>
-        <label><input type="checkbox" name="fmt" value="nonnude"><span>Non Nude</span></label>
-      </div>
-
-      <label class="lbl">Условия / процент <span class="req">*</span></label>
-      <input class="fld" type="text" name="percent" placeholder="Например: 50–70% от дохода, обучение, наставник" required>
-
-      <label class="lbl">Описание (коротко)</label>
-      <input class="fld" type="text" name="desc" placeholder="График, оборудование, что предлагаете">
-
-      <label class="lbl">Контакт для связи <span class="req">*</span></label>
-      <input class="fld" type="text" name="contact" placeholder="@telegram или ссылка" required>
-
-      <button type="submit" class="btn btn-gold" style="width:100%;">Отправить на модерацию</button>
-      <p class="form-note">После проверки студия появится в каталоге. Без обмана и предоплат с моделей — иначе снимаем.</p>
-      <div class="form-status" id="studioStatus"></div>
-    </form>
-  </div>
-</section>
-
 <!-- FAQ -->
 <section class="cat-section">
   <h2>Частые вопросы</h2>
@@ -240,7 +191,7 @@
     <div class="faq-item"><div class="faq-q">Какие требования, чтобы работать в вебкам студии?</div><div class="faq-a">Главное — возраст от 18 лет. Опыт не нужен: почти все студии проводят начальное обучение и дают наставника. Английский любого уровня — многие пользуются переводчиком. Работать можно как в студии, так и из дома.</div></div>
     <div class="faq-item"><div class="faq-q">Сколько процентов платят?</div><div class="faq-a">В среднем 50–70% от дохода. В первый стажировочный месяц процент обычно выше, потому что нет опыта. Точные условия каждой студии смотрите в её карточке.</div></div>
     <div class="faq-item"><div class="faq-q">Как не нарваться на обман?</div><div class="faq-a">Читайте отзывы в карточке, смотрите на метку «проверено», уточняйте процент до старта. Настоящая студия зарабатывает с вашего дохода — она не берёт предоплату вперёд. Просят деньги заранее — это повод насторожиться.</div></div>
-    <div class="faq-item"><div class="faq-q">Как разместить свою студию?</div><div class="faq-a">Нажмите «Разместить студию», войдите через Telegram, заполните название, город, условия и контакт. После короткой модерации студия появится в каталоге бесплатно.</div></div>
+    <div class="faq-item"><div class="faq-q">Как разместить свою студию?</div><div class="faq-a">Перейдите на страницу <a href="studii-podat.html">размещения студии</a>, войдите через Telegram и заполните заявку. После модерации и оплаты студия появится в каталоге.</div></div>
   </div>
 </section>
 
@@ -256,7 +207,7 @@
       <div class="footer-col">
         <h4>Каталог</h4>
         <a href="studii-katalog.html">Все студии</a>
-        <a href="#register">Разместить студию</a>
+        <a href="studii-podat.html">Разместить студию</a>
         <a href="vakansii.html">Вакансии и резюме</a>
         <a href="anketa.html">Работа с нами</a>
       </div>
@@ -279,25 +230,11 @@
 </footer>
 
 <script>
-var API = 'https://workadult-bots.onrender.com';
-var TG_AUTH = null;
 var STUDIOS = [];
 var REVIEWS = {};      // studio_id -> [reviews]
 var activeCity = 'all';
 
 /* ---------- Telegram auth ---------- */
-function onTelegramAuth(user){
-  TG_AUTH = user;
-  var box = document.getElementById('tg-login-box');
-  var form = document.getElementById('studio-form');
-  if(box) box.style.display='none';
-  if(form){
-    form.style.display='block';
-    var nm = (user.first_name||'') + (user.last_name? ' '+user.last_name : '');
-    document.getElementById('tg-badge').textContent = '✓ Вход выполнен: ' + nm + (user.username? ' (@'+user.username+')':'');
-  }
-}
-
 /* ---------- Format labels ---------- */
 var FMT = {studio:'В студии',home:'Из дома',pair:'Парой',guys:'Для парней',nonnude:'Non Nude'};
 
@@ -367,7 +304,7 @@ function renderStudios(){
     filtered.length + (STUDIOS.length? '' : ' · показаны примеры — будьте первой настоящей студией в каталоге');
 
   if(!filtered.length){
-    grid.innerHTML = '<div style="grid-column:1/-1;text-align:center;color:var(--faint);padding:40px;">В этом городе пока нет студий. <a href="#register" style="color:var(--accent-3);">Разместите первую →</a></div>';
+    grid.innerHTML = '<div style="grid-column:1/-1;text-align:center;color:var(--faint);padding:40px;">В этом городе пока нет студий. <a href="studii-podat.html" style="color:var(--accent-3);">Разместите первую →</a></div>';
     return;
   }
 
@@ -412,56 +349,10 @@ function toggleReviews(btn,id){
   box.style.display='block';
 }
 
-/* ---------- Leave a review (Telegram-gated) ---------- */
+/* ---------- Leave a review ---------- */
 function openReview(studioId){
-  if(!TG_AUTH){
-    alert('Чтобы оставить отзыв, сначала войдите через Telegram в блоке «Разместить студию» ниже — это защита от накрутки.');
-    location.hash='#register';
-    return;
-  }
-  var rating = prompt('Ваша оценка студии от 1 до 5:');
-  rating = parseInt(rating,10);
-  if(!(rating>=1 && rating<=5)){ alert('Введите число от 1 до 5.'); return; }
-  var text = prompt('Коротко опишите ваш опыт (условия, выплаты, отношение):');
-  if(!text || text.trim().length<5){ alert('Отзыв слишком короткий.'); return; }
-  fetch(API+'/submit-review',{
-    method:'POST', headers:{'Content-Type':'application/json'},
-    body: JSON.stringify({ auth:TG_AUTH, studio_id:studioId, rating:rating, text:text.trim() })
-  }).then(function(r){return r.json();}).then(function(d){
-    if(d.ok) alert('Спасибо! Отзыв отправлен на модерацию и появится после проверки.');
-    else alert('Не получилось отправить отзыв. Попробуйте позже.');
-  }).catch(function(){ alert('Ошибка сети. Попробуйте позже.'); });
+  alert('Отзывы временно недоступны. Есть что сказать про студию? Напишите в поддержку: @Workadult_feedback_bot');
 }
-
-/* ---------- Submit studio ---------- */
-document.addEventListener('submit', function(e){
-  if(e.target.id!=='studio-form') return;
-  e.preventDefault();
-  if(!TG_AUTH){ alert('Сначала войдите через Telegram.'); return; }
-  var fd = new FormData(e.target);
-  var form = {};
-  var fmts = [];
-  fd.forEach(function(v,k){ if(k==='fmt') fmts.push(v); else form[k]=v; });
-  form.formats = fmts;
-  var status = document.getElementById('studioStatus');
-  status.textContent='Отправляю…'; status.style.color='var(--faint)';
-  fetch(API+'/submit-studio',{
-    method:'POST', headers:{'Content-Type':'application/json'},
-    body: JSON.stringify({ auth:TG_AUTH, form:form })
-  }).then(function(r){return r.json();}).then(function(d){
-    if(d.ok){
-      status.textContent='✓ Студия отправлена на модерацию! Появится в каталоге после проверки.';
-      status.style.color='var(--green)';
-      e.target.reset();
-    } else {
-      status.textContent='Не удалось отправить ('+(d.error||'ошибка')+'). Попробуйте позже.';
-      status.style.color='var(--red)';
-    }
-  }).catch(function(){
-    status.textContent='Ошибка сети. Попробуйте позже.';
-    status.style.color='var(--red)';
-  });
-});
 
 /* ---------- Load catalog ---------- */
 var ADMIN_API = 'https://workadult-server.onrender.com';
