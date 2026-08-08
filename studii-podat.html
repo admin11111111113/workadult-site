@@ -46,6 +46,25 @@
   .waitlist-check { display: none; align-items: center; gap: 8px; font-size: 12px; color: #9aa0aa; margin-top: 10px; padding-left: 4px; }
   .waitlist-check.show { display: flex; }
   .waitlist-check input { accent-color: #e91e8c; }
+
+  .photo-pick-row { display:flex; align-items:center; gap:10px; flex-wrap:wrap; }
+  .photo-btn { padding:9px 16px; border-radius:8px; border:1px solid #262a33; background:#1a1a24; color:#fff; font-size:13px; font-weight:600; cursor:pointer; }
+  .photo-btn:hover { border-color:#3a3f4a; }
+  .crop-box { margin-top:14px; }
+  .crop-viewport { width:100%; max-width:400px; aspect-ratio:8/5; overflow:hidden; position:relative; border-radius:10px; border:1px solid #262a33; background:#000; cursor:grab; touch-action:none; }
+  .crop-viewport.dragging { cursor:grabbing; }
+  .crop-viewport img { position:absolute; left:0; top:0; transform-origin:0 0; user-select:none; -webkit-user-drag:none; pointer-events:none; }
+  .crop-zoom { width:100%; max-width:400px; margin-top:10px; accent-color:#e91e8c; }
+  .crop-actions { display:flex; gap:10px; margin-top:10px; }
+  .crop-actions button { padding:8px 16px; border-radius:8px; border:none; font-size:13px; font-weight:700; cursor:pointer; }
+  .crop-apply { background:#e91e8c; color:#fff; }
+  .crop-cancel { background:#1a1a24; color:#9aa0aa; border:1px solid #262a33 !important; }
+  .logo-preview-wrap { margin-top:12px; }
+  .logo-preview-wrap img { width:100%; max-width:320px; border-radius:10px; display:block; border:1px solid #262a33; }
+  .logo-remove-btn { margin-top:8px; background:none; border:none; color:#9aa0aa; text-decoration:underline; cursor:pointer; font-size:12px; padding:0; }
+  .logo-url-details { margin-top:10px; }
+  .logo-url-details summary { cursor:pointer; color:#9aa0aa; font-size:12px; }
+  .logo-url-details input { margin-top:8px; }
 </style>
 </head>
 <body>
@@ -119,9 +138,30 @@
         <input name="percent" maxlength="60" placeholder="Например: 50-70%">
       </div>
       <div class="field">
-        <label>Логотип студии (ссылка на изображение)</label>
-        <input name="logo" type="url" placeholder="https://...">
-        <div class="hint">Рекомендуемый размер 800×500 — показывается над описанием в карточке.</div>
+        <label>Фото / логотип студии</label>
+        <div class="photo-pick-row">
+          <input type="file" id="logoFileInput" accept="image/*" style="display:none">
+          <button type="button" class="photo-btn" id="logoPickBtn">📷 Загрузить фото</button>
+          <span id="logoFileName" style="color:#666;font-size:12px;"></span>
+        </div>
+        <div class="crop-box" id="cropBox" style="display:none">
+          <div class="crop-viewport" id="cropViewport"><img id="cropImgEl" alt=""></div>
+          <input type="range" class="crop-zoom" id="cropZoom" min="1" max="3" step="0.01" value="1">
+          <div class="crop-actions">
+            <button type="button" class="crop-apply" id="cropApplyBtn">✓ Готово</button>
+            <button type="button" class="crop-cancel" id="cropCancelBtn">Отмена</button>
+          </div>
+        </div>
+        <div class="logo-preview-wrap" id="logoPreviewWrap" style="display:none">
+          <img id="logoPreviewImg" alt="">
+          <button type="button" class="logo-remove-btn" id="logoRemoveBtn">Удалить, выбрать другое фото</button>
+        </div>
+        <details class="logo-url-details">
+          <summary>или вставить ссылку на изображение</summary>
+          <input name="logo_url" type="url" placeholder="https://...">
+        </details>
+        <input type="hidden" name="logo" id="logoDataInput">
+        <div class="hint">Перетащите фото в рамке и увеличьте ползунком — сохраним ровно 800×500, как показывается в карточке.</div>
       </div>
       <div class="field">
         <label><b>*</b> Описание</label>
@@ -246,12 +286,113 @@ function onTgAuth(user) {
   document.getElementById('formBox').style.display = 'block';
 }
 
+// ---- Фото/лого: кроп загруженного файла под 800×500 ----
+const CROP_W = 800, CROP_H = 500;
+const cropViewport = document.getElementById('cropViewport');
+const cropImgEl = document.getElementById('cropImgEl');
+const cropZoom = document.getElementById('cropZoom');
+let cropNatW = 0, cropNatH = 0, cropBaseScale = 1, cropScale = 1, cropOffX = 0, cropOffY = 0;
+let cropViewW = 0, cropViewH = 0;
+
+function cropClamp() {
+  const dispW = cropNatW * cropScale, dispH = cropNatH * cropScale;
+  cropOffX = Math.min(0, Math.max(cropViewW - dispW, cropOffX));
+  cropOffY = Math.min(0, Math.max(cropViewH - dispH, cropOffY));
+}
+function cropApplyTransform() {
+  cropImgEl.style.width = (cropNatW * cropScale) + 'px';
+  cropImgEl.style.height = (cropNatH * cropScale) + 'px';
+  cropImgEl.style.transform = 'translate(' + cropOffX + 'px,' + cropOffY + 'px)';
+}
+function cropOpen(file) {
+  const url = URL.createObjectURL(file);
+  const img = new Image();
+  img.onload = function() {
+    cropNatW = img.naturalWidth; cropNatH = img.naturalHeight;
+    document.getElementById('cropBox').style.display = 'block';
+    document.getElementById('logoPreviewWrap').style.display = 'none';
+    const rect = cropViewport.getBoundingClientRect();
+    cropViewW = rect.width; cropViewH = rect.height;
+    cropBaseScale = Math.max(cropViewW / cropNatW, cropViewH / cropNatH);
+    cropScale = cropBaseScale;
+    cropOffX = (cropViewW - cropNatW * cropScale) / 2;
+    cropOffY = (cropViewH - cropNatH * cropScale) / 2;
+    cropZoom.value = 1;
+    cropImgEl.src = url;
+    cropApplyTransform();
+  };
+  img.src = url;
+}
+document.getElementById('logoPickBtn').addEventListener('click', () => document.getElementById('logoFileInput').click());
+document.getElementById('logoFileInput').addEventListener('change', function(e) {
+  const f = e.target.files && e.target.files[0];
+  if (!f) return;
+  document.getElementById('logoFileName').textContent = f.name;
+  cropOpen(f);
+});
+cropZoom.addEventListener('input', function() {
+  const cx = cropViewW / 2, cy = cropViewH / 2;
+  const imgCx = (cx - cropOffX) / cropScale, imgCy = (cy - cropOffY) / cropScale;
+  cropScale = cropBaseScale * parseFloat(cropZoom.value);
+  cropOffX = cx - imgCx * cropScale;
+  cropOffY = cy - imgCy * cropScale;
+  cropClamp();
+  cropApplyTransform();
+});
+let cropDragging = false, cropDragStartX = 0, cropDragStartY = 0, cropStartOffX = 0, cropStartOffY = 0;
+function cropDragStart(x, y) {
+  cropDragging = true; cropDragStartX = x; cropDragStartY = y;
+  cropStartOffX = cropOffX; cropStartOffY = cropOffY;
+  cropViewport.classList.add('dragging');
+}
+function cropDragMove(x, y) {
+  if (!cropDragging) return;
+  cropOffX = cropStartOffX + (x - cropDragStartX);
+  cropOffY = cropStartOffY + (y - cropDragStartY);
+  cropClamp();
+  cropApplyTransform();
+}
+function cropDragEnd() { cropDragging = false; cropViewport.classList.remove('dragging'); }
+cropViewport.addEventListener('mousedown', e => cropDragStart(e.clientX, e.clientY));
+window.addEventListener('mousemove', e => cropDragMove(e.clientX, e.clientY));
+window.addEventListener('mouseup', cropDragEnd);
+cropViewport.addEventListener('touchstart', e => { const t = e.touches[0]; cropDragStart(t.clientX, t.clientY); }, {passive: true});
+window.addEventListener('touchmove', e => { if (!cropDragging) return; const t = e.touches[0]; cropDragMove(t.clientX, t.clientY); }, {passive: true});
+window.addEventListener('touchend', cropDragEnd);
+
+document.getElementById('cropCancelBtn').addEventListener('click', function() {
+  document.getElementById('cropBox').style.display = 'none';
+  document.getElementById('logoFileInput').value = '';
+  document.getElementById('logoFileName').textContent = '';
+});
+document.getElementById('cropApplyBtn').addEventListener('click', function() {
+  const canvas = document.createElement('canvas');
+  canvas.width = CROP_W; canvas.height = CROP_H;
+  const ctx = canvas.getContext('2d');
+  const srcX = -cropOffX / cropScale, srcY = -cropOffY / cropScale;
+  const srcW = cropViewW / cropScale, srcH = cropViewH / cropScale;
+  ctx.drawImage(cropImgEl, srcX, srcY, srcW, srcH, 0, 0, CROP_W, CROP_H);
+  const dataUrl = canvas.toDataURL('image/jpeg', 0.75);
+  document.getElementById('logoDataInput').value = dataUrl;
+  document.getElementById('logoPreviewImg').src = dataUrl;
+  document.getElementById('logoPreviewWrap').style.display = 'block';
+  document.getElementById('cropBox').style.display = 'none';
+});
+document.getElementById('logoRemoveBtn').addEventListener('click', function() {
+  document.getElementById('logoDataInput').value = '';
+  document.getElementById('logoPreviewWrap').style.display = 'none';
+  document.getElementById('logoFileInput').value = '';
+  document.getElementById('logoFileName').textContent = '';
+});
+
 function submitStudio(e) {
   e.preventDefault();
   if (!TG_AUTH) { alert('Сначала войдите через Telegram.'); return false; }
   const form = e.target;
   const fd = new FormData(form);
   const data = Object.fromEntries(fd.entries());
+  data.logo = data.logo || data.logo_url || '';
+  delete data.logo_url;
   data.desired_tier = selectedTier;
   data.notify_waitlist = document.getElementById('waitlistInput').checked;
   data.promo_type = selectedTier === 'home' ? selectedPromoType : 'studio';
