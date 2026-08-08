@@ -452,17 +452,11 @@ function loadCatalog(){
     (d.reviews||[]).filter(function(r){return r.approved!==false;}).forEach(function(r){
       (REVIEWS[r.studio_id]=REVIEWS[r.studio_id]||[]).push(r);
     });
-    /* admin-панель добавляет студии отдельным слоем поверх самоподачи — подмешиваем.
-       Два независимых источника из админки: бесплатный каталог (formats/verified,
-       ручное добавление) и платное размещение (тарифы/буст, через Telegram-бота) —
-       платные помечаем premium/verified, чтобы всплывали наверх тем же сортом,
-       что и обычный "премиум" бейдж. */
-    Promise.all([
-      fetch(ADMIN_API+'/api/catalog').then(function(r){return r.json();}).catch(function(){return {studios:[]};}),
-      fetch(ADMIN_API+'/api/listings').then(function(r){return r.json();}).catch(function(){return {slots:[]};})
-    ]).then(function(results){
-      var freeAdmin = results[0].studios || [];
-      var paid = (results[1].slots || []).filter(function(s){return s.listing;}).map(function(s){
+    /* Платные места (тарифы/буст, через Telegram-бота) — единственный источник
+       студий из админки, подмешиваем к базовому списку. */
+    fetch(ADMIN_API+'/api/listings').then(function(r){return r.json();}).catch(function(){return {slots:[]};})
+    .then(function(result){
+      var paid = (result.slots || []).filter(function(s){return s.listing;}).map(function(s){
         var l = s.listing;
         return {
           id: 'paid-' + s.slot, name: l.name, city: l.city, formats: l.formats || [],
@@ -473,7 +467,7 @@ function loadCatalog(){
           features: l.features || [], tier: l.tier || 'regular', verified: true
         };
       });
-      STUDIOS = base.concat(freeAdmin, paid);
+      STUDIOS = base.concat(paid);
       buildCityChips();
       renderStudios();
       renderCityLinks();

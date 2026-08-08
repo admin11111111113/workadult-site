@@ -321,12 +321,9 @@ function loadCatalog(){
     var base = (d.studios||[]).filter(function(s){return s.approved!==false;});
     REVIEWS = {};
     (d.reviews||[]).filter(function(r){return r.approved!==false;}).forEach(function(r){(REVIEWS[r.studio_id]=REVIEWS[r.studio_id]||[]).push(r);});
-    Promise.all([
-      fetch(ADMIN_API+'/api/catalog').then(function(r){return r.json();}).catch(function(){return {studios:[]};}),
-      fetch(ADMIN_API+'/api/listings').then(function(r){return r.json();}).catch(function(){return {slots:[]};})
-    ]).then(function(results){
-      var freeAdmin = results[0].studios || [];
-      var paid = (results[1].slots || []).filter(function(s){return s.listing;}).map(function(s){
+    fetch(ADMIN_API+'/api/listings').then(function(r){return r.json();}).catch(function(){return {slots:[]};})
+    .then(function(result){
+      var paid = (result.slots || []).filter(function(s){return s.listing;}).map(function(s){
         var l = s.listing;
         return {
           id: 'paid-' + s.slot, name: l.name, city: l.city, formats: l.formats || [],
@@ -337,7 +334,7 @@ function loadCatalog(){
           features: l.features || [], tier: l.tier || 'regular', verified: true
         };
       });
-      STUDIOS = base.concat(freeAdmin, paid);
+      STUDIOS = base.concat(paid);
       renderStudios();
       renderOtherCities();
     }).catch(function(){ STUDIOS = base; renderStudios(); renderOtherCities(); });
