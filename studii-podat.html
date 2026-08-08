@@ -1,0 +1,177 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<title>Разместить студию — Workadult.pro</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex">
+<style>
+  * { box-sizing: border-box; }
+  body { font-family: system-ui, sans-serif; background: #0a0a0f; color: #e6e6e6; margin: 0; padding: 0; }
+  header { background: #12121a; padding: 16px 24px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #1e1e2e; }
+  header a { color: #e91e8c; font-weight: 700; font-size: 18px; text-decoration: none; }
+  header nav a { color: #9aa0aa; font-size: 13px; margin-left: 20px; text-decoration: none; }
+  header nav a:hover { color: #fff; }
+  .container { max-width: 640px; margin: 0 auto; padding: 24px; }
+  .hero { text-align: center; padding: 36px 0 12px; }
+  .hero h1 { font-size: 26px; margin: 0 0 8px; }
+  .hero p { color: #9aa0aa; font-size: 14px; line-height: 1.6; }
+  .tiers-note { display: flex; gap: 8px; justify-content: center; flex-wrap: wrap; margin: 18px 0 28px; }
+  .tiers-note span { font-size: 11px; padding: 5px 12px; border-radius: 999px; background: #12121a; border: 1px solid #1e1e2e; color: #9aa0aa; }
+  .box { background: #12121a; border: 1px solid #1e1e2e; border-radius: 14px; padding: 24px; }
+  .box h2 { font-size: 15px; margin: 0 0 16px; color: #fff; }
+  .field { margin-bottom: 14px; }
+  .field label { display: block; font-size: 12px; color: #9aa0aa; margin-bottom: 6px; }
+  .field label b { color: #e91e8c; }
+  .field input, .field textarea { width: 100%; padding: 11px 13px; border-radius: 8px; border: 1px solid #262a33; background: #0a0a0f; color: #fff; font-size: 14px; }
+  .field textarea { min-height: 80px; resize: vertical; }
+  .field .hint { font-size: 11px; color: #666; margin-top: 4px; }
+  .row2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  .submit-btn { width: 100%; padding: 13px; border-radius: 8px; border: none; background: #e91e8c; color: #fff; font-weight: 700; font-size: 14px; cursor: pointer; margin-top: 8px; }
+  .submit-btn:disabled { opacity: .5; cursor: default; }
+  #status { font-size: 13px; margin-top: 12px; text-align: center; }
+  #tgLoginBox { text-align: center; padding: 20px 0; }
+  #tgBadge { background: rgba(43,213,118,.13); color: #6fdc8c; border: 1px solid rgba(43,213,118,.3); border-radius: 8px; padding: 10px 14px; font-size: 13px; margin-bottom: 16px; display: none; }
+  #formBox { display: none; }
+</style>
+</head>
+<body>
+<header>
+  <a href="https://workadult.pro">WORKADULT.PRO</a>
+  <nav>
+    <a href="https://workadult-server.onrender.com/studios.html">Каталог мест</a>
+  </nav>
+</header>
+
+<div class="container">
+  <div class="hero">
+    <h1>Разместить студию</h1>
+    <p>Платное размещение с приоритетной модерацией: заявку смотрит админ лично,<br>после одобрения — быстрая оплата и публикация.</p>
+  </div>
+
+  <div class="tiers-note">
+    <span>Подача — разово, навсегда</span>
+    <span>🥉 Бронза / 🥈 Серебро / 🥇 Золото — буст помесячно</span>
+    <span>🏠 На главной — топ-показ</span>
+  </div>
+
+  <div class="box">
+    <h2>Вход через Telegram — защита от спама и подтверждение, что заявка ваша</h2>
+    <div id="tgLoginBox">
+      <script async src="https://telegram.org/js/telegram-widget.js?22"
+        data-telegram-login="Workadult_feedback_bot"
+        data-size="large"
+        data-radius="8"
+        data-onauth="onTgAuth(user)"
+        data-request-access="write"></script>
+    </div>
+
+    <div id="tgBadge"></div>
+
+    <form id="formBox" onsubmit="return submitStudio(event)">
+      <div class="row2">
+        <div class="field">
+          <label><b>*</b> Название студии</label>
+          <input name="studio" maxlength="120" required>
+        </div>
+        <div class="field">
+          <label><b>*</b> Город</label>
+          <input name="city" maxlength="80" required>
+        </div>
+      </div>
+      <div class="field">
+        <label>Процент для моделей</label>
+        <input name="percent" maxlength="60" placeholder="Например: 50-70%">
+      </div>
+      <div class="field">
+        <label>Логотип студии (ссылка на изображение)</label>
+        <input name="logo" type="url" placeholder="https://...">
+        <div class="hint">Рекомендуемый размер 800×500 — показывается над описанием в карточке.</div>
+      </div>
+      <div class="field">
+        <label><b>*</b> Описание</label>
+        <textarea name="terms" maxlength="600" required placeholder="Условия, оборудование, поддержка, формат работы"></textarea>
+      </div>
+      <div class="row2">
+        <div class="field">
+          <label><b>*</b> Контакт (Telegram, e-mail)</label>
+          <input name="contact" maxlength="200" required placeholder="@studio">
+        </div>
+        <div class="field">
+          <label>Телефон</label>
+          <input name="phone" maxlength="40" placeholder="+7...">
+        </div>
+      </div>
+      <div class="field">
+        <label>Сайт студии</label>
+        <input name="url" type="url" placeholder="https://...">
+      </div>
+      <div class="row2">
+        <div class="field">
+          <label>Telegram (соцсеть)</label>
+          <input name="social_telegram" placeholder="https://t.me/...">
+        </div>
+        <div class="field">
+          <label>Instagram</label>
+          <input name="social_instagram" placeholder="https://instagram.com/...">
+        </div>
+      </div>
+      <div class="field">
+        <label>VK</label>
+        <input name="social_vk" placeholder="https://vk.com/...">
+      </div>
+      <button class="submit-btn" type="submit" id="submitBtn">Отправить на модерацию</button>
+      <div id="status"></div>
+    </form>
+  </div>
+</div>
+
+<script>
+const API = 'https://workadult-server.onrender.com';
+let TG_AUTH = null;
+
+function onTgAuth(user) {
+  TG_AUTH = user;
+  document.getElementById('tgLoginBox').style.display = 'none';
+  const badge = document.getElementById('tgBadge');
+  const nm = (user.first_name || '') + (user.last_name ? ' ' + user.last_name : '');
+  badge.textContent = '✓ Вход выполнен: ' + nm + (user.username ? ' (@' + user.username + ')' : '');
+  badge.style.display = 'block';
+  document.getElementById('formBox').style.display = 'block';
+}
+
+function submitStudio(e) {
+  e.preventDefault();
+  if (!TG_AUTH) { alert('Сначала войдите через Telegram.'); return false; }
+  const form = e.target;
+  const fd = new FormData(form);
+  const data = Object.fromEntries(fd.entries());
+  const btn = document.getElementById('submitBtn');
+  const status = document.getElementById('status');
+  btn.disabled = true; btn.textContent = 'Отправляю...';
+  status.textContent = '';
+
+  fetch(API + '/api/submit-studio', {
+    method: 'POST', headers: {'Content-Type': 'application/json'},
+    body: JSON.stringify({auth: TG_AUTH, form: data})
+  }).then(r => r.json()).then(d => {
+    btn.disabled = false; btn.textContent = 'Отправить на модерацию';
+    if (d.ok) {
+      status.style.color = '#6fdc8c';
+      status.textContent = '✓ Заявка отправлена! Мы проверим её и напишем в Telegram — там же придут тарифы на оплату.';
+      form.reset();
+      form.style.display = 'none';
+    } else {
+      status.style.color = '#ff6b6b';
+      status.textContent = 'Заполните все обязательные поля и попробуйте снова.';
+    }
+  }).catch(() => {
+    btn.disabled = false; btn.textContent = 'Отправить на модерацию';
+    status.style.color = '#ff6b6b';
+    status.textContent = 'Сервис недоступен, попробуйте позже.';
+  });
+  return false;
+}
+</script>
+</body>
+</html>
