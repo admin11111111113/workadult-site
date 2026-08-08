@@ -101,6 +101,19 @@
         </div>
         <div class="hint">Если платный уровень занят — заявка пойдёт по обычному тарифу, а место можно занять сразу как освободится.</div>
       </div>
+      <div class="field" id="promoTypeField" style="display:none">
+        <label>Что рекламируем на главной?</label>
+        <div class="tier-picker">
+          <label class="tier-opt active" id="promoOptStudio">
+            <input type="radio" name="promoTypeRadio" value="studio" checked>
+            <span class="t-name">🏢 Студию — карточка в каталоге</span>
+          </label>
+          <label class="tier-opt" id="promoOptVacancy">
+            <input type="radio" name="promoTypeRadio" value="vacancy">
+            <span class="t-name">💼 Вакансию — объявление о работе</span>
+          </label>
+        </div>
+      </div>
       <div class="field">
         <label>Процент для моделей</label>
         <input name="percent" maxlength="60" placeholder="Например: 50-70%">
@@ -160,6 +173,7 @@ const TIER_META = [
   {key: 'home',    label: '🏠 На главной',       suffix: 'в месяц, вне города'},
 ];
 let selectedTier = 'regular';
+let selectedPromoType = 'studio';
 let tierAvail = null;
 
 function renderTierPicker() {
@@ -185,7 +199,26 @@ function renderTierPicker() {
   const selInfo = tierAvail && tierAvail.tiers[selectedTier];
   const selFull = selectedTier !== 'regular' && selInfo && !selInfo.available;
   wl.classList.toggle('show', !!selFull);
+
+  document.getElementById('promoTypeField').style.display = (selectedTier === 'home') ? 'block' : 'none';
 }
+
+document.querySelectorAll('input[name=promoTypeRadio]').forEach(function(r){
+  r.addEventListener('change', function(){
+    selectedPromoType = this.value;
+    document.getElementById('promoOptStudio').classList.toggle('active', selectedPromoType === 'studio');
+    document.getElementById('promoOptVacancy').classList.toggle('active', selectedPromoType === 'vacancy');
+    var nameLbl = document.querySelector('input[name=studio]').closest('.field').querySelector('label');
+    var nameInput = document.querySelector('input[name=studio]');
+    if (selectedPromoType === 'vacancy') {
+      nameLbl.innerHTML = '<b>*</b> Название вакансии';
+      nameInput.placeholder = 'Например: Ищем вебкам-модель';
+    } else {
+      nameLbl.innerHTML = '<b>*</b> Название студии';
+      nameInput.placeholder = '';
+    }
+  });
+});
 
 let tierFetchTimer = null;
 async function refreshTierAvailability() {
@@ -221,6 +254,7 @@ function submitStudio(e) {
   const data = Object.fromEntries(fd.entries());
   data.desired_tier = selectedTier;
   data.notify_waitlist = document.getElementById('waitlistInput').checked;
+  data.promo_type = selectedTier === 'home' ? selectedPromoType : 'studio';
   const btn = document.getElementById('submitBtn');
   const status = document.getElementById('status');
   btn.disabled = true; btn.textContent = 'Отправляю...';

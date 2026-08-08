@@ -174,6 +174,8 @@
 .vboard-card.tier-gold:hover{box-shadow:0 0 0 1px rgba(255,210,74,.32),0 16px 42px rgba(0,0,0,.5),0 0 48px rgba(255,210,74,.36);}
 .vboard-card.tier-silver{background:linear-gradient(180deg,rgba(200,200,210,.12),var(--glass));border:1px solid rgba(200,200,210,.5);box-shadow:0 0 0 1px rgba(200,200,210,.14),0 10px 26px rgba(0,0,0,.35);}
 .vboard-card.tier-bronze{background:linear-gradient(180deg,rgba(205,127,50,.12),var(--glass));border:1px solid rgba(205,127,50,.5);box-shadow:0 0 0 1px rgba(205,127,50,.16),0 10px 26px rgba(0,0,0,.35);}
+.vboard-card.tier-home{background:linear-gradient(180deg,rgba(168,85,247,.14),var(--glass));border:1px solid rgba(168,85,247,.5);box-shadow:0 0 0 1px rgba(168,85,247,.14),0 10px 30px rgba(0,0,0,.4),0 0 30px rgba(168,85,247,.18);}
+.vboard-card.tier-home .org{color:#c084fc;}
 .vboard-card .org{font-size:10px;font-weight:800;color:var(--gold);text-transform:uppercase;letter-spacing:.5px;margin:4px 0 5px;}
 .vboard-card .title{font-size:15px;font-weight:700;color:var(--text);margin-bottom:4px;line-height:1.3;}
 .vboard-card .sal{font-size:13px;color:var(--c3);font-weight:600;margin-bottom:8px;}
@@ -390,6 +392,12 @@
       <div class="btn-group" style="justify-content:center;margin-top:20px;">
         <a href="/vakansii.html" class="btn btn-gold btn-lg">Разместить вакансию →</a>
       </div>
+    </div>
+
+    <!-- Оплаченные места "на главной" — студии или вакансии, что рекламодатель выбрал при подаче -->
+    <div class="reveal" id="featured-block" style="margin-top:28px;display:none;">
+      <div class="board-head"><span class="eyebrow" style="margin:0;">⭐ Рекомендуем</span></div>
+      <div id="featured-board" class="board-row"></div>
     </div>
 
     <!-- Свежие вакансии: одна горизонтальная строка компактных карточек -->
@@ -642,6 +650,36 @@
   }).catch(function(){
     renderBoard(DEMO);
   });
+
+  /* Оплаченные места "на главной" ($100/мес) — студия или вакансия,
+     что рекламодатель выбрал при подаче. Не путать со свободной лентой
+     вакансий выше — это отдельный платный тариф. */
+  function featuredCard(it){
+    var isVacancy = it.promo_type === 'vacancy';
+    var contact='';
+    if(it.contacts){
+      var c=String(it.contacts);
+      var url=c.charAt(0)==='@'?('https://t.me/'+c.slice(1)):(/^https?:\/\//.test(c)?c:'');
+      contact=url?('<a class="ct" href="'+esc(url)+'" target="_blank" rel="noopener nofollow">Написать →</a>'):('<span class="ct">'+esc(c)+'</span>');
+    }
+    var orgText = isVacancy ? (it.city||'Вакансия') : (it.city||'Студия');
+    return '<div class="vboard-card tier-home">'+
+      '<div class="org">'+esc(orgText)+'</div>'+
+      '<div class="title">'+esc(it.name||'')+'</div>'+
+      (it.percent?'<div class="sal">'+esc(it.percent)+'</div>':'')+
+      contact+'</div>';
+  }
+  function renderFeatured(items){
+    var block=document.getElementById('featured-block');
+    var el=document.getElementById('featured-board');
+    if(!block||!el) return;
+    if(!items || !items.length){ block.style.display='none'; return; }
+    el.innerHTML = items.slice(0,5).map(featuredCard).join('');
+    block.style.display='block';
+  }
+  fetch(ADMIN_API+'/api/featured').then(function(r){return r.json();}).then(function(d){
+    renderFeatured(d.featured||[]);
+  }).catch(function(){});
 })();
 </script>
 <script>
