@@ -80,13 +80,12 @@
 .studio-modal-overlay{display:none;position:fixed;inset:0;background:rgba(6,6,10,.75);backdrop-filter:blur(4px);z-index:999;padding:26px 16px;overflow-y:auto;}
 .studio-modal-overlay.open{display:flex;align-items:flex-start;justify-content:center;}
 .studio-modal{background:var(--bg,#0e0e14);border:1px solid var(--glass-brd);border-radius:20px;max-width:640px;width:100%;margin:auto;position:relative;overflow:hidden;}
+.studio-modal.tier-gold{border:2px solid #f5a623;box-shadow:0 0 0 1px rgba(245,166,35,.3),0 20px 60px rgba(245,166,35,.15);}
+.studio-modal.tier-silver{border:2px solid #c9ccd6;box-shadow:0 0 0 1px rgba(200,200,210,.25),0 20px 50px rgba(200,200,210,.12);}
+.studio-modal.tier-bronze{border:2px solid #cd7f32;box-shadow:0 0 0 1px rgba(205,127,50,.3),0 20px 50px rgba(205,127,50,.14);}
 .studio-modal .m-close{position:absolute;top:12px;right:14px;width:34px;height:34px;border-radius:999px;background:rgba(0,0,0,.5);color:#fff;border:1px solid rgba(255,255,255,.2);font-size:18px;line-height:32px;text-align:center;cursor:pointer;z-index:3;}
 .studio-modal .m-photo{width:100%;height:220px;object-fit:cover;background:linear-gradient(135deg,rgba(255,255,255,.06),rgba(255,255,255,.02));}
 .studio-modal .m-body{padding:26px 28px 30px;}
-.studio-modal .m-tier{display:inline-block;font-size:11px;font-weight:800;padding:4px 11px;border-radius:999px;margin-bottom:10px;}
-.m-tier-gold{background:#f5a623;color:#2a1e00;}
-.m-tier-silver{background:#c9ccd6;color:#20222a;}
-.m-tier-bronze{background:#cd7f32;color:#2a1a08;}
 .studio-modal .m-name{font-size:24px;font-weight:900;color:var(--text);margin-bottom:6px;}
 .studio-modal .m-city{color:var(--accent-3);font-weight:700;font-size:14px;margin-bottom:14px;}
 .studio-modal .m-fmt{display:flex;flex-wrap:wrap;gap:7px;margin-bottom:14px;}
@@ -220,8 +219,6 @@ var STUDIOS = [], REVIEWS = {};
 var FMT = {studio:'В студии',home:'Из дома',pair:'Парой',guys:'Для парней',nonnude:'Non Nude'};
 var FEAT = {weekly_pay:'Еженедельные выплаты',flexible_schedule:'Гибкий график',housing:'Предоставляем проживание',training:'Обучение новичков',city_center:'В центре города',near_metro:'Рядом с метро'};
 var TIER_RANK = {gold:0,silver:1,bronze:2,regular:3};
-var TIER_LABEL = {gold:'🥇 Золото',silver:'🥈 Серебро',bronze:'🥉 Бронза'};
-var TIER_ICON = {gold:'🥇',silver:'🥈',bronze:'🥉'};
 var DEMO = [
   {id:'d1',name:'Neon Studio',city:CITY,formats:['studio','home'],percent:'50–70%, обучение, наставник',desc:'Кабинеты в центре, новое оборудование, поддержка 24/7.',contact:'@neon_studio',verified:true,demo:true}
 ];
@@ -273,7 +270,8 @@ function openStudioModal(id){
   var photo = s.cover_photo || (s.photos&&s.photos[0]) || s.photo || '';
   var fmt = (s.formats||[]).map(function(f){return '<span class="fmt-tag">'+(FMT[f]||f)+'</span>';}).join('');
   var feat = (s.features||[]).map(function(f){return '<div class="m-feature">'+(FEAT[f]||f)+'</div>';}).join('');
-  var tierChip = TIER_LABEL[s.tier] ? '<span class="m-tier m-tier-'+s.tier+'">'+TIER_LABEL[s.tier]+'</span><br>' : (s.verified? '<span class="badge-ver">✓ Проверено</span><br>':'');
+  var isPaidTier = (s.tier==='gold'||s.tier==='silver'||s.tier==='bronze');
+  var tierChip = isPaidTier ? '' : (s.verified? '<span class="badge-ver">✓ Проверено</span><br>':'');
   var contacts = '';
   if(s.contact) contacts += '<span>📞 '+esc(s.contact)+'</span>';
   if(s.phone) contacts += '<a href="tel:'+esc(s.phone)+'">📱 '+esc(s.phone)+'</a>';
@@ -284,7 +282,9 @@ function openStudioModal(id){
   if(!contacts) contacts = '<span style="color:var(--faint)">Контакты появятся после модерации.</span>';
   var avg = avgRating(s.id), cnt = studioReviews(s.id).length;
   var ratingHtml = cnt? '<span class="stars">'+starStr(avg)+'</span> '+avg.toFixed(1)+' · '+cnt+' отз.' : '<span class="stars">☆☆☆☆☆</span> нет отзывов';
-  document.getElementById('studioModal').innerHTML =
+  var modalEl = document.getElementById('studioModal');
+  modalEl.className = 'studio-modal' + (isPaidTier ? ' tier-'+s.tier : '');
+  modalEl.innerHTML =
       '<div class="m-close" onclick="closeStudioModal()">✕</div>'
     + (photo? '<img class="m-photo" src="'+esc(photo)+'" alt="">' : '')
     + '<div class="m-body">'
