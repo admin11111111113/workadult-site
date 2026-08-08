@@ -32,10 +32,11 @@ async function submitOrder(event) {
   event.preventDefault();
   const form = event.target;
   const btn = form.querySelector("button[type=submit]");
+  const originalBtnText = btn.textContent;
   btn.disabled = true; btn.textContent = "Отправляем...";
 
   const data = Object.fromEntries(new FormData(form));
-  const product = document.getElementById("orderProductLabel").textContent || "Заказ";
+  const product = data.product || "Заказ";
 
   const text =
     `📦 <b>НОВЫЙ ЗАКАЗ</b>\n` +
@@ -52,21 +53,26 @@ async function submitOrder(event) {
 
   // Передаём txid и amount для проверки блокчейна
   const payload = {type: "order", text, txid: data.txid || "", amount: data.amount || "0"};
-  const resp = await fetch(`${BACKEND}/send`, {
-    method: "POST",
-    headers: {"Content-Type": "application/json"},
-    body: JSON.stringify(payload)
-  });
-  const ok = resp.ok;
-  btn.disabled = false; btn.textContent = "Отправить заказ";
+  let ok = false;
+  try {
+    const resp = await fetch(`${BACKEND}/send`, {
+      method: "POST",
+      headers: {"Content-Type": "application/json"},
+      body: JSON.stringify(payload)
+    });
+    ok = resp.ok;
+  } catch (e) { ok = false; }
+  btn.disabled = false; btn.textContent = originalBtnText;
 
   if (ok) {
     form.reset();
-    document.getElementById("orderProductLabel").textContent = "";
-    document.getElementById("order-form").querySelector(".form-success").style.display = "block";
-    setTimeout(() => {
-      document.getElementById("order-form").querySelector(".form-success").style.display = "none";
-    }, 6000);
+    const selectedPlan = document.getElementById("selectedPlan");
+    if (selectedPlan) selectedPlan.style.display = "none";
+    const successEl = form.nextElementSibling;
+    if (successEl) {
+      successEl.style.display = "block";
+      setTimeout(() => { successEl.style.display = "none"; }, 6000);
+    }
   } else {
     alert("Ошибка. Напишите напрямую: @workadultpro");
   }
