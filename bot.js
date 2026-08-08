@@ -113,22 +113,7 @@ async function submitQuestion(event) {
   else alert("Ошибка. Напишите: @workadultpro");
 }
 
-// Кнопки тарифов
 document.addEventListener("DOMContentLoaded", () => {
-  document.querySelectorAll(".order-btn").forEach(btn => {
-    btn.addEventListener("click", e => {
-      e.preventDefault();
-      const product = btn.dataset.product;
-      document.getElementById("orderProductLabel").textContent = product;
-      // Обновляем сумму в поле
-      const priceMatch = product.match(/\$(\d+)/);
-      if (priceMatch) {
-        document.querySelector("#orderForm [name=amount]").value = priceMatch[1];
-      }
-      document.getElementById("order-form").scrollIntoView({behavior: "smooth"});
-    });
-  });
-
   // Бургер меню
   const burger = document.querySelector(".burger");
   const navLinks = document.querySelector(".nav-links");
