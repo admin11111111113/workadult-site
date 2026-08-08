@@ -53,37 +53,56 @@
 .city-chip:hover{border-color:var(--accent);color:var(--text);}
 .city-chip.active{background:linear-gradient(90deg,var(--accent),var(--accent-2));color:#fff;border-color:transparent;}
 
-/* studio grid */
+/* studio grid — квадратные карточки, 5 в ряд, приоритет золото→серебро→бронза→обычные */
 .studio-wrap{max-width:var(--maxw);margin:36px auto 0;padding:0 20px;}
 .studio-count{color:var(--faint);font-size:13.5px;text-align:center;margin-bottom:20px;}
-.studio-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(310px,1fr));gap:18px;}
-.studio-card{background:var(--glass-bg);border:1px solid var(--glass-brd);border-radius:var(--radius);padding:22px;backdrop-filter:var(--blur);transition:.2s var(--ease);position:relative;display:flex;flex-direction:column;}
-.studio-card:hover{transform:translateY(-3px);border-color:var(--glass-hi);box-shadow:var(--shadow);}
-.studio-card.premium{border-color:rgba(245,166,35,.5);box-shadow:0 0 0 1px rgba(245,166,35,.25),0 8px 40px rgba(245,166,35,.08);}
-.studio-top{display:flex;justify-content:space-between;align-items:flex-start;gap:10px;margin-bottom:6px;}
-.studio-name{font-size:19px;font-weight:800;color:var(--text);line-height:1.25;}
-.studio-city{color:var(--accent-3);font-size:13px;font-weight:700;margin-bottom:12px;}
-.badge-ver{flex-shrink:0;display:inline-flex;align-items:center;gap:4px;background:rgba(43,213,118,.13);color:var(--green);border:1px solid rgba(43,213,118,.3);border-radius:999px;padding:3px 9px;font-size:11px;font-weight:700;}
-.badge-prem{flex-shrink:0;background:rgba(245,166,35,.14);color:var(--gold);border:1px solid rgba(245,166,35,.35);border-radius:999px;padding:3px 9px;font-size:11px;font-weight:700;}
-.studio-fmt{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:12px;}
-.fmt-tag{background:rgba(255,255,255,.05);border:1px solid var(--glass-brd);color:var(--muted);border-radius:8px;padding:4px 10px;font-size:12px;font-weight:600;}
-.studio-pct{font-size:14px;color:var(--text);margin-bottom:10px;}
-.studio-pct b{color:var(--green);}
-.studio-desc{color:var(--muted);font-size:13.5px;line-height:1.6;margin-bottom:14px;flex-grow:1;}
-.studio-rating{display:flex;align-items:center;gap:8px;margin-bottom:14px;font-size:13px;color:var(--muted);}
-.stars{color:var(--gold);letter-spacing:1px;}
-.studio-foot{display:flex;gap:8px;flex-wrap:wrap;margin-top:auto;}
-.studio-foot .btn{flex:1;min-width:120px;text-align:center;font-size:13.5px;padding:11px 12px;}
-.contact-rev{display:none;margin-top:10px;background:rgba(106,75,255,.12);border:1px solid rgba(106,75,255,.3);border-radius:10px;padding:10px 14px;font-size:14px;color:var(--text);word-break:break-all;}
+.studio-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:16px;}
+@media(max-width:1180px){.studio-grid{grid-template-columns:repeat(4,1fr);}}
+@media(max-width:920px){.studio-grid{grid-template-columns:repeat(3,1fr);}}
+@media(max-width:640px){.studio-grid{grid-template-columns:repeat(2,1fr);}}
+@media(max-width:420px){.studio-grid{grid-template-columns:1fr;}}
 
-/* reviews */
-.reviews-box{display:none;margin-top:14px;border-top:1px solid var(--glass-brd);padding-top:14px;}
-.review{background:rgba(255,255,255,.03);border-radius:10px;padding:11px 13px;margin-bottom:9px;}
-.review-head{display:flex;justify-content:space-between;font-size:12.5px;margin-bottom:4px;}
-.review-author{color:var(--accent-3);font-weight:700;}
-.review-stars{color:var(--gold);font-size:12px;}
-.review-text{color:var(--muted);font-size:13px;line-height:1.55;}
-.review-empty{color:var(--faint);font-size:13px;font-style:italic;}
+.studio-card{background:var(--glass-bg);border:1px solid var(--glass-brd);border-radius:var(--radius);backdrop-filter:var(--blur);transition:.2s var(--ease);position:relative;display:flex;flex-direction:column;aspect-ratio:1/1.18;overflow:hidden;cursor:pointer;text-align:left;padding:0;}
+.studio-card:hover{transform:translateY(-3px);border-color:var(--glass-hi);box-shadow:var(--shadow);}
+.studio-card.tier-gold{border-color:rgba(245,166,35,.55);box-shadow:0 0 0 1px rgba(245,166,35,.22),0 8px 30px rgba(245,166,35,.12);}
+.studio-card.tier-silver{border-color:rgba(200,200,210,.55);box-shadow:0 0 0 1px rgba(200,200,210,.18);}
+.studio-card.tier-bronze{border-color:rgba(205,127,50,.55);box-shadow:0 0 0 1px rgba(205,127,50,.18);}
+.studio-card .card-photo{width:100%;height:44%;object-fit:cover;background:linear-gradient(135deg,rgba(255,255,255,.06),rgba(255,255,255,.02));flex-shrink:0;}
+.studio-card .card-photo.ph-empty{display:flex;align-items:center;justify-content:center;font-size:28px;opacity:.25;}
+.studio-card .card-body{padding:14px 14px 12px;display:flex;flex-direction:column;flex-grow:1;min-height:0;}
+.studio-card .tier-ribbon{position:absolute;top:10px;left:10px;font-size:10px;font-weight:800;padding:3px 9px;border-radius:999px;letter-spacing:.3px;z-index:2;}
+.tier-ribbon.gold{background:rgba(245,166,35,.85);color:#2a1e00;}
+.tier-ribbon.silver{background:rgba(200,200,210,.85);color:#20222a;}
+.tier-ribbon.bronze{background:rgba(205,127,50,.85);color:#2a1a08;}
+.studio-name{font-size:15px;font-weight:800;color:var(--text);line-height:1.22;margin-bottom:3px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;}
+.studio-city{color:var(--accent-3);font-size:12px;font-weight:700;margin-bottom:6px;}
+.badge-ver{flex-shrink:0;display:inline-flex;align-items:center;gap:4px;background:rgba(43,213,118,.13);color:var(--green);border:1px solid rgba(43,213,118,.3);border-radius:999px;padding:2px 7px;font-size:10px;font-weight:700;}
+.badge-prem{flex-shrink:0;background:rgba(245,166,35,.14);color:var(--gold);border:1px solid rgba(245,166,35,.35);border-radius:999px;padding:2px 7px;font-size:10px;font-weight:700;}
+.studio-fmt{display:flex;flex-wrap:wrap;gap:4px;margin-bottom:6px;}
+.fmt-tag{background:rgba(255,255,255,.05);border:1px solid var(--glass-brd);color:var(--muted);border-radius:6px;padding:2px 7px;font-size:10.5px;font-weight:600;}
+.studio-pct{font-size:12.5px;color:var(--text);margin-top:auto;}
+.studio-pct b{color:var(--green);}
+
+/* модалка с полной информацией о студии (открывается по клику на карточку) */
+.studio-modal-overlay{display:none;position:fixed;inset:0;background:rgba(6,6,10,.75);backdrop-filter:blur(4px);z-index:999;padding:26px 16px;overflow-y:auto;}
+.studio-modal-overlay.open{display:flex;align-items:flex-start;justify-content:center;}
+.studio-modal{background:var(--bg,#0e0e14);border:1px solid var(--glass-brd);border-radius:20px;max-width:640px;width:100%;margin:auto;position:relative;overflow:hidden;}
+.studio-modal .m-close{position:absolute;top:12px;right:14px;width:34px;height:34px;border-radius:999px;background:rgba(0,0,0,.5);color:#fff;border:1px solid rgba(255,255,255,.2);font-size:18px;line-height:32px;text-align:center;cursor:pointer;z-index:3;}
+.studio-modal .m-photo{width:100%;height:220px;object-fit:cover;background:linear-gradient(135deg,rgba(255,255,255,.06),rgba(255,255,255,.02));}
+.studio-modal .m-body{padding:26px 28px 30px;}
+.studio-modal .m-tier{display:inline-block;font-size:11px;font-weight:800;padding:4px 11px;border-radius:999px;margin-bottom:10px;}
+.studio-modal .m-name{font-size:24px;font-weight:900;color:var(--text);margin-bottom:6px;}
+.studio-modal .m-city{color:var(--accent-3);font-weight:700;font-size:14px;margin-bottom:14px;}
+.studio-modal .m-fmt{display:flex;flex-wrap:wrap;gap:7px;margin-bottom:14px;}
+.studio-modal .m-pct{font-size:15px;margin-bottom:14px;}
+.studio-modal .m-pct b{color:var(--green);}
+.studio-modal .m-desc{color:var(--muted);font-size:14.5px;line-height:1.7;margin-bottom:18px;white-space:pre-wrap;}
+.studio-modal .m-features{display:grid;grid-template-columns:1fr 1fr;gap:6px 14px;margin-bottom:18px;}
+.studio-modal .m-feature{font-size:13px;color:var(--muted);display:flex;align-items:center;gap:7px;}
+.studio-modal .m-feature::before{content:"✓";color:var(--green);font-weight:800;}
+.studio-modal .m-contacts{background:rgba(255,255,255,.04);border:1px solid var(--glass-brd);border-radius:14px;padding:16px 18px;display:flex;flex-direction:column;gap:8px;}
+.studio-modal .m-contacts a,.studio-modal .m-contacts span{color:var(--text);font-size:14px;text-decoration:none;word-break:break-all;}
+.studio-modal .m-contacts a:hover{color:var(--accent-3);}
 
 /* generic section */
 .cat-section{max-width:var(--maxw);margin:70px auto 0;padding:0 20px;}
@@ -169,6 +188,11 @@
   <div class="studio-grid" id="studioGrid"></div>
 </div>
 
+<!-- STUDIO DETAIL MODAL -->
+<div class="studio-modal-overlay" id="studioModalOverlay" onclick="if(event.target===this)closeStudioModal();">
+  <div class="studio-modal" id="studioModal"></div>
+</div>
+
 <!-- STUDII PO GORODAM -->
 <section class="cat-section" id="cities">
   <h2>Студии по городам</h2>
@@ -237,6 +261,12 @@ var activeCity = 'all';
 /* ---------- Telegram auth ---------- */
 /* ---------- Format labels ---------- */
 var FMT = {studio:'В студии',home:'Из дома',pair:'Парой',guys:'Для парней',nonnude:'Non Nude'};
+var FEAT = {weekly_pay:'Еженедельные выплаты',flexible_schedule:'Гибкий график',housing:'Предоставляем проживание',
+  training:'Обучение новичков',city_center:'В центре города',near_metro:'Рядом с метро'};
+
+/* ---------- Тарифные уровни: золото/серебро/бронза/обычное — сортировка карточек ---------- */
+var TIER_RANK = {gold:0,silver:1,bronze:2,regular:3};
+var TIER_LABEL = {gold:'🥇 Золото',silver:'🥈 Серебро',bronze:'🥉 Бронза'};
 
 /* ---------- Demo studios (shown only if catalog empty) ---------- */
 var DEMO = [
@@ -297,8 +327,12 @@ function renderStudios(){
     if(q && (s.city||'').toLowerCase().indexOf(q)===-1 && (s.name||'').toLowerCase().indexOf(q)===-1) return false;
     return true;
   });
-  // премиум вперёд
-  filtered.sort(function(a,b){ return (b.premium?1:0)-(a.premium?1:0); });
+  // золото → серебро → бронза → обычные (как на карточках мест в городе)
+  filtered.sort(function(a,b){
+    var ra = TIER_RANK[a.tier]!=null ? TIER_RANK[a.tier] : 3;
+    var rb = TIER_RANK[b.tier]!=null ? TIER_RANK[b.tier] : 3;
+    return ra - rb;
+  });
 
   document.getElementById('studioCount').textContent =
     filtered.length + (STUDIOS.length? '' : ' · показаны примеры — будьте первой настоящей студией в каталоге');
@@ -309,45 +343,81 @@ function renderStudios(){
   }
 
   grid.innerHTML = filtered.map(function(s){
-    var fmt = (s.formats||[]).map(function(f){return '<span class="fmt-tag">'+(FMT[f]||f)+'</span>';}).join('');
-    var avg = avgRating(s.id), cnt = studioReviews(s.id).length;
-    var ratingHtml = cnt? '<span class="stars">'+starStr(avg)+'</span> <span>'+avg.toFixed(1)+' · '+cnt+' отз.</span>'
-                        : '<span class="stars">☆☆☆☆☆</span> <span>нет отзывов</span>';
-    var badge = s.premium? '<span class="badge-prem">★ Премиум</span>' : (s.verified? '<span class="badge-ver">✓ Проверено</span>':'');
-    return '<div class="studio-card'+(s.premium?' premium':'')+'">'
-      + '<div class="studio-top"><div><div class="studio-name">'+esc(s.name)+'</div><div class="studio-city">📍 '+esc(s.city)+'</div></div>'+badge+'</div>'
-      + (fmt?'<div class="studio-fmt">'+fmt+'</div>':'')
-      + '<div class="studio-pct">💰 <b>'+esc(s.percent||'')+'</b></div>'
-      + (s.desc?'<div class="studio-desc">'+esc(s.desc)+'</div>':'')
-      + '<div class="studio-rating">'+ratingHtml+'</div>'
-      + '<div class="studio-foot">'
-        + '<button class="btn btn-gold" onclick="showContact(this,\''+s.id+'\')">Показать контакты</button>'
-        + '<button class="btn btn-black" onclick="toggleReviews(this,\''+s.id+'\')">Отзывы ('+cnt+')</button>'
+    var tierClass = (s.tier==='gold'||s.tier==='silver'||s.tier==='bronze') ? ' tier-'+s.tier : '';
+    var ribbon = TIER_LABEL[s.tier] ? '<span class="tier-ribbon '+s.tier+'">'+TIER_LABEL[s.tier]+'</span>' : '';
+    var photo = s.cover_photo || (s.photos&&s.photos[0]) || s.photo || '';
+    var photoHtml = photo
+      ? '<img class="card-photo" src="'+esc(photo)+'" alt="" loading="lazy">'
+      : '<div class="card-photo ph-empty">🏢</div>';
+    var fmt = (s.formats||[]).slice(0,2).map(function(f){return '<span class="fmt-tag">'+(FMT[f]||f)+'</span>';}).join('');
+    var badge = !s.tier || s.tier==='regular'
+      ? (s.premium? '<span class="badge-prem">★</span>' : (s.verified? '<span class="badge-ver">✓</span>':''))
+      : '';
+    return '<div class="studio-card'+tierClass+'" onclick="openStudioModal(\''+s.id+'\')">'
+      + ribbon + photoHtml
+      + '<div class="card-body">'
+        + '<div class="studio-name">'+esc(s.name)+' '+badge+'</div>'
+        + '<div class="studio-city">📍 '+esc(s.city)+'</div>'
+        + (fmt?'<div class="studio-fmt">'+fmt+'</div>':'')
+        + (s.percent?'<div class="studio-pct">💰 <b>'+esc(s.percent)+'</b></div>':'')
       + '</div>'
-      + '<div class="contact-rev" data-c="'+s.id+'">📞 '+esc(s.contact||'—')+'</div>'
-      + '<div class="reviews-box" data-r="'+s.id+'"></div>'
     + '</div>';
   }).join('');
 }
 
+/* ---------- Модалка с полной информацией о студии ---------- */
+function openStudioModal(id){
+  var s = STUDIOS.filter(function(x){return String(x.id)===String(id);})[0];
+  if(!s) return;
+  var photo = s.cover_photo || (s.photos&&s.photos[0]) || s.photo || '';
+  var fmt = (s.formats||[]).map(function(f){return '<span class="fmt-tag">'+(FMT[f]||f)+'</span>';}).join('');
+  var feat = (s.features||[]).map(function(f){return '<div class="m-feature">'+(FEAT[f]||f)+'</div>';}).join('');
+  var tierChip = TIER_LABEL[s.tier]
+    ? '<span class="m-tier tier-ribbon '+s.tier+'" style="position:static;display:inline-block;">'+TIER_LABEL[s.tier]+'</span><br>'
+    : (s.premium? '<span class="badge-prem">★ Премиум</span><br>' : (s.verified? '<span class="badge-ver">✓ Проверено</span><br>':''));
+
+  var contacts = '';
+  if(s.contact) contacts += '<span>📞 '+esc(s.contact)+'</span>';
+  if(s.phone) contacts += '<a href="tel:'+esc(s.phone)+'">📱 '+esc(s.phone)+'</a>';
+  if(s.social_telegram) contacts += '<a href="'+esc(s.social_telegram)+'" target="_blank" rel="noopener">✈️ Telegram</a>';
+  if(s.social_instagram) contacts += '<a href="'+esc(s.social_instagram)+'" target="_blank" rel="noopener">📷 Instagram</a>';
+  if(s.social_vk) contacts += '<a href="'+esc(s.social_vk)+'" target="_blank" rel="noopener">VK</a>';
+  if(s.url) contacts += '<a href="'+esc(s.url)+'" target="_blank" rel="noopener">🌐 Сайт студии</a>';
+  if(!contacts) contacts = '<span style="color:var(--faint)">Контакты появятся после модерации.</span>';
+
+  var avg = avgRating(s.id), cnt = studioReviews(s.id).length;
+  var ratingHtml = cnt? '<span class="stars">'+starStr(avg)+'</span> '+avg.toFixed(1)+' · '+cnt+' отз.'
+                      : '<span class="stars">☆☆☆☆☆</span> нет отзывов';
+
+  document.getElementById('studioModal').innerHTML =
+      '<div class="m-close" onclick="closeStudioModal()">✕</div>'
+    + (photo? '<img class="m-photo" src="'+esc(photo)+'" alt="">' : '')
+    + '<div class="m-body">'
+      + tierChip
+      + '<div class="m-name">'+esc(s.name)+'</div>'
+      + '<div class="m-city">📍 '+esc(s.city)+'</div>'
+      + (fmt?'<div class="m-fmt">'+fmt+'</div>':'')
+      + (s.percent?'<div class="m-pct">💰 Процент для моделей: <b>'+esc(s.percent)+'</b></div>':'')
+      + (s.desc?'<div class="m-desc">'+esc(s.desc)+'</div>':'')
+      + (feat?'<div class="m-features">'+feat+'</div>':'')
+      + '<div style="margin-bottom:14px;font-size:13px;color:var(--muted)">'+ratingHtml+'</div>'
+      + '<div class="m-contacts">'+contacts+'</div>'
+      + '<button class="btn btn-black" style="width:100%;margin-top:14px;font-size:13px;" onclick="openReview(\''+s.id+'\')">＋ Оставить отзыв</button>'
+    + '</div>';
+  document.getElementById('studioModalOverlay').classList.add('open');
+  document.body.style.overflow = 'hidden';
+}
+
+function closeStudioModal(){
+  document.getElementById('studioModalOverlay').classList.remove('open');
+  document.body.style.overflow = '';
+}
+
+document.addEventListener('keydown', function(e){
+  if(e.key === 'Escape') closeStudioModal();
+});
+
 function esc(t){return String(t==null?'':t).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
-
-function showContact(btn,id){
-  var el = btn.closest('.studio-card').querySelector('[data-c="'+id+'"]');
-  el.style.display = el.style.display==='block'?'none':'block';
-}
-
-function toggleReviews(btn,id){
-  var box = btn.closest('.studio-card').querySelector('[data-r="'+id+'"]');
-  if(box.style.display==='block'){ box.style.display='none'; return; }
-  var rev = studioReviews(id);
-  var html = rev.length ? rev.map(function(r){
-    return '<div class="review"><div class="review-head"><span class="review-author">'+esc(r.author||'аноним')+'</span><span class="review-stars">'+starStr(r.rating)+'</span></div><div class="review-text">'+esc(r.text||'')+'</div></div>';
-  }).join('') : '<div class="review-empty">Пока нет отзывов. Работали тут? Оставьте первый — это поможет другим.</div>';
-  html += '<button class="btn btn-black" style="width:100%;margin-top:8px;font-size:13px;" onclick="openReview(\''+id+'\')">＋ Оставить отзыв</button>';
-  box.innerHTML = html;
-  box.style.display='block';
-}
 
 /* ---------- Leave a review ---------- */
 function openReview(studioId){
@@ -376,11 +446,13 @@ function loadCatalog(){
       var freeAdmin = results[0].studios || [];
       var paid = (results[1].slots || []).filter(function(s){return s.listing;}).map(function(s){
         var l = s.listing;
-        var boosted = l.tier && l.tier !== 'regular';
         return {
           id: 'paid-' + s.slot, name: l.name, city: l.city, formats: l.formats || [],
           percent: l.percent || '', desc: l.desc || '', contact: l.contacts || '',
-          premium: boosted, verified: true
+          phone: l.phone || '', url: l.url || '',
+          social_telegram: l.social_telegram || '', social_instagram: l.social_instagram || '',
+          social_vk: l.social_vk || '', photos: l.photos || [], cover_photo: l.cover_photo || l.photo || '',
+          features: l.features || [], tier: l.tier || 'regular', verified: true
         };
       });
       STUDIOS = base.concat(freeAdmin, paid);
