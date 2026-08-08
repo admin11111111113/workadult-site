@@ -33,6 +33,19 @@
   #tgLoginBox { text-align: center; padding: 20px 0; }
   #tgBadge { background: rgba(43,213,118,.13); color: #6fdc8c; border: 1px solid rgba(43,213,118,.3); border-radius: 8px; padding: 10px 14px; font-size: 13px; margin-bottom: 16px; display: none; }
   #formBox { display: none; }
+
+  .tier-picker { display: flex; flex-direction: column; gap: 8px; }
+  .tier-opt { display: flex; align-items: center; gap: 10px; padding: 11px 14px; border-radius: 8px; border: 1px solid #262a33; cursor: pointer; transition: border-color .15s, background .15s; }
+  .tier-opt:hover { border-color: #3a3f4a; }
+  .tier-opt.active { border-color: #e91e8c; background: rgba(233,30,140,.06); }
+  .tier-opt input[type=radio] { margin: 0; accent-color: #e91e8c; }
+  .tier-opt .t-name { font-weight: 700; font-size: 13px; flex: 1; }
+  .tier-opt .t-price { font-size: 12px; color: #9aa0aa; white-space: nowrap; }
+  .tier-opt.full { opacity: .55; }
+  .tier-opt.full .t-name::after { content: ' — занято'; color: #dc6f6f; font-weight: 400; }
+  .waitlist-check { display: none; align-items: center; gap: 8px; font-size: 12px; color: #9aa0aa; margin-top: 10px; padding-left: 4px; }
+  .waitlist-check.show { display: flex; }
+  .waitlist-check input { accent-color: #e91e8c; }
 </style>
 </head>
 <body>
@@ -46,7 +59,7 @@
 <div class="container">
   <div class="hero">
     <h1>Разместить студию</h1>
-    <p>Платное размещение с приоритетной модерацией: заявку смотрит админ лично,<br>после одобрения — быстрая оплата и публикация.</p>
+    <p>Выберите тариф и оплатите — объявление сразу уйдёт на финальную проверку<br>и будет опубликовано в ближайшее время.</p>
   </div>
 
   <div class="tiers-note">
@@ -76,8 +89,17 @@
         </div>
         <div class="field">
           <label><b>*</b> Город</label>
-          <input name="city" maxlength="80" required>
+          <input name="city" id="cityInput" maxlength="80" required>
         </div>
+      </div>
+      <div class="field">
+        <label><b>*</b> Тариф размещения</label>
+        <div class="tier-picker" id="tierPicker"></div>
+        <div class="waitlist-check" id="waitlistCheck">
+          <input type="checkbox" id="waitlistInput">
+          <label for="waitlistInput" style="margin:0">Сообщить в Telegram, когда выбранный уровень освободится</label>
+        </div>
+        <div class="hint">Если платный уровень занят — заявка пойдёт по обычному тарифу, а место можно занять сразу как освободится.</div>
       </div>
       <div class="field">
         <label>Процент для моделей</label>
@@ -120,7 +142,7 @@
         <label>VK</label>
         <input name="social_vk" placeholder="https://vk.com/...">
       </div>
-      <button class="submit-btn" type="submit" id="submitBtn">Отправить на модерацию</button>
+      <button class="submit-btn" type="submit" id="submitBtn">Отправить и оплатить</button>
       <div id="status"></div>
     </form>
   </div>
@@ -129,6 +151,57 @@
 <script>
 const API = 'https://workadult-server.onrender.com';
 let TG_AUTH = null;
+
+const TIER_META = [
+  {key: 'regular', label: 'Обычное размещение', suffix: 'разово, навсегда'},
+  {key: 'bronze',  label: '🥉 Бронза',           suffix: 'в месяц'},
+  {key: 'silver',  label: '🥈 Серебро',          suffix: 'в месяц'},
+  {key: 'gold',    label: '🥇 Золото',           suffix: 'в месяц'},
+  {key: 'home',    label: '🏠 На главной',       suffix: 'в месяц, вне города'},
+];
+let selectedTier = 'regular';
+let tierAvail = null;
+
+function renderTierPicker() {
+  const box = document.getElementById('tierPicker');
+  box.innerHTML = '';
+  TIER_META.forEach(t => {
+    const info = tierAvail && tierAvail.tiers[t.key];
+    const price = t.key === 'regular' ? (tierAvail ? tierAvail.submit_price : 70) : (info ? info.price : null);
+    const full = t.key !== 'regular' && info && !info.available;
+    const wrap = document.createElement('label');
+    wrap.className = 'tier-opt' + (full ? ' full' : '') + (selectedTier === t.key ? ' active' : '');
+    const priceText = t.key === 'regular' ? ('$' + price) : (price !== null ? ('$' + price + ' ' + t.suffix) : '…');
+    wrap.innerHTML = '<input type="radio" name="tierRadio" value="' + t.key + '"' + (selectedTier === t.key ? ' checked' : '') + '>' +
+      '<span class="t-name">' + t.label + '</span>' +
+      '<span class="t-price">' + priceText + '</span>';
+    wrap.querySelector('input').addEventListener('change', () => {
+      selectedTier = t.key;
+      renderTierPicker();
+    });
+    box.appendChild(wrap);
+  });
+  const wl = document.getElementById('waitlistCheck');
+  const selInfo = tierAvail && tierAvail.tiers[selectedTier];
+  const selFull = selectedTier !== 'regular' && selInfo && !selInfo.available;
+  wl.classList.toggle('show', !!selFull);
+}
+
+let tierFetchTimer = null;
+async function refreshTierAvailability() {
+  const city = document.getElementById('cityInput').value.trim();
+  try {
+    const r = await fetch(API + '/api/tier-availability?city=' + encodeURIComponent(city));
+    const d = await r.json();
+    if (d.ok) { tierAvail = d; renderTierPicker(); }
+  } catch (e) { /* тихо игнорируем — цены проставит сервер при подаче */ }
+}
+document.getElementById('cityInput').addEventListener('input', () => {
+  clearTimeout(tierFetchTimer);
+  tierFetchTimer = setTimeout(refreshTierAvailability, 500);
+});
+renderTierPicker();
+refreshTierAvailability();
 
 function onTgAuth(user) {
   TG_AUTH = user;
@@ -146,6 +219,8 @@ function submitStudio(e) {
   const form = e.target;
   const fd = new FormData(form);
   const data = Object.fromEntries(fd.entries());
+  data.desired_tier = selectedTier;
+  data.notify_waitlist = document.getElementById('waitlistInput').checked;
   const btn = document.getElementById('submitBtn');
   const status = document.getElementById('status');
   btn.disabled = true; btn.textContent = 'Отправляю...';
@@ -155,10 +230,10 @@ function submitStudio(e) {
     method: 'POST', headers: {'Content-Type': 'application/json'},
     body: JSON.stringify({auth: TG_AUTH, form: data})
   }).then(r => r.json()).then(d => {
-    btn.disabled = false; btn.textContent = 'Отправить на модерацию';
+    btn.disabled = false; btn.textContent = 'Отправить и оплатить';
     if (d.ok) {
       status.style.color = '#6fdc8c';
-      status.textContent = '✓ Заявка отправлена! Мы проверим её и напишем в Telegram — там же придут тарифы на оплату.';
+      status.textContent = '✓ Заявка отправлена! Инструкция для оплаты пришла в Telegram — после оплаты объявление уйдёт на финальную проверку и будет опубликовано.';
       form.reset();
       form.style.display = 'none';
     } else {
@@ -166,7 +241,7 @@ function submitStudio(e) {
       status.textContent = 'Заполните все обязательные поля и попробуйте снова.';
     }
   }).catch(() => {
-    btn.disabled = false; btn.textContent = 'Отправить на модерацию';
+    btn.disabled = false; btn.textContent = 'Отправить и оплатить';
     status.style.color = '#ff6b6b';
     status.textContent = 'Сервис недоступен, попробуйте позже.';
   });

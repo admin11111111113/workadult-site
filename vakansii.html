@@ -358,7 +358,6 @@ div[style*="background:#fffdf2"] { background: rgba(245,166,35,0.07) !important;
       <p style="color:#444;font-size:15px;margin-bottom:14px;">Что вы хотите разместить?</p>
       <div style="display:flex;gap:12px;flex-wrap:wrap;">
         <button type="button" id="choose-vacancy" class="btn btn-gold">💼 Я студия — вакансия</button>
-        <button type="button" id="choose-seeker" class="btn btn-white" style="border:1px solid #ddd;">🔎 Я ищу работу — резюме</button>
       </div>
     </div>
 
@@ -405,45 +404,12 @@ div[style*="background:#fffdf2"] { background: rgba(245,166,35,0.07) !important;
       </div>
     </form>
 
-    <form id="seeker-form" style="display:none;margin-top:8px;">
-      <div style="display:grid;gap:14px;">
-        <label style="display:block;">
-          <span style="display:block;font-size:13px;font-weight:600;color:#444;margin-bottom:6px;">Опыт работы *</span>
-          <textarea name="experience" required maxlength="500" rows="3" placeholder="Стаж, площадки, навыки, график, язык" style="width:100%;padding:12px 14px;border:1px solid #ddd;border-radius:8px;font-size:15px;box-sizing:border-box;resize:vertical;"></textarea>
-        </label>
-        <label style="display:block;">
-          <span style="display:block;font-size:13px;font-weight:600;color:#444;margin-bottom:6px;">Желаемая зарплата *</span>
-          <input name="salary" required maxlength="60" placeholder="Например: от $1500 или 50% оплаты" style="width:100%;padding:12px 14px;border:1px solid #ddd;border-radius:8px;font-size:15px;box-sizing:border-box;">
-        </label>
-        <label style="display:block;">
-          <span style="display:block;font-size:13px;font-weight:600;color:#444;margin-bottom:6px;">Контакт для связи *</span>
-          <input name="contact" required maxlength="80" placeholder="Telegram, email или телефон" style="width:100%;padding:12px 14px;border:1px solid #ddd;border-radius:8px;font-size:15px;box-sizing:border-box;">
-        </label>
-        <div style="border:1px solid #ffe08a;background:#fffdf2;border-radius:10px;padding:16px;">
-          <label style="display:flex;align-items:flex-start;gap:10px;cursor:pointer;">
-            <input type="checkbox" id="sk-toggle" style="margin-top:3px;width:18px;height:18px;flex-shrink:0;">
-            <span style="font-size:14px;color:#444;"><b>⭐ Выделить резюме</b> — поднять вверх раздела «Ищут работу» и подсветить на <b id="sk-days">14</b> дней за <b id="sk-price">4</b> USDT (TRC-20). Без выделения резюме размещается <b>бесплатно</b>.</span>
-          </label>
-          <div id="sk-pay" style="display:none;margin-top:14px;border-top:1px dashed #ffe08a;padding-top:14px;">
-            <p style="font-size:13px;color:#555;margin:0 0 8px;">1. Переведите <b id="sk-amount">4 USDT</b> в сети <b>TRC-20 (Tron)</b> на адрес:</p>
-            <div style="display:flex;gap:8px;align-items:center;margin-bottom:12px;">
-              <code id="sk-addr" style="flex:1;background:#fff;border:1px solid #ddd;border-radius:6px;padding:8px 10px;font-size:13px;word-break:break-all;">загрузка…</code>
-              <button type="button" id="sk-copy" style="background:#ffd400;border:none;border-radius:6px;padding:8px 12px;font-size:13px;font-weight:600;cursor:pointer;white-space:nowrap;">Копировать</button>
-            </div>
-            <p style="font-size:13px;color:#555;margin:0 0 6px;">2. Вставьте <b>хэш транзакции (TxID)</b>:</p>
-            <input name="txid" id="sk-txid" maxlength="64" placeholder="64 символа из вашего кошелька" style="width:100%;padding:12px 14px;border:1px solid #ddd;border-radius:8px;font-size:14px;box-sizing:border-box;">
-          </div>
-        </div>
-        <button type="submit" class="btn btn-gold" style="margin-top:6px;">Разместить резюме</button>
-        <p id="seeker-status" style="font-size:14px;margin:0;"></p>
-      </div>
-    </form>
   </div>
 </section>
 <section class="article" style="padding-top:48px;"><div class="container" style="max-width:1080px;">
-  <div class="section-label">Биржа вакансий и резюме</div>
-  <h2 class="section-title" style="color:#111;margin-bottom:4px;">Вакансии от студий и резюме моделей</h2>
-  <p style="color:#666;font-size:15px;max-width:680px;margin:6px 0 0;">Слева — вакансии от студий и агентств, справа — резюме тех, кто ищет работу.</p>
+  <div class="section-label">Биржа вакансий</div>
+  <h2 class="section-title" style="color:#111;margin-bottom:4px;">Вакансии от студий</h2>
+  <p style="color:#666;font-size:15px;max-width:680px;margin:6px 0 0;">Открытые вакансии и предложения от студий и агентств.</p>
 
   <div class="vac-columns">
     <div class="vac-col">
@@ -453,14 +419,6 @@ div[style*="background:#fffdf2"] { background: rgba(245,166,35,0.07) !important;
       <div class="post-grid" id="vac-list"></div>
       <div class="pager" id="vac-pager"></div>
       <a href="#post-box" class="btn btn-gold" style="margin-top:12px;display:inline-block;">➕ Разместить вакансию</a>
-    </div>
-    <div class="vac-col">
-      <div class="section-label">🔎 Ищут работу</div>
-      <h3 class="vac-col-title">Резюме</h3>
-      <p style="color:#777;font-size:14px;margin:0 0 4px;">Кто ищет работу в вебкам. Студии — пишите напрямую.</p>
-      <div class="seeker-grid" id="res-list"></div>
-      <div class="pager" id="res-pager"></div>
-      <a href="#post-box" class="btn btn-gold" style="margin-top:12px;display:inline-block;">➕ Разместить резюме</a>
     </div>
   </div>
 
