@@ -358,7 +358,6 @@ div[style*="background:#fffdf2"] { background: rgba(245,166,35,0.07) !important;
       <p style="color:#444;font-size:15px;margin-bottom:14px;">What would you like to post?</p>
       <div style="display:flex;gap:12px;flex-wrap:wrap;">
         <button type="button" id="choose-vacancy" class="btn btn-gold">💼 I am a studio — post a job</button>
-        <button type="button" id="choose-seeker" class="btn btn-white" style="border:1px solid #ddd;">🔎 I am looking for work — resume</button>
       </div>
     </div>
 
@@ -385,57 +384,9 @@ div[style*="background:#fffdf2"] { background: rgba(245,166,35,0.07) !important;
           <span style="display:block;font-size:13px;font-weight:600;color:#444;margin-bottom:6px;">Contact *</span>
           <input name="contact" required maxlength="80" placeholder="Telegram, email or phone" style="width:100%;padding:12px 14px;border:1px solid #ddd;border-radius:8px;font-size:15px;box-sizing:border-box;">
         </label>
-        <div style="border:1px solid #ffe08a;background:#fffdf2;border-radius:10px;padding:16px;margin-top:4px;">
-          <label style="display:flex;align-items:flex-start;gap:10px;cursor:pointer;">
-            <input type="checkbox" id="pin-toggle" style="margin-top:3px;width:18px;height:18px;flex-shrink:0;">
-            <span style="font-size:14px;color:#444;"><b>💎 Pin job to the top</b> — highlight and first place in the list for <b id="pin-days">7</b> days for <b id="pin-price">5</b> USDT (TRC-20).</span>
-          </label>
-          <div id="pin-pay" style="display:none;margin-top:14px;border-top:1px dashed #ffe08a;padding-top:14px;">
-            <p style="font-size:13px;color:#555;margin:0 0 8px;">1. Send <b id="pin-amount">5 USDT</b> on the <b>TRC-20 (Tron)</b> network to address:</p>
-            <div style="display:flex;gap:8px;align-items:center;margin-bottom:12px;">
-              <code id="pin-addr" style="flex:1;background:#fff;border:1px solid #ddd;border-radius:6px;padding:8px 10px;font-size:13px;word-break:break-all;">loading…</code>
-              <button type="button" id="pin-copy" style="background:#ffd400;border:none;border-radius:6px;padding:8px 12px;font-size:13px;font-weight:600;cursor:pointer;white-space:nowrap;">Copy</button>
-            </div>
-            <p style="font-size:13px;color:#555;margin:0 0 6px;">2. Paste the <b>transaction hash (TxID)</b> to verify payment:</p>
-            <input name="txid" id="pin-txid" maxlength="64" placeholder="64 characters from your wallet" style="width:100%;padding:12px 14px;border:1px solid #ddd;border-radius:8px;font-size:14px;box-sizing:border-box;">
-          </div>
-        </div>
+        <p style="font-size:12.5px;color:#888;margin:0;">Posting is free. If your studio has a paid colored tier on the site, the job will automatically be highlighted with the same color. Max one job per studio per week.</p>
         <button type="submit" class="btn btn-gold" style="margin-top:6px;">Submit</button>
         <p id="vacancy-status" style="font-size:14px;margin:0;"></p>
-      </div>
-    </form>
-
-    <form id="seeker-form" style="display:none;margin-top:8px;">
-      <div style="display:grid;gap:14px;">
-        <label style="display:block;">
-          <span style="display:block;font-size:13px;font-weight:600;color:#444;margin-bottom:6px;">Work experience *</span>
-          <textarea name="experience" required maxlength="500" rows="3" placeholder="Experience, platforms, skills, schedule, language" style="width:100%;padding:12px 14px;border:1px solid #ddd;border-radius:8px;font-size:15px;box-sizing:border-box;resize:vertical;"></textarea>
-        </label>
-        <label style="display:block;">
-          <span style="display:block;font-size:13px;font-weight:600;color:#444;margin-bottom:6px;">Desired pay *</span>
-          <input name="salary" required maxlength="60" placeholder="e.g. from $1500 or 50% revenue share" style="width:100%;padding:12px 14px;border:1px solid #ddd;border-radius:8px;font-size:15px;box-sizing:border-box;">
-        </label>
-        <label style="display:block;">
-          <span style="display:block;font-size:13px;font-weight:600;color:#444;margin-bottom:6px;">Contact *</span>
-          <input name="contact" required maxlength="80" placeholder="Telegram, email or phone" style="width:100%;padding:12px 14px;border:1px solid #ddd;border-radius:8px;font-size:15px;box-sizing:border-box;">
-        </label>
-        <div style="border:1px solid #ffe08a;background:#fffdf2;border-radius:10px;padding:16px;">
-          <label style="display:flex;align-items:flex-start;gap:10px;cursor:pointer;">
-            <input type="checkbox" id="sk-toggle" style="margin-top:3px;width:18px;height:18px;flex-shrink:0;">
-            <span style="font-size:14px;color:#444;"><b>⭐ Feature my resume</b> — pin to the top of the Looking for work section and highlight it for <b id="sk-days">14</b> days for <b id="sk-price">4</b> USDT (TRC-20). Without featuring, your resume is posted <b>for free</b>.</span>
-          </label>
-          <div id="sk-pay" style="display:none;margin-top:14px;border-top:1px dashed #ffe08a;padding-top:14px;">
-            <p style="font-size:13px;color:#555;margin:0 0 8px;">1. Send <b id="sk-amount">4 USDT</b> on the <b>TRC-20 (Tron)</b> network to address:</p>
-            <div style="display:flex;gap:8px;align-items:center;margin-bottom:12px;">
-              <code id="sk-addr" style="flex:1;background:#fff;border:1px solid #ddd;border-radius:6px;padding:8px 10px;font-size:13px;word-break:break-all;">loading…</code>
-              <button type="button" id="sk-copy" style="background:#ffd400;border:none;border-radius:6px;padding:8px 12px;font-size:13px;font-weight:600;cursor:pointer;white-space:nowrap;">Copy</button>
-            </div>
-            <p style="font-size:13px;color:#555;margin:0 0 6px;">2. Paste the <b>transaction hash (TxID)</b>:</p>
-            <input name="txid" id="sk-txid" maxlength="64" placeholder="64 characters from your wallet" style="width:100%;padding:12px 14px;border:1px solid #ddd;border-radius:8px;font-size:14px;box-sizing:border-box;">
-          </div>
-        </div>
-        <button type="submit" class="btn btn-gold" style="margin-top:6px;">Post resume</button>
-        <p id="seeker-status" style="font-size:14px;margin:0;"></p>
       </div>
     </form>
   </div>
@@ -453,14 +404,6 @@ div[style*="background:#fffdf2"] { background: rgba(245,166,35,0.07) !important;
       <div class="post-grid" id="vac-list"></div>
       <div class="pager" id="vac-pager"></div>
       <a href="#post-box" class="btn btn-gold" style="margin-top:12px;display:inline-block;">➕ Post a job</a>
-    </div>
-    <div class="vac-col">
-      <div class="section-label">🔎 Looking for work</div>
-      <h3 class="vac-col-title">Resumes</h3>
-      <p style="color:#777;font-size:14px;margin:0 0 4px;">People looking for webcam work. Studios — message them directly.</p>
-      <div class="seeker-grid" id="res-list"></div>
-      <div class="pager" id="res-pager"></div>
-      <a href="#post-box" class="btn btn-gold" style="margin-top:12px;display:inline-block;">➕ Post a resume</a>
     </div>
   </div>
 
@@ -495,9 +438,8 @@ div[style*="background:#fffdf2"] { background: rgba(245,166,35,0.07) !important;
 
 
 <script>
-if(location.hash==='#pin'){window.__WANT_PIN=true;}
 var TG_AUTH = null;
-var API = 'https://workadult-bots.onrender.com';
+var API = 'https://workadult-server.onrender.com';
 function onTelegramAuth(user) {
   TG_AUTH = user;
   document.getElementById('tg-login-box').style.display = 'none';
@@ -508,114 +450,19 @@ function onTelegramAuth(user) {
   document.getElementById('tg-user-badge2').textContent = badge;
   document.getElementById('tg-user-badge').textContent = badge;
 
-  // auto-pin: open vacancy form with pin enabled when coming from TOP button (#pin)
-  if (location.hash === '#pin' || window.__WANT_PIN) {
+  if (location.hash === '#pin') {
     var rc = document.getElementById('role-choice'); if (rc) rc.style.display='none';
     var vf = document.getElementById('vacancy-form'); if (vf) vf.style.display='block';
-    var pt = document.getElementById('pin-toggle');
-    if (pt && !pt.checked) {
-      pt.checked = true;
-      pt.dispatchEvent(new Event('change', {bubbles:true}));
-    }
     var pb = document.getElementById('post-box');
     if (pb) pb.scrollIntoView({behavior:'smooth'});
   }
-}
-function fillPay(prefix){
-  fetch(API + '/pin-info').then(function(r){return r.json();}).then(function(d){
-    if (prefix==='pin'){
-      document.getElementById('pin-addr').textContent = d.address || 'address not set';
-      document.getElementById('pin-amount').textContent = d.price + ' USDT';
-      document.getElementById('pin-price').textContent = d.price;
-      document.getElementById('pin-days').textContent = d.days;
-    } else {
-      document.getElementById('sk-addr').textContent = d.address || 'address not set';
-      document.getElementById('sk-amount').textContent = d.seeker_price + ' USDT';
-      document.getElementById('sk-price').textContent = d.seeker_price;
-      document.getElementById('sk-days').textContent = d.seeker_days;
-    }
-  }).catch(function(){});
 }
 document.addEventListener('click', function(e){
   if (e.target.id === 'choose-vacancy') {
     document.getElementById('role-choice').style.display='none';
     document.getElementById('vacancy-form').style.display='block';
-  } else if (e.target.id === 'choose-seeker') {
-    document.getElementById('role-choice').style.display='none';
-    document.getElementById('seeker-form').style.display='block';
-    fillPay('sk');
-  } else if (e.target.id === 'sk-copy') {
-    var t=document.getElementById('sk-addr').textContent;
-    navigator.clipboard.writeText(t); e.target.textContent='✓';
-    setTimeout(function(){ e.target.textContent='Copy'; },1500);
   }
 });
-// sk-toggle
-document.addEventListener('change', function(e){
-  if (e.target.id !== 'sk-toggle') return;
-  var pay = document.getElementById('sk-pay');
-  pay.style.display = e.target.checked ? 'block' : 'none';
-  if (e.target.checked) { fillPay('sk'); }
-});
-// Submit resume
-document.addEventListener('submit', function(e){
-  if (e.target.id !== 'seeker-form') return;
-  e.preventDefault();
-  if (!TG_AUTH) return;
-  var fd=new FormData(e.target); var form={};
-  fd.forEach(function(v,k){ form[k]=v; });
-  var pinned = document.getElementById('sk-toggle') && document.getElementById('sk-toggle').checked;
-  var txid=(form.txid||'').trim(); delete form.txid;
-  var status=document.getElementById('seeker-status');
-  if (pinned && txid.length !== 64){
-    status.textContent='To feature your resume, paste a valid transaction hash (64 characters).';
-    status.style.color='#c62828'; return;
-  }
-  status.textContent = pinned ? 'Verifying payment on the blockchain…' : 'Sending…'; status.style.color='#888';
-  fetch(API + '/submit-vacancy', {
-    method:'POST', headers:{'Content-Type':'application/json'},
-    body: JSON.stringify({ auth:TG_AUTH, form:form, kind:'seeker', pinned:pinned, txid:txid })
-  }).then(function(r){return r.json();}).then(function(d){
-    if (d.ok){
-      status.textContent = pinned ? '✓ Payment confirmed! Your resume is featured in the Looking for work section.' : '✓ Your resume is posted in the Looking for work section!';
-      status.style.color='#2e7d32'; e.target.reset();
-    } else if (d.error==='payment'){
-      status.textContent='Payment verification failed: '+(d.reason||'');
-      status.style.color='#c62828';
-    } else if (d.error==='txid_used'){
-      status.textContent='This transaction hash has already been used.';
-      status.style.color='#c62828';
-    } else if (d.error==='fields'){
-      status.textContent='Please fill in all required fields.';
-      status.style.color='#c62828';
-    } else {
-      status.textContent='Error. Please try again.';
-      status.style.color='#c62828';
-    }
-  }).catch(function(){ status.textContent='Service unavailable, please try again later.'; status.style.color='#c62828'; });
-});
-// pin toggle
-document.addEventListener('change', function(e){
-  if (e.target.id !== 'pin-toggle') return;
-  var pay = document.getElementById('pin-pay');
-  pay.style.display = e.target.checked ? 'block' : 'none';
-  if (e.target.checked && document.getElementById('pin-addr').textContent === 'loading…') {
-    fetch(API + '/pin-info').then(function(r){return r.json();}).then(function(d){
-      document.getElementById('pin-addr').textContent = d.address || 'address not set — contact support';
-      document.getElementById('pin-amount').textContent = d.price + ' USDT';
-      document.getElementById('pin-price').textContent = d.price;
-      document.getElementById('pin-days').textContent = d.days;
-    }).catch(function(){ document.getElementById('pin-addr').textContent='loading error'; });
-  }
-});
-document.addEventListener('click', function(e){
-  if (e.target.id !== 'pin-copy') return;
-  var t = document.getElementById('pin-addr').textContent;
-  navigator.clipboard.writeText(t); e.target.textContent='✓';
-  setTimeout(function(){ e.target.textContent='Copy'; }, 1500);
-});
-// pin-toggle via fillPay
-
 document.addEventListener('submit', function(e){
   if (e.target.id !== 'vacancy-form') return;
   e.preventDefault();
@@ -623,32 +470,18 @@ document.addEventListener('submit', function(e){
   var fd = new FormData(e.target);
   var form = {};
   fd.forEach(function(v,k){ form[k]=v; });
-  var pinned = document.getElementById('pin-toggle').checked;
-  var txid = (form.txid||'').trim();
-  delete form.txid;
   var status = document.getElementById('vacancy-status');
-  if (pinned && txid.length !== 64) {
-    status.textContent = 'To pin, paste a valid transaction hash (64 characters).';
-    status.style.color='#c62828'; return;
-  }
-  status.textContent = pinned ? 'Verifying payment on the blockchain…' : 'Sending…';
+  status.textContent = 'Sending…';
   status.style.color='#888';
-  fetch(API + '/submit-vacancy', {
+  fetch(API + '/api/submit-vacancy', {
     method:'POST', headers:{'Content-Type':'application/json'},
-    body: JSON.stringify({ auth: TG_AUTH, form: form, pinned: pinned, txid: txid })
+    body: JSON.stringify({ auth: TG_AUTH, form: form })
   }).then(function(r){return r.json();}).then(function(d){
-    if (d.ok && d.pinned) {
-      status.textContent = '💎 Payment confirmed! Your job is pinned to the top.';
-      status.style.color='#2e7d32'; e.target.reset();
-      document.getElementById('pin-pay').style.display='none';
-    } else if (d.ok) {
+    if (d.ok) {
       status.textContent = '✓ Submitted! We will review and publish your job.';
       status.style.color='#2e7d32'; e.target.reset();
-    } else if (d.error === 'payment') {
-      status.textContent = 'Payment verification failed: ' + (d.reason||'') ;
-      status.style.color='#c62828';
-    } else if (d.error === 'txid_used') {
-      status.textContent = 'This transaction hash has already been used.';
+    } else if (d.error === 'cooldown') {
+      status.textContent = d.message || 'You can post once a week.';
       status.style.color='#c62828';
     } else {
       status.textContent = 'Submission error. Check the fields and try again.';
@@ -704,13 +537,11 @@ document.querySelector('.burger').addEventListener('click', () => {
   var PER=10;
   function esc(s){var d=document.createElement('div');d.textContent=(s==null?'':String(s));return d.innerHTML;}
   function sortAds(arr){return arr.slice().sort(function(x,y){
-    var px=x.pinned?1:0, py=y.pinned?1:0;
-    if(px!==py)return py-px;
+    if((y.ts||0)!==(x.ts||0)) return (y.ts||0)-(x.ts||0);
     return String(y.date||'').localeCompare(String(x.date||''));
   });}
   function card(it){
-    var pinned=it.pinned?' pinned':'';
-    var badge=it.pinned?'<span class="pin-badge">★ TOP</span>':'';
+    var tierClass = (it.tier==='gold'||it.tier==='silver'||it.tier==='bronze') ? ' tier-'+it.tier : '';
     var org=it.org?'<div class="vac-org">'+esc(it.org)+'</div>':'';
     var sal=it.salary?'<div class="vac-sal">'+esc(it.salary)+'</div>':'';
     var desc=it.desc?'<div class="vac-desc">'+esc(it.desc)+'</div>':'';
@@ -720,7 +551,7 @@ document.querySelector('.burger').addEventListener('click', () => {
       var url=c.charAt(0)==='@'?('https://t.me/'+c.slice(1)):(/^https?:\/\//.test(c)?c:'');
       contact=url?('<a class="vac-contact" href="'+esc(url)+'" target="_blank" rel="noopener nofollow">Message ›</a>'):('<div class="vac-contact">'+esc(c)+'</div>');
     }
-    return '<div class="post-card'+pinned+'">'+badge+org+'<div class="vac-title">'+esc(it.title||'')+'</div>'+sal+desc+contact+'</div>';
+    return '<div class="post-card'+tierClass+'">'+org+'<div class="vac-title">'+esc(it.title||'')+'</div>'+sal+desc+contact+'</div>';
   }
   function render(listId,pagerId,items,empty){
     var listEl=document.getElementById(listId), pagerEl=document.getElementById(pagerId);
@@ -736,9 +567,15 @@ document.querySelector('.burger').addEventListener('click', () => {
     }
     draw();
   }
+  var ADMIN_API='https://workadult-server.onrender.com';
   fetch('/board.json?t='+Date.now()).then(function(r){return r.json();}).then(function(d){
-    render('vac-list','vac-pager',d.vacancies,'No studio jobs yet - they will appear here after moderation.');
+    var base=d.vacancies||[];
     render('res-list','res-pager',d.resumes,'No resumes yet - be the first to post yours.');
+    fetch(ADMIN_API+'/api/board').then(function(r){return r.json();}).then(function(ad){
+      render('vac-list','vac-pager',base.concat(ad.vacancies||[]),'No studio jobs yet - they will appear here after moderation.');
+    }).catch(function(){
+      render('vac-list','vac-pager',base,'No studio jobs yet - they will appear here after moderation.');
+    });
   }).catch(function(){});
 })();
 </script>
