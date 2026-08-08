@@ -219,10 +219,7 @@ var STUDIOS = [], REVIEWS = {};
 var FMT = {studio:'В студии',home:'Из дома',pair:'Парой',guys:'Для парней',nonnude:'Non Nude'};
 var FEAT = {weekly_pay:'Еженедельные выплаты',flexible_schedule:'Гибкий график',housing:'Предоставляем проживание',training:'Обучение новичков',city_center:'В центре города',near_metro:'Рядом с метро'};
 var TIER_RANK = {gold:0,silver:1,bronze:2,regular:3};
-var DEMO = [
-  {id:'d1',name:'Neon Studio',city:CITY,formats:['studio','home'],percent:'50–70%, обучение, наставник',desc:'Кабинеты в центре, новое оборудование, поддержка 24/7.',contact:'@neon_studio',verified:true,demo:true,
-   photo:'https://d8j0ntlcm91z4.cloudfront.net/user_3FOR5i8wwfqXhYSQz7etkkwYWMD/hf_20260808_160146_26af51b5-5da7-44b4-b04d-8a7ea145a24f.png'}
-];
+var DEMO = []; // подтягивается с /api/demo (редактируется в админке), см. loadDemo()
 
 function esc(t){return String(t==null?'':t).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
 function starStr(a){var f=Math.round(a),s='';for(var i=0;i<5;i++)s+=i<f?'★':'☆';return s;}
@@ -318,7 +315,14 @@ function renderOtherCities(){
   document.getElementById('otherCities').style.display = 'block';
 }
 
+function loadDemo(){
+  return fetch(ADMIN_API+'/api/demo').then(function(r){return r.json();}).then(function(d){
+    var s = (d.studios||[])[0];
+    if(s) DEMO=[{id:'d1',name:s.name,city:CITY,formats:['studio','home'],percent:s.percent,desc:s.desc,contact:s.contact,photo:s.photo,demo:true}];
+  }).catch(function(){});
+}
 function loadCatalog(){
+  loadDemo().then(function(){
   fetch('/studios.json?t='+Date.now()).then(function(r){return r.json();}).then(function(d){
     var base = (d.studios||[]).filter(function(s){return s.approved!==false;});
     REVIEWS = {};
@@ -341,6 +345,7 @@ function loadCatalog(){
       renderOtherCities();
     }).catch(function(){ STUDIOS = base; renderStudios(); renderOtherCities(); });
   }).catch(function(){ STUDIOS=[]; REVIEWS={}; renderStudios(); });
+  });
 }
 
 document.getElementById('faqList').addEventListener('click', function(e){var q=e.target.closest('.faq-q');if(!q)return;q.parentElement.classList.toggle('open');});

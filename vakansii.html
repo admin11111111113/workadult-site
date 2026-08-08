@@ -637,12 +637,11 @@ document.querySelector('.burger').addEventListener('click', () => {
     }
     draw();
   }
-  var DEMO_VAC=[
-    {org:'Neon Studio',title:'Вебкам-модель — новичкам',salary:'50–70%, обучение, наставник',desc:'Стажировка, помощь с оформлением, старт без опыта.',contact:'@neon_studio',demo:true},
-    {org:'Aurora Webcam',title:'Ищем модель для работы в паре',salary:'от 55%',desc:'Гибкий график, помощь новичкам с анкетой.',contact:'@aurora_cam',demo:true},
-    {org:'HomeWork CAM',title:'Удалённая работа из дома',salary:'до 65%',desc:'Полностью удалённая работа, обучение онлайн.',contact:'@homework_cam',demo:true}
-  ];
+  var DEMO_VAC=[]; // подтягивается с /api/demo (редактируется в админке)
   var ADMIN_API='https://workadult-server.onrender.com';
+  fetch(ADMIN_API+'/api/demo').then(function(r){return r.json();}).then(function(d){
+    DEMO_VAC=(d.vacancies||[]).map(function(v){return {org:v.org,title:v.title,salary:v.salary,desc:v.desc,contact:v.contact,demo:true};});
+  }).catch(function(){}).then(function(){
   fetch('/board.json?t='+Date.now()).then(function(r){return r.json();}).then(function(d){
     var base=d.vacancies||[];
     render('res-list','res-pager',d.resumes,'Пока резюме нет — будьте первым, разместите своё.');
@@ -655,6 +654,7 @@ document.querySelector('.burger').addEventListener('click', () => {
     });
   }).catch(function(){
     render('vac-list','vac-pager',DEMO_VAC,'Пока вакансий от студий нет — они появятся здесь после модерации.');
+  });
   });
 })();
 </script>

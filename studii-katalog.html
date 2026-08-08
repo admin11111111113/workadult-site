@@ -272,14 +272,7 @@ var FEAT = {weekly_pay:'Еженедельные выплаты',flexible_schedu
 var TIER_RANK = {gold:0,silver:1,bronze:2,regular:3};
 
 /* ---------- Demo studios (shown only if catalog empty) ---------- */
-var DEMO = [
-  {id:'demo1',name:'Neon Studio',city:'Москва',formats:['studio','home'],percent:'50–70%, обучение, наставник',desc:'Уютные кабинеты в центре, новое оборудование, поддержка 24/7.',contact:'@neon_studio',verified:true,premium:true,demo:true,
-   photo:'https://d8j0ntlcm91z4.cloudfront.net/user_3FOR5i8wwfqXhYSQz7etkkwYWMD/hf_20260808_160146_26af51b5-5da7-44b4-b04d-8a7ea145a24f.png'},
-  {id:'demo2',name:'Aurora Webcam',city:'Санкт-Петербург',formats:['studio','pair'],percent:'от 55%',desc:'Работа парами и соло, гибкий график, помощь новичкам.',contact:'@aurora_cam',verified:true,demo:true,
-   photo:'https://d8j0ntlcm91z4.cloudfront.net/user_3FOR5i8wwfqXhYSQz7etkkwYWMD/hf_20260808_160146_4bc0737e-8b81-4af3-85d1-c5f818267b19.png'},
-  {id:'demo3',name:'HomeWork CAM',city:'Новосибирск',formats:['home'],percent:'до 65%',desc:'Полностью удалённая работа, обучение онлайн.',contact:'@homework_cam',verified:false,demo:true,
-   photo:'https://d8j0ntlcm91z4.cloudfront.net/user_3FOR5i8wwfqXhYSQz7etkkwYWMD/hf_20260808_160146_a3ee8b4f-7e24-4299-941a-a80d32260a39.png'}
-];
+var DEMO = []; // подтягивается с /api/demo (редактируется в админке), см. loadDemo()
 
 /* ---------- Cities — чипы и блок "по городам" строим ТОЛЬКО из городов,
    где реально есть объявления (свои + демо, если каталог совсем пуст) —
@@ -446,7 +439,15 @@ function openReview(studioId){
 
 /* ---------- Load catalog ---------- */
 var ADMIN_API = 'https://workadult-server.onrender.com';
+function loadDemo(){
+  return fetch(ADMIN_API+'/api/demo').then(function(r){return r.json();}).then(function(d){
+    DEMO = (d.studios||[]).map(function(s,i){
+      return {id:'demo'+i, name:s.name, city:s.city, formats:['studio'], percent:s.percent, desc:s.desc, contact:s.contact, photo:s.photo, demo:true};
+    });
+  }).catch(function(){});
+}
 function loadCatalog(){
+  loadDemo().then(function(){
   fetch('/studios.json?t='+Date.now()).then(function(r){return r.json();}).then(function(d){
     var base = (d.studios||[]).filter(function(s){return s.approved!==false;});
     // index reviews by studio
@@ -483,6 +484,7 @@ function loadCatalog(){
     STUDIOS=[]; REVIEWS={};
     buildCityChips();
     renderStudios();
+  });
   });
 }
 

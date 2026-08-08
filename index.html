@@ -614,11 +614,7 @@
     if(!raw) return '';
     return '<span class="ct ct-reveal" data-contact="'+escAttr(raw)+'">Показать контакт</span>';
   }
-  var DEMO=[
-    {org:'Neon Studio',title:'Вебкам-модель — новичкам',salary:'50–70%, обучение, наставник',contact:'@neon_studio'},
-    {org:'Aurora Webcam',title:'Ищем модель для работы в паре',salary:'от 55%',contact:'@aurora_cam'},
-    {org:'HomeWork CAM',title:'Удалённая работа из дома',salary:'до 65%',contact:'@homework_cam'}
-  ];
+  var DEMO=[]; // подтягивается с /api/demo (редактируется в админке)
   function card(it){
     var tierClass = (it.tier==='gold'||it.tier==='silver'||it.tier==='bronze') ? ' tier-'+it.tier : '';
     return '<div class="vboard-card'+tierClass+'">'+
@@ -640,6 +636,9 @@
     }).slice(0,5);
     renderBoard(top);
   }
+  fetch(ADMIN_API+'/api/demo').then(function(r){return r.json();}).then(function(d){
+    DEMO=(d.vacancies||[]).map(function(v){return {org:v.org,title:v.title,salary:v.salary,contact:v.contact};});
+  }).catch(function(){}).then(function(){
   fetch('/board.json?t='+Date.now()).then(function(r){return r.json();}).then(function(d){
     var base=d.vacancies||[];
     /* серверная админка/бот добавляют вакансии — подмешиваем к статичным */
@@ -648,6 +647,7 @@
     }).catch(function(){ finish(base); });
   }).catch(function(){
     renderBoard(DEMO);
+  });
   });
 
   /* Оплаченные места "на главной" ($100/мес) — студия или вакансия,

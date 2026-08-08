@@ -258,11 +258,11 @@
 <script>
 (function(){
   function esc(s){var d=document.createElement('div');d.textContent=(s==null?'':String(s));return d.innerHTML;}
-  var DEMO=[
-    {org:'Neon Studio',title:'Webcam model - beginners welcome',salary:'50-70%, training, mentor',contact:'@neon_studio'},
-    {org:'Aurora Webcam',title:'Looking for a model to work in a pair',salary:'from 55%',contact:'@aurora_cam'},
-    {org:'HomeWork CAM',title:'Remote work from home',salary:'up to 65%',contact:'@homework_cam'}
-  ];
+  var DEMO=[]; // fetched from /api/demo (editable in admin)
+  var ADMIN_API='https://workadult-server.onrender.com';
+  var demoReady=fetch(ADMIN_API+'/api/demo').then(function(r){return r.json();}).then(function(d){
+    DEMO=(d.vacancies||[]).map(function(v){return {org:v.org,title:v.title,salary:v.salary,contact:v.contact};});
+  }).catch(function(){});
   function card(it){
     var contact='';
     if(it.contact){
@@ -286,12 +286,14 @@
     if(free<=0){ st.style.color='#ff8da3'; st.innerHTML='&#128308; <b>0 of 5</b> spots left'; }
     else { st.style.color='#7ee0a6'; st.innerHTML='&#128994; <b>'+free+' of 5</b> spots left'; }
   }
+  demoReady.then(function(){
   fetch('/board.json?t='+Date.now()).then(function(r){return r.json();}).then(function(d){
     var pinned=(d.vacancies||[]).filter(function(x){return x.pinned;});
     var top=pinned.slice().sort(function(x,y){return String(y.date||'').localeCompare(String(x.date||''));}).slice(0,5);
     setStatus(Math.max(0,5-pinned.length));
     renderBoard(top);
   }).catch(function(){ setStatus(0); renderBoard(DEMO); });
+  });
 })();
 </script>
 
