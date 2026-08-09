@@ -48,10 +48,8 @@
 .city-bar{max-width:var(--maxw);margin:20px auto 0;padding:0 20px;}
 .city-search{width:100%;max-width:480px;margin:0 auto 18px;display:block;background:var(--glass-bg);border:1px solid var(--glass-brd);border-radius:14px;padding:14px 18px;color:var(--text);font-size:15px;font-family:var(--font);}
 .city-search::placeholder{color:var(--faint);}
-.city-chips{display:flex;flex-wrap:wrap;gap:9px;justify-content:center;}
-.city-chip{background:var(--glass-bg);border:1px solid var(--glass-brd);color:var(--muted);border-radius:999px;padding:8px 16px;font-size:13.5px;font-weight:600;cursor:pointer;transition:.18s var(--ease);}
-.city-chip:hover{border-color:var(--accent);color:var(--text);}
-.city-chip.active{background:linear-gradient(90deg,var(--accent),var(--accent-2));color:#fff;border-color:transparent;}
+.city-select{display:block;width:100%;max-width:280px;margin:0 auto;background:var(--glass-bg);border:1px solid var(--glass-brd);color:var(--text);border-radius:14px;padding:12px 16px;font-size:14px;font-family:var(--font);cursor:pointer;}
+.city-select:hover{border-color:var(--accent);}
 
 /* studio grid — квадратные карточки, 5 в ряд, приоритет золото→серебро→бронза→обычные */
 .studio-wrap{max-width:var(--maxw);margin:36px auto 0;padding:0 20px;}
@@ -183,7 +181,7 @@
 <!-- CITY FILTER -->
 <div class="city-bar" id="catalog">
   <input type="text" class="city-search" id="citySearch" placeholder="🔍 Введите свой город…" autocomplete="off">
-  <div class="city-chips" id="cityChips"></div>
+  <select class="city-select" id="cityChips"><option value="all">Все города</option></select>
 </div>
 
 <!-- STUDIO GRID -->
@@ -284,21 +282,18 @@ function buildCityChips(){
   var counts = {};
   list.forEach(function(s){ if(s.city) counts[s.city]=(counts[s.city]||0)+1; });
   var cities = Object.keys(counts).sort(function(a,b){ return counts[b]-counts[a]; });
-  var html = '<button class="city-chip active" data-city="all">Все города</button>';
+  var html = '<option value="all">Все города</option>';
   cities.forEach(function(c){
-    html += '<button class="city-chip" data-city="'+c.replace(/"/g,'')+'">'+c+'</button>';
+    html += '<option value="'+esc(c)+'">'+esc(c)+' ('+counts[c]+')</option>';
   });
   var box = document.getElementById('cityChips');
   box.innerHTML = html;
-  box.querySelectorAll('.city-chip').forEach(function(ch){
-    ch.addEventListener('click', function(){
-      box.querySelectorAll('.city-chip').forEach(function(x){x.classList.remove('active');});
-      ch.classList.add('active');
-      activeCity = ch.getAttribute('data-city');
-      document.getElementById('citySearch').value = activeCity==='all'?'':activeCity;
-      renderStudios();
-    });
-  });
+  box.value = activeCity;
+  box.onchange = function(){
+    activeCity = box.value;
+    document.getElementById('citySearch').value = activeCity==='all'?'':activeCity;
+    renderStudios();
+  };
 }
 
 function renderCityLinks(){
@@ -490,8 +485,8 @@ function loadCatalog(){
 /* ---------- City search ---------- */
 document.getElementById('citySearch').addEventListener('input', function(){
   activeCity = this.value.trim() ? this.value.trim() : 'all';
-  document.querySelectorAll('.city-chip').forEach(function(x){x.classList.remove('active');});
-  if(!this.value.trim()){ var a=document.querySelector('.city-chip[data-city="all"]'); if(a)a.classList.add('active'); }
+  var sel = document.getElementById('cityChips');
+  if(sel) sel.value = 'all';
   renderStudios();
 });
 
