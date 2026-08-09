@@ -251,6 +251,13 @@ function esc(t){return String(t==null?'':t).replace(/&/g,'&amp;').replace(/</g,'
 function starStr(a){var f=Math.round(a),s='';for(var i=0;i<5;i++)s+=i<f?'★':'☆';return s;}
 function studioReviews(id){return REVIEWS[id]||[];}
 function avgRating(id){var r=studioReviews(id);if(!r.length)return 0;var s=0;r.forEach(function(x){s+=(+x.rating||0);});return s/r.length;}
+function displayRating(s){
+  var cnt = studioReviews(s.id).length;
+  if(cnt) return {avg: avgRating(s.id), cnt: cnt};
+  var vip = (s.tier==='gold' || s.tier==='home');
+  var avg = s.admin_rating ? +s.admin_rating : (vip ? 5 : 4);
+  return {avg: avg, cnt: 0};
+}
 
 function renderStudios(){
   var grid = document.getElementById('studioGrid');
@@ -273,8 +280,8 @@ function renderStudios(){
     var photoHtml = photo ? '<img class="card-photo" src="'+esc(photo)+'" alt="" loading="lazy">' : '<div class="card-photo ph-empty">🏢</div>';
     var fmt = (s.formats||[]).slice(0,2).map(function(f){return '<span class="fmt-tag">'+(FMT[f]||f)+'</span>';}).join('');
     var badge = (!s.tier || s.tier==='regular') ? (s.verified? '<span class="badge-ver">✓</span>':'') : '';
-    var avg = avgRating(s.id), cnt = studioReviews(s.id).length;
-    var ratingRow = cnt ? '<div class="card-rating"><span class="stars">'+starStr(avg)+'</span>'+avg.toFixed(1)+' · '+cnt+'</div>' : '';
+    var rt = displayRating(s);
+    var ratingRow = '<div class="card-rating"><span class="stars">'+starStr(rt.avg)+'</span>'+rt.avg.toFixed(1)+(rt.cnt?' · '+rt.cnt:'')+'</div>';
     return '<div class="studio-card'+tierClass+'" onclick="openStudioModal(\''+s.id+'\')">'
       + ribbon + photoHtml
       + '<div class="card-body">'
@@ -306,8 +313,8 @@ function openStudioModal(id){
   if(s.social_vk) contacts += '<a href="'+esc(s.social_vk)+'" target="_blank" rel="noopener">VK</a>';
   if(s.url) contacts += '<a href="'+esc(s.url)+'" target="_blank" rel="noopener">🌐 Сайт студии</a>';
   if(!contacts) contacts = '<span style="color:var(--faint)">Контакты появятся после модерации.</span>';
-  var avg = avgRating(s.id), cnt = studioReviews(s.id).length;
-  var ratingHtml = cnt? '<span class="stars">'+starStr(avg)+'</span> '+avg.toFixed(1)+' · '+cnt+' отз.' : '<span class="stars">☆☆☆☆☆</span> нет отзывов';
+  var rt = displayRating(s);
+  var ratingHtml = '<span class="stars">'+starStr(rt.avg)+'</span> '+rt.avg.toFixed(1)+(rt.cnt?' · '+rt.cnt+' отз.':'');
   var modalEl = document.getElementById('studioModal');
   modalEl.className = 'studio-modal' + (isPaidTier ? ' tier-'+s.tier : '');
   modalEl.innerHTML =
@@ -428,7 +435,7 @@ function loadCatalog(){
           phone: l.phone || '', url: l.url || '',
           social_telegram: l.social_telegram || '', social_instagram: l.social_instagram || '',
           social_vk: l.social_vk || '', photos: l.photos || [], cover_photo: l.cover_photo || l.photo || '',
-          features: l.features || [], tier: l.tier || 'regular', verified: true
+          features: l.features || [], tier: l.tier || 'regular', verified: true, admin_rating: l.admin_rating || null
         };
       });
       STUDIOS = base.concat(paid);
