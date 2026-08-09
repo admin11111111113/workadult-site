@@ -261,6 +261,11 @@
 <script>
 (function(){
   function esc(s){var d=document.createElement('div');d.textContent=(s==null?'':String(s));return d.innerHTML;}
+  function fmtPercent(v){
+    v = (v==null?'':String(v)).trim();
+    if(!v || v.indexOf('%')!==-1) return v;
+    return /^\d+([.,]\d+)?(\s*-\s*\d+([.,]\d+)?)?$/.test(v) ? v+'%' : v;
+  }
   var DEMO=[]; // fetched from /api/demo (editable in admin) — studios, not vacancies
   var ADMIN_API='https://workadult-server.onrender.com';
   var TIER_RANK={gold:0,silver:1,bronze:2,regular:3};
@@ -279,7 +284,7 @@
       photoHtml+
       (it.org?'<div class="org">'+esc(it.org)+'</div>':'')+
       '<div class="title">'+esc(it.title||'')+'</div>'+
-      (it.salary?'<div class="sal">'+esc(it.salary)+'</div>':'')+
+      (it.salary?'<div class="sal">'+esc(fmtPercent(it.salary))+'</div>':'')+
       contact+'</div>';
   }
   function renderBoard(items){

@@ -75,6 +75,7 @@
 .studio-name{font-size:15px;font-weight:800;color:var(--text);line-height:1.22;margin-bottom:3px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;}
 .studio-city{color:var(--accent-3);font-size:12px;font-weight:700;margin-bottom:6px;}
 .studio-desc{color:var(--muted);font-size:12.5px;line-height:1.5;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden;}
+.studio-fmt{display:flex;flex-wrap:wrap;gap:4px;margin-bottom:6px;}
 .badge-ver{flex-shrink:0;display:inline-flex;align-items:center;gap:4px;background:rgba(43,213,118,.13);color:var(--green);border:1px solid rgba(43,213,118,.3);border-radius:999px;padding:2px 7px;font-size:10px;font-weight:700;}
 .badge-prem{flex-shrink:0;background:rgba(245,166,35,.14);color:var(--gold);border:1px solid rgba(245,166,35,.35);border-radius:999px;padding:2px 7px;font-size:10px;font-weight:700;}
 .stars{color:var(--gold,#f5a623);letter-spacing:1px;font-size:15px;font-weight:900;}
@@ -387,11 +388,13 @@ function renderStudios(){
     var photoHtml = photo
       ? '<img class="card-photo" src="'+esc(photo)+'" alt="" loading="lazy">'
       : '<div class="card-photo ph-empty">🏢</div>';
+    var fmt = (s.formats||[]).map(function(f){return '<span class="fmt-tag">'+(FMT[f]||f)+'</span>';}).join('');
     return '<div class="studio-card'+tierClass+'" onclick="openStudioModal(\''+s.id+'\')">'
       + ribbon + photoHtml
       + '<div class="card-body">'
         + '<div class="studio-name">'+esc(s.name)+'</div>'
         + '<div class="studio-city">📍 '+esc(s.city)+'</div>'
+        + (fmt?'<div class="studio-fmt">'+fmt+'</div>':'')
         + (s.desc?'<div class="studio-desc">'+esc(s.desc)+'</div>':'')
       + '</div>'
     + '</div>';
@@ -430,7 +433,7 @@ function openStudioModal(id){
       + '<div class="m-name">'+esc(s.name)+'</div>'
       + '<div class="m-city">📍 '+esc(s.city)+'</div>'
       + (fmt?'<div class="m-fmt">'+fmt+'</div>':'')
-      + (s.percent?'<div class="m-pct">💰 Процент для моделей: <b>'+esc(s.percent)+'</b></div>':'')
+      + (s.percent?'<div class="m-pct">💰 Выплата моделям: <b>'+esc(fmtPercent(s.percent))+'</b></div>':'')
       + (s.desc?'<div class="m-desc">'+esc(s.desc)+'</div>':'')
       + (feat?'<div class="m-features">'+feat+'</div>':'')
       + '<div style="margin-bottom:14px;font-size:13px;color:var(--muted)">'+ratingHtml+'</div>'
@@ -451,6 +454,11 @@ document.addEventListener('keydown', function(e){
 });
 
 function esc(t){return String(t==null?'':t).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
+function fmtPercent(v){
+  v = (v==null?'':String(v)).trim();
+  if(!v || v.indexOf('%')!==-1) return v;
+  return /^\d+([.,]\d+)?(\s*-\s*\d+([.,]\d+)?)?$/.test(v) ? v+'%' : v;
+}
 
 /* ---------- Leave a review ---------- */
 var reviewStudioId = null;

@@ -614,6 +614,11 @@
 (function(){
   function esc(s){var d=document.createElement('div');d.textContent=(s==null?'':String(s));return d.innerHTML;}
   function escAttr(s){ return esc(s).replace(/"/g,'&quot;'); }
+  function fmtPercent(v){
+    v = (v==null?'':String(v)).trim();
+    if(!v || v.indexOf('%')!==-1) return v;
+    return /^\d+([.,]\d+)?(\s*-\s*\d+([.,]\d+)?)?$/.test(v) ? v+'%' : v;
+  }
   function contactHtml(raw){
     if(!raw) return '';
     return '<span class="ct ct-reveal" data-contact="'+escAttr(raw)+'">Показать контакт</span>';
@@ -627,7 +632,7 @@
       photoHtml+
       (it.org?'<div class="org">'+esc(it.org)+'</div>':'')+
       '<div class="title">'+esc(it.title||'')+'</div>'+
-      (it.salary?'<div class="sal">'+esc(it.salary)+'</div>':'')+
+      (it.salary?'<div class="sal">'+esc(fmtPercent(it.salary))+'</div>':'')+
       contactHtml(it.contact)+'</div>';
   }
   function renderBoard(items){
@@ -664,7 +669,7 @@
     return '<div class="vboard-card tier-home">'+
       '<div class="org">'+esc(orgText)+'</div>'+
       '<div class="title">'+esc(it.name||'')+'</div>'+
-      (it.percent?'<div class="sal">'+esc(it.percent)+'</div>':'')+
+      (it.percent?'<div class="sal">'+esc(fmtPercent(it.percent))+'</div>':'')+
       contactHtml(it.contacts)+'</div>';
   }
   function renderFeatured(items){
