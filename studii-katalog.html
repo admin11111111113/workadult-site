@@ -104,6 +104,15 @@
 .studio-modal .m-contacts{background:rgba(255,255,255,.04);border:1px solid var(--glass-brd);border-radius:14px;padding:16px 18px;display:flex;flex-direction:column;gap:8px;}
 .studio-modal .m-contacts a,.studio-modal .m-contacts span{color:var(--text);font-size:14px;text-decoration:none;word-break:break-all;}
 .studio-modal .m-contacts a:hover{color:var(--accent-3);}
+.review-modal{max-width:420px;}
+.rm-stars{font-size:34px;letter-spacing:6px;margin:6px 0 16px;line-height:1;}
+.rm-star{cursor:pointer;color:rgba(255,255,255,.22);transition:color .15s;}
+.rm-star.active{color:var(--gold,#f5a623);}
+.rm-text,.rm-author{width:100%;background:rgba(255,255,255,.04);border:1px solid var(--glass-brd);border-radius:12px;color:var(--text);font-family:var(--font);font-size:14px;padding:12px 14px;margin-bottom:10px;box-sizing:border-box;resize:vertical;}
+.rm-text:focus,.rm-author:focus{outline:none;border-color:var(--accent-3);}
+.rm-status{font-size:13px;min-height:18px;margin-bottom:4px;}
+.rm-status.err{color:#ff6b6b;}
+.rm-status.ok{color:var(--green);}
 
 /* generic section */
 .cat-section{max-width:var(--maxw);margin:70px auto 0;padding:0 20px;}
@@ -193,6 +202,22 @@
 <!-- STUDIO DETAIL MODAL -->
 <div class="studio-modal-overlay" id="studioModalOverlay" onclick="if(event.target===this)closeStudioModal();">
   <div class="studio-modal" id="studioModal"></div>
+</div>
+
+<!-- REVIEW MODAL -->
+<div class="studio-modal-overlay" id="reviewModalOverlay" onclick="if(event.target===this)closeReviewModal();">
+  <div class="studio-modal review-modal" id="reviewModal">
+    <div class="m-close" onclick="closeReviewModal()">✕</div>
+    <div class="m-body">
+      <div class="m-name">Оставить отзыв</div>
+      <div class="m-city" id="reviewStudioName"></div>
+      <div class="rm-stars" id="reviewStars"></div>
+      <textarea class="rm-text" id="reviewText" rows="4" maxlength="800" placeholder="Расскажите о своём опыте работы с этой студией..."></textarea>
+      <input type="text" class="rm-author" id="reviewAuthor" maxlength="60" placeholder="Ваше имя (необязательно)">
+      <div class="rm-status" id="reviewStatus"></div>
+      <button type="button" class="btn btn-black" id="reviewSubmitBtn" style="width:100%;margin-top:10px;font-size:13px;" onclick="submitReview()">Отправить на модерацию</button>
+    </div>
+  </div>
 </div>
 
 <!-- STUDII PO GORODAM — только города, где реально есть объявления (см. renderCityLinks) -->
@@ -421,14 +446,97 @@ function closeStudioModal(){
 }
 
 document.addEventListener('keydown', function(e){
-  if(e.key === 'Escape') closeStudioModal();
+  if(e.key === 'Escape'){ closeReviewModal(); closeStudioModal(); }
 });
 
 function esc(t){return String(t==null?'':t).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
 
 /* ---------- Leave a review ---------- */
+var reviewStudioId = null;
+var reviewRating = 0;
+
 function openReview(studioId){
-  alert('Отзывы временно недоступны. Есть что сказать про студию? Напишите в поддержку: @Workadult_feedback_bot');
+  var s = STUDIOS.filter(function(x){return String(x.id)===String(studioId);})[0];
+  reviewStudioId = studioId;
+  reviewRating = 0;
+  document.getElementById('reviewStudioName').textContent = s ? s.name : '';
+  document.getElementById('reviewText').value = '';
+  document.getElementById('reviewAuthor').value = '';
+  var statusEl = document.getElementById('reviewStatus');
+  statusEl.textContent = '';
+  statusEl.className = 'rm-status';
+  var btn = document.getElementById('reviewSubmitBtn');
+  btn.disabled = false;
+  btn.style.display = '';
+  btn.textContent = 'Отправить на модерацию';
+  renderReviewStars();
+  document.getElementById('reviewModalOverlay').classList.add('open');
+  document.body.style.overflow = 'hidden';
+}
+
+function closeReviewModal(){
+  document.getElementById('reviewModalOverlay').classList.remove('open');
+  document.body.style.overflow = '';
+}
+
+function setReviewRating(n){
+  reviewRating = n;
+  renderReviewStars();
+}
+
+function renderReviewStars(){
+  var html = '';
+  for(var i=1;i<=5;i++){
+    html += '<span class="rm-star'+(i<=reviewRating?' active':'')+'" onclick="setReviewRating('+i+')">★</span>';
+  }
+  document.getElementById('reviewStars').innerHTML = html;
+}
+
+function submitReview(){
+  var statusEl = document.getElementById('reviewStatus');
+  var text = document.getElementById('reviewText').value.trim();
+  if(!reviewRating){
+    statusEl.textContent = 'Выберите оценку от 1 до 5 звёзд.';
+    statusEl.className = 'rm-status err';
+    return;
+  }
+  if(!text){
+    statusEl.textContent = 'Напишите текст отзыва.';
+    statusEl.className = 'rm-status err';
+    return;
+  }
+  var s = STUDIOS.filter(function(x){return String(x.id)===String(reviewStudioId);})[0];
+  var btn = document.getElementById('reviewSubmitBtn');
+  btn.disabled = true;
+  btn.textContent = 'Отправка...';
+  statusEl.textContent = '';
+  statusEl.className = 'rm-status';
+  fetch(ADMIN_API+'/api/submit-review', {
+    method:'POST', headers:{'Content-Type':'application/json'},
+    body: JSON.stringify({
+      studio_id: reviewStudioId,
+      studio_name: s ? s.name : '',
+      rating: reviewRating,
+      text: text,
+      author: document.getElementById('reviewAuthor').value.trim()
+    })
+  }).then(function(r){return r.json();}).then(function(d){
+    if(d && d.ok){
+      statusEl.textContent = 'Спасибо! Отзыв отправлен на модерацию и появится после проверки.';
+      statusEl.className = 'rm-status ok';
+      btn.style.display = 'none';
+    } else {
+      statusEl.textContent = 'Не удалось отправить отзыв. Проверьте оценку и текст.';
+      statusEl.className = 'rm-status err';
+      btn.disabled = false;
+      btn.textContent = 'Отправить на модерацию';
+    }
+  }).catch(function(){
+    statusEl.textContent = 'Ошибка сети. Попробуйте ещё раз.';
+    statusEl.className = 'rm-status err';
+    btn.disabled = false;
+    btn.textContent = 'Отправить на модерацию';
+  });
 }
 
 /* ---------- Load catalog ---------- */
@@ -444,10 +552,12 @@ function loadCatalog(){
   loadDemo().then(function(){
   fetch('/studios.json?t='+Date.now()).then(function(r){return r.json();}).then(function(d){
     var base = (d.studios||[]).filter(function(s){return s.approved!==false;});
-    // index reviews by studio
     REVIEWS = {};
-    (d.reviews||[]).filter(function(r){return r.approved!==false;}).forEach(function(r){
-      (REVIEWS[r.studio_id]=REVIEWS[r.studio_id]||[]).push(r);
+    fetch(ADMIN_API+'/api/reviews').then(function(r){return r.json();}).catch(function(){return {reviews:[]};})
+    .then(function(rd){
+      (rd.reviews||[]).forEach(function(r){
+        (REVIEWS[r.studio_id]=REVIEWS[r.studio_id]||[]).push(r);
+      });
     });
     /* Платные места (тарифы/буст, через Telegram-бота) — единственный источник
        студий из админки, подмешиваем к базовому списку. */
