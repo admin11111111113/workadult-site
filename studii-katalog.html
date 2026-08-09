@@ -78,8 +78,8 @@
 .badge-ver{flex-shrink:0;display:inline-flex;align-items:center;gap:4px;background:rgba(43,213,118,.13);color:var(--green);border:1px solid rgba(43,213,118,.3);border-radius:999px;padding:2px 7px;font-size:10px;font-weight:700;}
 .badge-prem{flex-shrink:0;background:rgba(245,166,35,.14);color:var(--gold);border:1px solid rgba(245,166,35,.35);border-radius:999px;padding:2px 7px;font-size:10px;font-weight:700;}
 .studio-fmt{display:flex;flex-wrap:wrap;gap:4px;margin-bottom:6px;}
+.stars{color:var(--gold,#f5a623);letter-spacing:1px;font-size:15px;font-weight:900;}
 .card-rating{display:flex;align-items:center;gap:5px;font-size:11.5px;color:var(--muted);margin-bottom:6px;}
-.card-rating .stars{color:var(--gold,#f5a623);letter-spacing:1px;font-size:12px;}
 .fmt-tag{background:rgba(255,255,255,.05);border:1px solid var(--glass-brd);color:var(--muted);border-radius:6px;padding:2px 7px;font-size:10.5px;font-weight:600;}
 .studio-pct{font-size:12.5px;color:var(--text);margin-top:auto;}
 .studio-pct b{color:var(--green);}
@@ -396,7 +396,7 @@ function renderStudios(){
       ? (s.premium? '<span class="badge-prem">★ Премиум</span>' : (s.verified? '<span class="badge-ver">✓</span>':''))
       : '';
     var rt = displayRating(s);
-    var ratingRow = '<div class="card-rating"><span class="stars">'+starStr(rt.avg)+'</span>'+rt.avg.toFixed(1)+(rt.cnt?' · '+rt.cnt:'')+'</div>';
+    var ratingRow = '<div class="card-rating"><span class="stars">'+starStr(rt.avg)+'</span>'+(rt.cnt?rt.cnt+' отз.':'')+'</div>';
     return '<div class="studio-card'+tierClass+'" onclick="openStudioModal(\''+s.id+'\')">'
       + ribbon + photoHtml
       + '<div class="card-body">'
@@ -431,7 +431,7 @@ function openStudioModal(id){
   if(!contacts) contacts = '<span style="color:var(--faint)">Контакты появятся после модерации.</span>';
 
   var rt = displayRating(s);
-  var ratingHtml = '<span class="stars">'+starStr(rt.avg)+'</span> '+rt.avg.toFixed(1)+(rt.cnt?' · '+rt.cnt+' отз.':'');
+  var ratingHtml = '<span class="stars">'+starStr(rt.avg)+'</span>'+(rt.cnt?' '+rt.cnt+' отз.':'');
 
   var modalEl = document.getElementById('studioModal');
   modalEl.className = 'studio-modal' + (isPaidTier ? ' tier-'+s.tier : '');
