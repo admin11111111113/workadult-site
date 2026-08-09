@@ -605,8 +605,9 @@
 <script src="bot.js"></script>
 <script src="fx.js"></script>
 <script>
-/* Homepage TOP-5 board — reads /board.json, renders pinned vacancies as gold-glow cards.
-   Falls back to 5 demo cards if the board is empty or unavailable. (board.json fetch preserved.) */
+/* Homepage TOP-5 board — реклама студий (не вакансий), заголовок «Свежие
+   вакансии» оставлен как есть. Источник — /api/listings, сортировка по
+   тиру (золото→серебро→бронза→обычные). Демо — тоже студии, из /api/demo. */
 (function(){
   function esc(s){var d=document.createElement('div');d.textContent=(s==null?'':String(s));return d.innerHTML;}
   function escAttr(s){ return esc(s).replace(/"/g,'&quot;'); }
@@ -615,6 +616,7 @@
     return '<span class="ct ct-reveal" data-contact="'+escAttr(raw)+'">Показать контакт</span>';
   }
   var DEMO=[]; // подтягивается с /api/demo (редактируется в админке)
+  var TIER_RANK={gold:0,silver:1,bronze:2,regular:3};
   function card(it){
     var tierClass = (it.tier==='gold'||it.tier==='silver'||it.tier==='bronze') ? ' tier-'+it.tier : '';
     return '<div class="vboard-card'+tierClass+'">'+
@@ -631,23 +633,21 @@
   var ADMIN_API='https://workadult-server.onrender.com';
   function finish(all){
     var top=all.slice().sort(function(x,y){
-      if((y.ts||0)!==(x.ts||0)) return (y.ts||0)-(x.ts||0);
-      return String(y.date||'').localeCompare(String(x.date||''));
+      var rx=TIER_RANK[x.tier]!=null?TIER_RANK[x.tier]:3, ry=TIER_RANK[y.tier]!=null?TIER_RANK[y.tier]:3;
+      return rx-ry;
     }).slice(0,5);
     renderBoard(top);
   }
   fetch(ADMIN_API+'/api/demo').then(function(r){return r.json();}).then(function(d){
-    DEMO=(d.vacancies||[]).map(function(v){return {org:v.org,title:v.title,salary:v.salary,contact:v.contact};});
+    DEMO=(d.studios||[]).map(function(s){return {org:s.city,title:s.name,salary:s.percent,contact:s.contact};});
   }).catch(function(){}).then(function(){
-  fetch('/board.json?t='+Date.now()).then(function(r){return r.json();}).then(function(d){
-    var base=d.vacancies||[];
-    /* серверная админка/бот добавляют вакансии — подмешиваем к статичным */
-    fetch(ADMIN_API+'/api/board').then(function(r){return r.json();}).then(function(ad){
-      finish(base.concat(ad.vacancies||[]));
-    }).catch(function(){ finish(base); });
-  }).catch(function(){
-    renderBoard(DEMO);
-  });
+  fetch(ADMIN_API+'/api/listings').then(function(r){return r.json();}).then(function(result){
+    var studios=(result.slots||[]).filter(function(s){return s.listing;}).map(function(s){
+      var l=s.listing;
+      return {org:l.city,title:l.name,salary:l.percent,contact:l.contacts,tier:l.tier};
+    });
+    finish(studios);
+  }).catch(function(){ renderBoard(DEMO); });
   });
 
   /* Оплаченные места "на главной" ($100/мес) — студия или вакансия,

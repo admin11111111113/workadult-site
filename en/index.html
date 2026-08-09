@@ -258,10 +258,11 @@
 <script>
 (function(){
   function esc(s){var d=document.createElement('div');d.textContent=(s==null?'':String(s));return d.innerHTML;}
-  var DEMO=[]; // fetched from /api/demo (editable in admin)
+  var DEMO=[]; // fetched from /api/demo (editable in admin) — studios, not vacancies
   var ADMIN_API='https://workadult-server.onrender.com';
+  var TIER_RANK={gold:0,silver:1,bronze:2,regular:3};
   var demoReady=fetch(ADMIN_API+'/api/demo').then(function(r){return r.json();}).then(function(d){
-    DEMO=(d.vacancies||[]).map(function(v){return {org:v.org,title:v.title,salary:v.salary,contact:v.contact};});
+    DEMO=(d.studios||[]).map(function(s){return {org:s.city,title:s.name,salary:s.percent,contact:s.contact};});
   }).catch(function(){});
   function card(it){
     var contact='';
@@ -270,7 +271,7 @@
       var url=c.charAt(0)==='@'?('https://t.me/'+c.slice(1)):(/^https?:\/\//.test(c)?c:'');
       contact=url?('<a class="ct" href="'+esc(url)+'" target="_blank" rel="noopener nofollow">Message &#8594;</a>'):('<span class="ct">'+esc(c)+'</span>');
     }
-    return '<div class="vboard-card"><span class="pin">&#9733; TOP</span>'+
+    return '<div class="vboard-card">'+
       (it.org?'<div class="org">'+esc(it.org)+'</div>':'')+
       '<div class="title">'+esc(it.title||'')+'</div>'+
       (it.salary?'<div class="sal">'+esc(it.salary)+'</div>':'')+
@@ -281,18 +282,17 @@
     var list=(items&&items.length)?items:DEMO;
     el.innerHTML=list.slice(0,5).map(card).join('');
   }
-  function setStatus(free){
-    var st=document.getElementById('spot-status'); if(!st)return;
-    if(free<=0){ st.style.color='#ff8da3'; st.innerHTML='&#128308; <b>0 of 5</b> spots left'; }
-    else { st.style.color='#7ee0a6'; st.innerHTML='&#128994; <b>'+free+' of 5</b> spots left'; }
-  }
   demoReady.then(function(){
-  fetch('/board.json?t='+Date.now()).then(function(r){return r.json();}).then(function(d){
-    var pinned=(d.vacancies||[]).filter(function(x){return x.pinned;});
-    var top=pinned.slice().sort(function(x,y){return String(y.date||'').localeCompare(String(x.date||''));}).slice(0,5);
-    setStatus(Math.max(0,5-pinned.length));
-    renderBoard(top);
-  }).catch(function(){ setStatus(0); renderBoard(DEMO); });
+  fetch(ADMIN_API+'/api/listings').then(function(r){return r.json();}).then(function(result){
+    var studios=(result.slots||[]).filter(function(s){return s.listing;}).map(function(s){
+      var l=s.listing;
+      return {org:l.city,title:l.name,salary:l.percent,contact:l.contacts,tier:l.tier};
+    }).sort(function(x,y){
+      var rx=TIER_RANK[x.tier]!=null?TIER_RANK[x.tier]:3, ry=TIER_RANK[y.tier]!=null?TIER_RANK[y.tier]:3;
+      return rx-ry;
+    });
+    renderBoard(studios);
+  }).catch(function(){ renderBoard(DEMO); });
   });
 })();
 </script>
