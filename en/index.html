@@ -112,6 +112,9 @@
 .vboard-card .title{font-size:13px;font-weight:600;color:#fff;line-height:1.35;}
 .vboard-card .sal{font-size:12px;font-weight:500;color:#b9b3c7;margin:6px 0 0;line-height:1.5;}
 .vboard-card .ct{margin-top:auto;padding-top:14px;font-size:12px;font-weight:600;color:#ff4d8d;text-decoration:none;}
+.vboard-card.hb-card{padding:16px 20px 22px;}
+.hb-photo{width:100%;height:110px;object-fit:cover;border-radius:10px;margin-bottom:10px;display:block;}
+.hb-photo-empty{display:flex;align-items:center;justify-content:center;font-size:26px;opacity:.3;background:rgba(255,255,255,.04);}
 @media(max-width:820px){.board-row{justify-content:flex-start;}}
 
 
@@ -262,7 +265,7 @@
   var ADMIN_API='https://workadult-server.onrender.com';
   var TIER_RANK={gold:0,silver:1,bronze:2,regular:3};
   var demoReady=fetch(ADMIN_API+'/api/demo').then(function(r){return r.json();}).then(function(d){
-    DEMO=(d.studios||[]).map(function(s){return {org:s.city,title:s.name,salary:s.percent,contact:s.contact};});
+    DEMO=(d.studios||[]).map(function(s){return {org:s.city,title:s.name,salary:s.percent,contact:s.contact,photo:s.photo};});
   }).catch(function(){});
   function card(it){
     var contact='';
@@ -271,7 +274,9 @@
       var url=c.charAt(0)==='@'?('https://t.me/'+c.slice(1)):(/^https?:\/\//.test(c)?c:'');
       contact=url?('<a class="ct" href="'+esc(url)+'" target="_blank" rel="noopener nofollow">Message &#8594;</a>'):('<span class="ct">'+esc(c)+'</span>');
     }
-    return '<div class="vboard-card">'+
+    var photoHtml = it.photo ? '<img class="hb-photo" src="'+esc(it.photo)+'" alt="" loading="lazy">' : '<div class="hb-photo hb-photo-empty">🏢</div>';
+    return '<div class="vboard-card hb-card">'+
+      photoHtml+
       (it.org?'<div class="org">'+esc(it.org)+'</div>':'')+
       '<div class="title">'+esc(it.title||'')+'</div>'+
       (it.salary?'<div class="sal">'+esc(it.salary)+'</div>':'')+
@@ -286,7 +291,7 @@
   fetch(ADMIN_API+'/api/listings').then(function(r){return r.json();}).then(function(result){
     var studios=(result.slots||[]).filter(function(s){return s.listing;}).map(function(s){
       var l=s.listing;
-      return {org:l.city,title:l.name,salary:l.percent,contact:l.contacts,tier:l.tier};
+      return {org:l.city,title:l.name,salary:l.percent,contact:l.contacts,tier:l.tier,photo:l.cover_photo||l.photo||''};
     }).sort(function(x,y){
       var rx=TIER_RANK[x.tier]!=null?TIER_RANK[x.tier]:3, ry=TIER_RANK[y.tier]!=null?TIER_RANK[y.tier]:3;
       return rx-ry;
