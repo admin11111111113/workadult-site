@@ -235,8 +235,7 @@ function renderStudios(){
     var rb = TIER_RANK[b.tier]!=null ? TIER_RANK[b.tier] : 3;
     return ra - rb;
   });
-  document.getElementById('studioCount').textContent =
-    filtered.length + (STUDIOS.length? ' студий в Новосибирск' : ' · показаны примеры — станьте первой настоящей студией в Новосибирск');
+  document.getElementById('studioCount').textContent = STUDIOS.length ? (filtered.length + ' студий в Новосибирск') : '';
   if(!filtered.length){
     grid.innerHTML = '<div style="grid-column:1/-1;text-align:center;color:var(--faint);padding:40px;">Пока нет студий в Новосибирск. <a href="studii-podat.html" style="color:var(--accent-3);">Разместите первую →</a></div>';
     return;
