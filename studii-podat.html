@@ -87,9 +87,6 @@
 <body>
 <header>
   <a href="https://workadult.pro">WORKADULT.PRO</a>
-  <nav>
-    <a href="https://workadult-server.onrender.com/studios.html">Каталог мест</a>
-  </nav>
 </header>
 
 <div class="container">
@@ -513,8 +510,9 @@ function pollPayment() {
     const status = document.getElementById('payStatus');
     if (d.ok) {
       status.style.color = '#6fdc8c';
-      status.textContent = '✓ Оплата подтверждена! Объявление уйдёт на финальную проверку и будет опубликовано в ближайшее время.';
+      status.textContent = '✓ Оплата подтверждена! Объявление уйдёт на финальную проверку и будет опубликовано в ближайшее время. Переходим в каталог...';
       btn.style.display = 'none';
+      setTimeout(function(){ window.location.href = 'studii-katalog.html'; }, 4000);
       return;
     }
     if (d.error === 'used' || d.error === 'no_pending') {
