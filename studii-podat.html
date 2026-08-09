@@ -195,6 +195,15 @@
         <label>VK</label>
         <input name="social_vk" placeholder="https://vk.com/...">
       </div>
+      <div class="field" id="tariffExplainer" style="background:#0a0a0f;border:1px solid #262a33;border-radius:10px;padding:14px 16px;font-size:13px;color:#9aa0aa;line-height:1.8;">
+        <b style="color:#fff;">Как устроены тарифы</b><br>
+        Обычное размещение — разовая оплата <b id="teSubmit">$70</b>, объявление остаётся в каталоге навсегда, без буста.<br>
+        Буст (по желанию, оплачивается отдельно и помесячно) поднимает вас наверх списка в вашем городе:<br>
+        🥇 Золото — до <span id="teGoldCap">5</span> лучших мест в городе — <b id="teGold">$50</b>/мес<br>
+        🥈 Серебро — следующие до <span id="teSilverCap">5</span> мест — <b id="teSilver">$30</b>/мес<br>
+        🥉 Бронза — следующие до <span id="teBronzeCap">5</span> мест — <b id="teBronze">$15</b>/мес<br>
+        Дальше в списке — только обычное размещение, без буста.
+      </div>
       <button class="submit-btn" type="submit" id="submitBtn">Отправить и оплатить</button>
       <div id="status"></div>
     </form>
@@ -241,6 +250,19 @@ function renderTierPicker() {
   wl.classList.toggle('show', !!selFull);
 
   document.getElementById('promoTypeField').style.display = (selectedTier === 'home') ? 'block' : 'none';
+  renderTariffExplainer();
+}
+
+function renderTariffExplainer() {
+  const t = tierAvail ? tierAvail.tiers : {};
+  const set = (id, val) => { const el = document.getElementById(id); if (el) el.textContent = val; };
+  set('teSubmit', '$' + (tierAvail ? tierAvail.submit_price : 70));
+  set('teGold', '$' + (t.gold ? t.gold.price : 50));
+  set('teGoldCap', t.gold ? t.gold.cap : 5);
+  set('teSilver', '$' + (t.silver ? t.silver.price : 30));
+  set('teSilverCap', t.silver ? t.silver.cap : 5);
+  set('teBronze', '$' + (t.bronze ? t.bronze.price : 15));
+  set('teBronzeCap', t.bronze ? t.bronze.cap : 5);
 }
 
 document.querySelectorAll('input[name=promoTypeRadio]').forEach(function(r){
