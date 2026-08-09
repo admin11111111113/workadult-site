@@ -390,13 +390,10 @@
 <!-- TOP PLACEMENT (right after hero) -->
 <section class="section" id="top-placement" style="padding-top:56px;padding-bottom:24px;">
   <div class="container" style="max-width:1200px;">
-    <!-- promo card -->
-    <div class="card reveal" style="text-align:center;">
-      <div class="promo-star">⭐</div>
-      <h2 class="section-title" style="font-size:clamp(22px,2.8vw,32px);">Ищете модель или сотрудника? <span class="grad">Разместите вакансию</span></h2>
-      <div class="btn-group" style="justify-content:center;margin-top:20px;">
-        <a href="/vakansii.html" class="btn btn-gold btn-lg">Разместить вакансию →</a>
-      </div>
+    <!-- Свежие вакансии (топ-студии): реклама студий — приоритет -->
+    <div class="reveal d1">
+      <div class="board-head"><span class="eyebrow" style="margin:0;">🔥 Свежие вакансии</span></div>
+      <div id="home-board" class="board-row"></div>
     </div>
 
     <!-- Оплаченные места "на главной" — студии или вакансии, что рекламодатель выбрал при подаче -->
@@ -405,10 +402,13 @@
       <div id="featured-board" class="board-row"></div>
     </div>
 
-    <!-- Свежие вакансии: одна горизонтальная строка компактных карточек -->
-    <div class="reveal d1" style="margin-top:28px;">
-      <div class="board-head"><span class="eyebrow" style="margin:0;">🔥 Свежие вакансии</span></div>
-      <div id="home-board" class="board-row"></div>
+    <!-- promo card: разместить вакансию — ниже рекламы студий -->
+    <div class="card reveal" style="text-align:center;margin-top:28px;">
+      <div class="promo-star">⭐</div>
+      <h2 class="section-title" style="font-size:clamp(22px,2.8vw,32px);">Ищете модель или сотрудника? <span class="grad">Разместите вакансию</span></h2>
+      <div class="btn-group" style="justify-content:center;margin-top:20px;">
+        <a href="/vakansii.html" class="btn btn-gold btn-lg">Разместить вакансию →</a>
+      </div>
     </div>
   </div>
 </section>
