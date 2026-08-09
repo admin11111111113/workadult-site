@@ -217,19 +217,20 @@
 
     <div id="paymentPanel" style="display:none">
       <h2>Оплата</h2>
-      <div class="total-box" style="margin-bottom:16px;">К оплате: <b id="payAmount"></b> USDT (TRC-20)</div>
+      <div class="total-box" style="margin-bottom:8px;">К оплате: <b id="payAmount"></b> USDT <span style="font-weight:400;color:#9aa0aa;">+ комиссия сети (обычно ≈$1.5)</span></div>
+      <div class="hint" style="margin-bottom:16px;">Если комиссии не будет — спишется ровно <b id="payAmount2"></b>. Не переживайте — платёж дойдёт в любом случае, небольшая неточность не страшна.</div>
       <img id="payQr" alt="QR для оплаты" style="width:180px;height:180px;display:block;margin:0 auto 16px;border-radius:10px;background:#fff;padding:8px;">
       <div class="field">
         <label>Адрес кошелька (TRC-20)</label>
         <input type="text" id="payAddress" readonly onclick="this.select()">
       </div>
-      <div class="hint" style="margin-bottom:16px;">⚠️ Переведите указанную сумму с уникальными копейками — так платёж находится в сети автоматически. Кошелёк может списать чуть больше — это комиссия сети Tether (обычно ≈$1.5), она не наша и в сумму не входит. Небольшая неточность (в пределах пары долларов) не страшна — оплата всё равно пройдёт.</div>
-      <div class="field">
-        <label>TxID (хэш транзакции)</label>
-        <input type="text" id="txidInput" placeholder="Вставьте хэш транзакции после оплаты">
-      </div>
-      <button class="submit-btn" type="button" id="confirmPayBtn">Я оплатил</button>
+      <button class="submit-btn" type="button" id="confirmPayBtn">Подтвердить оплату</button>
       <div id="payStatus"></div>
+      <div id="paymentHelp" class="field" style="display:none;margin-top:20px;">
+        <div class="hint" style="margin-bottom:8px;">Платёж не находится автоматически? Опишите, что произошло — мы проверим вручную.</div>
+        <textarea id="paymentIssueNote" rows="3" placeholder="Например: оплатил, но не подтверждается"></textarea>
+        <button type="button" class="submit-btn" id="reportIssueBtn" style="margin-top:8px;">Написать нам</button>
+      </div>
     </div>
   </div>
 </div>
@@ -466,42 +467,85 @@ function submitStudio(e) {
 
 function showPaymentPanel(d) {
   document.getElementById('payAmount').textContent = d.amount;
+  document.getElementById('payAmount2').textContent = d.amount;
   document.getElementById('payAddress').value = d.address;
   document.getElementById('payQr').src = 'https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=' + encodeURIComponent(d.address);
   document.getElementById('paymentPanel').style.display = 'block';
   document.getElementById('paymentPanel').scrollIntoView({behavior: 'smooth', block: 'start'});
 }
 
+const MAX_POLL_ATTEMPTS = 24;   // ~24 × 8с ≈ 3 минуты активного опроса
+const POLL_INTERVAL_MS = 8000;
+let pollAttempts = 0;
+
 document.getElementById('confirmPayBtn').addEventListener('click', function() {
-  const btn = this;
-  const status = document.getElementById('payStatus');
-  const txid = document.getElementById('txidInput').value.trim();
-  if (!txid) { status.style.color = '#ff6b6b'; status.textContent = 'Вставьте хэш транзакции (TxID).'; return; }
-  btn.disabled = true; btn.textContent = 'Проверяем...';
-  status.style.color = '#9aa0aa'; status.textContent = '';
+  this.disabled = true; this.textContent = 'Проверяем...';
+  document.getElementById('payStatus').style.color = '#9aa0aa';
+  document.getElementById('payStatus').textContent = 'Ищем ваш платёж в сети — обычно занимает 1-3 минуты, не закрывайте страницу.';
+  document.getElementById('paymentHelp').style.display = 'none';
+  pollAttempts = 0;
+  pollPayment();
+});
+
+function pollPayment() {
+  pollAttempts++;
   fetch(API + '/api/confirm-payment', {
     method: 'POST', headers: {'Content-Type': 'application/json'},
-    body: JSON.stringify({auth: TG_AUTH, txid: txid})
+    body: JSON.stringify({auth: TG_AUTH})
   }).then(r => r.json()).then(d => {
-    btn.disabled = false; btn.textContent = 'Я оплатил';
+    const btn = document.getElementById('confirmPayBtn');
+    const status = document.getElementById('payStatus');
     if (d.ok) {
       status.style.color = '#6fdc8c';
       status.textContent = '✓ Оплата подтверждена! Объявление уйдёт на финальную проверку и будет опубликовано в ближайшее время.';
-      document.getElementById('txidInput').disabled = true;
       btn.style.display = 'none';
-    } else {
-      const msgs = {
-        no_pending: 'Не найден ожидающий платёж — возможно, он уже подтверждён.',
-        used: 'Этот TxID уже был использован ранее.',
-        not_found: 'Платёж не найден в сети. Проверьте перевод и попробуйте снова через 1-3 минуты.',
-      };
+      return;
+    }
+    if (d.error === 'used' || d.error === 'no_pending') {
       status.style.color = '#ff6b6b';
-      status.textContent = msgs[d.error] || 'Ошибка проверки. Попробуйте ещё раз через пару минут.';
+      status.textContent = d.error === 'used' ? 'Этот платёж уже был засчитан ранее.' : 'Платёж уже подтверждён или не найден. Обновите страницу.';
+      btn.disabled = false; btn.textContent = 'Проверить ещё раз';
+      document.getElementById('paymentHelp').style.display = 'block';
+      return;
+    }
+    if (pollAttempts >= MAX_POLL_ATTEMPTS) {
+      status.style.color = '#f5a623';
+      status.textContent = 'Платёж пока не найден в сети. Если вы уже оплатили — подождите ещё немного и нажмите «Проверить ещё раз», либо напишите нам ниже.';
+      btn.disabled = false; btn.textContent = 'Проверить ещё раз';
+      document.getElementById('paymentHelp').style.display = 'block';
+      return;
+    }
+    status.textContent = 'Ищем платёж в сети... (попытка ' + pollAttempts + ')';
+    setTimeout(pollPayment, POLL_INTERVAL_MS);
+  }).catch(() => {
+    const btn = document.getElementById('confirmPayBtn');
+    btn.disabled = false; btn.textContent = 'Подтвердить оплату';
+    document.getElementById('payStatus').style.color = '#ff6b6b';
+    document.getElementById('payStatus').textContent = 'Сервис недоступен, попробуйте ещё раз.';
+    document.getElementById('paymentHelp').style.display = 'block';
+  });
+}
+
+document.getElementById('reportIssueBtn').addEventListener('click', function() {
+  const btn = this;
+  const note = document.getElementById('paymentIssueNote').value.trim();
+  btn.disabled = true; btn.textContent = 'Отправляем...';
+  fetch(API + '/api/report-payment-issue', {
+    method: 'POST', headers: {'Content-Type': 'application/json'},
+    body: JSON.stringify({auth: TG_AUTH, message: note})
+  }).then(r => r.json()).then(d => {
+    btn.disabled = false; btn.textContent = 'Написать нам';
+    if (d.ok) {
+      document.getElementById('paymentIssueNote').disabled = true;
+      btn.style.display = 'none';
+      document.getElementById('paymentHelp').insertAdjacentHTML('beforeend',
+        '<div style="color:#6fdc8c;margin-top:8px;">✓ Сообщение отправлено — мы проверим оплату вручную и ответим в Telegram.</div>');
+    } else {
+      alert('Ошибка отправки. Напишите напрямую: @Workadult_feedback_bot');
     }
   }).catch(() => {
-    btn.disabled = false; btn.textContent = 'Я оплатил';
-    status.style.color = '#ff6b6b';
-    status.textContent = 'Сервис недоступен, попробуйте позже.';
+    btn.disabled = false; btn.textContent = 'Написать нам';
+    alert('Ошибка сети. Напишите напрямую: @Workadult_feedback_bot');
   });
 });
 </script>
