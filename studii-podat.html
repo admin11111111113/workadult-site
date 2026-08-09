@@ -24,6 +24,10 @@
   .field input, .field textarea { width: 100%; padding: 11px 13px; border-radius: 8px; border: 1px solid #262a33; background: #0a0a0f; color: #fff; font-size: 14px; }
   .field textarea { min-height: 80px; resize: vertical; }
   .field .hint { font-size: 11px; color: #666; margin-top: 4px; }
+  .field .fmt-pick { display: flex; flex-wrap: wrap; gap: 8px; }
+  .field .fmt-pick label { display: flex; align-items: center; width: auto; background: rgba(255,255,255,.04); border: 1px solid #262a33; border-radius: 10px; padding: 8px 13px; font-size: 13px; color: #9aa0aa; cursor: pointer; user-select: none; margin: 0; }
+  .field .fmt-pick input { width: auto; margin-right: 6px; }
+  .field .fmt-pick input:checked + span { color: #fff; }
   .row2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
   .submit-btn { width: 100%; padding: 13px; border-radius: 8px; border: none; background: #e91e8c; color: #fff; font-weight: 700; font-size: 14px; cursor: pointer; margin-top: 8px; }
   .submit-btn:disabled { opacity: .5; cursor: default; }
@@ -153,6 +157,17 @@
       <div class="field">
         <label><b>*</b> Описание</label>
         <textarea name="terms" maxlength="600" required placeholder="Условия, оборудование, поддержка, формат работы"></textarea>
+      </div>
+      <div class="field">
+        <label>Формат работы <span style="font-weight:400">(необязательно, можно выбрать несколько)</span></label>
+        <div class="fmt-pick">
+          <label><input type="checkbox" name="fmt" value="studio"><span>В студии</span></label>
+          <label><input type="checkbox" name="fmt" value="home"><span>Из дома</span></label>
+          <label><input type="checkbox" name="fmt" value="pair"><span>Парой</span></label>
+          <label><input type="checkbox" name="fmt" value="guys"><span>Принимаем парней</span></label>
+          <label><input type="checkbox" name="fmt" value="nonnude"><span>Non Nude</span></label>
+          <label><input type="checkbox" name="fmt" value="trans"><span>Принимаем транссексуалов</span></label>
+        </div>
       </div>
       <div class="row2">
         <div class="field">
@@ -435,6 +450,7 @@ function submitStudio(e) {
   const form = e.target;
   const fd = new FormData(form);
   const data = Object.fromEntries(fd.entries());
+  data.fmt = fd.getAll('fmt');
   data.logo = data.logo || data.logo_url || '';
   delete data.logo_url;
   data.desired_tier = selectedTier;
