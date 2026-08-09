@@ -384,7 +384,8 @@ div[style*="background:#fffdf2"] { background: rgba(245,166,35,0.07) !important;
           <span style="display:block;font-size:13px;font-weight:600;color:#444;margin-bottom:6px;">Контакт для связи *</span>
           <input name="contact" required maxlength="80" placeholder="Telegram, email или телефон" style="width:100%;padding:12px 14px;border:1px solid #ddd;border-radius:8px;font-size:15px;box-sizing:border-box;">
         </label>
-        <p style="font-size:12.5px;color:#888;margin:0;">Публикация бесплатная. Если у вашей студии оплачен цветной тариф на сайте — вакансия автоматически подсветится тем же цветом. Не чаще одной вакансии в неделю на студию.</p>
+        <p style="font-size:12.5px;color:#888;margin:0;">Публикация бесплатная. Если у вашей студии оплачен цветной тариф на сайте — вакансия автоматически подсветится тем же цветом.</p>
+        <p id="vacancy-quota-status" style="font-size:13px;margin:0;"></p>
         <button type="submit" class="btn btn-gold" style="margin-top:6px;">Отправить заявку</button>
         <p id="vacancy-status" style="font-size:14px;margin:0;"></p>
       </div>
@@ -445,6 +446,24 @@ function onTelegramAuth(user) {
     var pb = document.getElementById('post-box');
     if (pb) pb.scrollIntoView({behavior:'smooth'});
   }
+  refreshVacancyQuota();
+}
+function refreshVacancyQuota(){
+  var el = document.getElementById('vacancy-quota-status');
+  if (!TG_AUTH || !el) return;
+  fetch(API + '/api/vacancy-status?tg_id=' + encodeURIComponent(TG_AUTH.id))
+    .then(function(r){return r.json();}).then(function(d){
+      if (!d.ok) { el.textContent = ''; return; }
+      var freq = d.posts_per_week === 2 ? '2 вакансии в неделю' : '1 вакансию в неделю';
+      var upsell = d.vip ? '' : ' — <a href="studii-podat.html" style="color:#c62828;">золото/буст на главной даёт 2 в неделю →</a>';
+      if (d.can_post) {
+        el.style.color = '#2e7d32';
+        el.innerHTML = '✓ Можно опубликовать вакансию прямо сейчас (лимит: ' + freq + ')' + upsell;
+      } else {
+        el.style.color = '#c62828';
+        el.innerHTML = 'Следующую вакансию можно опубликовать через ' + d.wait_days + ' дн. (лимит: ' + freq + ')' + upsell;
+      }
+    }).catch(function(){ el.textContent = ''; });
 }
 function fillPay(prefix){
   fetch(API + '/pin-info').then(function(r){return r.json();}).then(function(d){
@@ -465,6 +484,7 @@ document.addEventListener('click', function(e){
   if (e.target.id === 'choose-vacancy') {
     document.getElementById('role-choice').style.display='none';
     document.getElementById('vacancy-form').style.display='block';
+    refreshVacancyQuota();
   } else if (e.target.id === 'choose-seeker') {
     document.getElementById('role-choice').style.display='none';
     document.getElementById('seeker-form').style.display='block';
