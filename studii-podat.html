@@ -45,6 +45,17 @@
   .waitlist-check.show { display: flex; }
   .waitlist-check input { accent-color: #e91e8c; }
   .tier-base-note { display: flex; align-items: center; gap: 8px; padding: 11px 14px; border-radius: 8px; border: 1px solid rgba(43,213,118,.3); background: rgba(43,213,118,.08); font-size: 13px; color: #d7f5e2; }
+  .total-box { background: #12121a; border: 1px solid #e91e8c; border-radius: 10px; padding: 13px 16px; font-size: 15px; color: #fff; text-align: center; }
+  .total-box b { color: #ff6fae; }
+  /* чем дороже буст, тем заметнее карточка тарифа */
+  .tier-opt[data-tier="bronze"] { border-color: rgba(205,127,50,.35); }
+  .tier-opt[data-tier="bronze"].active { border-color: #cd7f32; background: linear-gradient(90deg,rgba(205,127,50,.16),rgba(205,127,50,.03)); }
+  .tier-opt[data-tier="silver"] { border-color: rgba(200,200,210,.35); }
+  .tier-opt[data-tier="silver"].active { border-color: #c9ccd6; background: linear-gradient(90deg,rgba(200,200,210,.2),rgba(200,200,210,.03)); }
+  .tier-opt[data-tier="gold"] { border-color: rgba(245,166,35,.4); }
+  .tier-opt[data-tier="gold"].active { border-color: #f5a623; background: linear-gradient(90deg,rgba(245,166,35,.22),rgba(245,166,35,.04)); box-shadow: 0 0 22px rgba(245,166,35,.18); }
+  .tier-opt[data-tier="home"] { border-color: rgba(168,85,247,.4); }
+  .tier-opt[data-tier="home"].active { border-color: #a855f7; background: linear-gradient(90deg,rgba(168,85,247,.22),rgba(168,85,247,.04)); box-shadow: 0 0 22px rgba(168,85,247,.18); }
 
   .photo-pick-row { display:flex; align-items:center; gap:10px; flex-wrap:wrap; }
   .photo-btn { padding:9px 16px; border-radius:8px; border:1px solid #262a33; background:#1a1a24; color:#fff; font-size:13px; font-weight:600; cursor:pointer; }
@@ -104,32 +115,6 @@
           <input name="city" id="cityInput" maxlength="80" required list="cityList" placeholder="Начните вводить...">
           <datalist id="cityList"><option value="Москва"><option value="Санкт-Петербург"><option value="Новосибирск"><option value="Екатеринбург"><option value="Казань"><option value="Нижний Новгород"><option value="Челябинск"><option value="Красноярск"><option value="Самара"><option value="Уфа"><option value="Ростов-на-Дону"><option value="Краснодар"><option value="Омск"><option value="Воронеж"><option value="Пермь"><option value="Волгоград"><option value="Саратов"><option value="Тюмень"><option value="Барнаул"><option value="Ижевск"><option value="Калининград"><option value="Кемерово"><option value="Томск"><option value="Сочи"><option value="Иркутск"><option value="Анапа"><option value="Белгород"><option value="Бийск"><option value="Владивосток"><option value="Владимир"><option value="Вологда"><option value="Дзержинск"><option value="Евпатория"><option value="Иваново"><option value="Йошкар-Ола"><option value="Калуга"><option value="Киров"><option value="Курск"><option value="Липецк"><option value="Набережные Челны"><option value="Нальчик"><option value="Нижневартовск"><option value="Нижнекамск"><option value="Нижний Тагил"><option value="Новокузнецк"><option value="Новороссийск"><option value="Оренбург"><option value="Пенза"><option value="Псков"><option value="Севастополь"><option value="Симферополь"><option value="Ставрополь"><option value="Стерлитамак"><option value="Сургут"><option value="Таганрог"><option value="Тамбов"><option value="Тверь"><option value="Тольятти"><option value="Тула"><option value="Ульяновск"><option value="Чайковский"><option value="Чебоксары"><option value="Чита"><option value="Энгельс"><option value="Ярославль"><option value="Курган"><option value="Алматы"><option value="Тбилиси"><option value="Белград"><option value="Пхукет"><option value="Валенсия"><option value="Нячанг"><option value="Беларусь"><option value="Казахстан"><option value="Кыргызстан"><option value="Молдова"><option value="Украина"></datalist>
           <div class="hint">Нет своего города в списке — впишите вручную, поле текстовое.</div>
-        </div>
-      </div>
-      <div class="field">
-        <label>Размещение</label>
-        <div class="tier-base-note">✓ Обычное размещение — <b id="basePriceLabel">$70</b> (разово, платится всегда, объявление остаётся в каталоге навсегда)</div>
-      </div>
-      <div class="field">
-        <label>Доп. буст (по желанию, отдельно, помесячно) — поднимает место в списке и красит рамку карточки</label>
-        <div class="tier-picker" id="tierPicker"></div>
-        <div class="waitlist-check" id="waitlistCheck">
-          <input type="checkbox" id="waitlistInput">
-          <label for="waitlistInput" style="margin:0">Сообщить в Telegram, когда выбранный уровень освободится</label>
-        </div>
-        <div class="hint">Если платный уровень занят — заявка пойдёт по обычному тарифу, а место можно занять сразу как освободится.</div>
-      </div>
-      <div class="field" id="promoTypeField" style="display:none">
-        <label>Что рекламируем на главной?</label>
-        <div class="tier-picker">
-          <label class="tier-opt active" id="promoOptStudio">
-            <input type="radio" name="promoTypeRadio" value="studio" checked>
-            <span class="t-name">🏢 Студию — карточка в каталоге</span>
-          </label>
-          <label class="tier-opt" id="promoOptVacancy">
-            <input type="radio" name="promoTypeRadio" value="vacancy">
-            <span class="t-name">💼 Вакансию — объявление о работе</span>
-          </label>
         </div>
       </div>
       <div class="field">
@@ -203,9 +188,55 @@
         🥉 Бронза — следующие до <span id="teBronzeCap">5</span> мест — <b id="teBronze">$15</b>/мес<br>
         Дальше в списке — только обычное размещение, без буста.
       </div>
-      <button class="submit-btn" type="submit" id="submitBtn">Отправить и оплатить</button>
+      <div class="field">
+        <label>Размещение</label>
+        <div class="tier-base-note">✓ Обычное размещение — <b id="basePriceLabel">$70</b> (разово, платится всегда, объявление остаётся в каталоге навсегда)</div>
+      </div>
+      <div class="field">
+        <label>Доп. буст (по желанию, отдельно, помесячно) — поднимает место в списке и красит рамку карточки</label>
+        <div class="tier-picker" id="tierPicker"></div>
+        <div class="waitlist-check" id="waitlistCheck">
+          <input type="checkbox" id="waitlistInput">
+          <label for="waitlistInput" style="margin:0">Сообщить в Telegram, когда выбранный уровень освободится</label>
+        </div>
+        <div class="hint">Если платный уровень занят — заявка пойдёт по обычному тарифу, а место можно занять сразу как освободится.</div>
+      </div>
+      <div class="field" id="promoTypeField" style="display:none">
+        <label>Что рекламируем на главной?</label>
+        <div class="tier-picker">
+          <label class="tier-opt active" id="promoOptStudio">
+            <input type="radio" name="promoTypeRadio" value="studio" checked>
+            <span class="t-name">🏢 Студию — карточка в каталоге</span>
+          </label>
+          <label class="tier-opt" id="promoOptVacancy">
+            <input type="radio" name="promoTypeRadio" value="vacancy">
+            <span class="t-name">💼 Вакансию — объявление о работе</span>
+          </label>
+        </div>
+      </div>
+      <div class="field">
+        <div class="total-box">Итого к оплате сейчас: <b id="totalAmountLabel">$70</b></div>
+      </div>
+      <button class="submit-btn" type="submit" id="submitBtn">Отправить</button>
       <div id="status"></div>
     </form>
+
+    <div id="paymentPanel" style="display:none">
+      <h2>Оплата</h2>
+      <div class="total-box" style="margin-bottom:16px;">К оплате: <b id="payAmount"></b> USDT (TRC-20)</div>
+      <img id="payQr" alt="QR для оплаты" style="width:180px;height:180px;display:block;margin:0 auto 16px;border-radius:10px;background:#fff;padding:8px;">
+      <div class="field">
+        <label>Адрес кошелька (TRC-20)</label>
+        <input type="text" id="payAddress" readonly onclick="this.select()">
+      </div>
+      <div class="hint" style="margin-bottom:16px;">⚠️ Переведите ТОЧНО указанную сумму (с уникальными копейками) — так платёж находится в сети автоматически.</div>
+      <div class="field">
+        <label>TxID (хэш транзакции)</label>
+        <input type="text" id="txidInput" placeholder="Вставьте хэш транзакции после оплаты">
+      </div>
+      <button class="submit-btn" type="button" id="confirmPayBtn">Я оплатил</button>
+      <div id="payStatus"></div>
+    </div>
   </div>
 </div>
 
@@ -234,6 +265,7 @@ function renderTierPicker() {
     const full = t.key !== 'regular' && info && !info.available;
     const wrap = document.createElement('label');
     wrap.className = 'tier-opt' + (full ? ' full' : '') + (selectedTier === t.key ? ' active' : '');
+    wrap.dataset.tier = t.key;
     const priceText = t.key === 'regular' ? 'входит в размещение' : (price !== null ? ('+$' + price + ' ' + t.suffix) : '…');
     wrap.innerHTML = '<input type="radio" name="tierRadio" value="' + t.key + '"' + (selectedTier === t.key ? ' checked' : '') + '>' +
       '<span class="t-name">' + t.label + '</span>' +
@@ -250,6 +282,12 @@ function renderTierPicker() {
   wl.classList.toggle('show', !!selFull);
 
   document.getElementById('promoTypeField').style.display = (selectedTier === 'home') ? 'block' : 'none';
+
+  const submitPrice = tierAvail ? tierAvail.submit_price : 70;
+  const boostPrice = selectedTier === 'regular' ? 0 : (selInfo ? selInfo.price : 0);
+  document.getElementById('totalAmountLabel').textContent = '$' + (submitPrice + boostPrice) +
+    (boostPrice ? (' (' + submitPrice + ' + ' + boostPrice + '/мес)') : '');
+
   renderTariffExplainer();
 }
 
@@ -427,23 +465,62 @@ function submitStudio(e) {
     method: 'POST', headers: {'Content-Type': 'application/json'},
     body: JSON.stringify({auth: TG_AUTH, form: data})
   }).then(r => r.json()).then(d => {
-    btn.disabled = false; btn.textContent = 'Отправить и оплатить';
+    btn.disabled = false; btn.textContent = 'Отправить';
     if (d.ok) {
-      status.style.color = '#6fdc8c';
-      status.textContent = '✓ Заявка отправлена! Инструкция для оплаты пришла в Telegram — после оплаты объявление уйдёт на финальную проверку и будет опубликовано.';
-      form.reset();
       form.style.display = 'none';
+      showPaymentPanel(d);
     } else {
       status.style.color = '#ff6b6b';
       status.textContent = 'Заполните все обязательные поля и попробуйте снова.';
     }
   }).catch(() => {
-    btn.disabled = false; btn.textContent = 'Отправить и оплатить';
+    btn.disabled = false; btn.textContent = 'Отправить';
     status.style.color = '#ff6b6b';
     status.textContent = 'Сервис недоступен, попробуйте позже.';
   });
   return false;
 }
+
+function showPaymentPanel(d) {
+  document.getElementById('payAmount').textContent = d.amount;
+  document.getElementById('payAddress').value = d.address;
+  document.getElementById('payQr').src = 'https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=' + encodeURIComponent(d.address);
+  document.getElementById('paymentPanel').style.display = 'block';
+  document.getElementById('paymentPanel').scrollIntoView({behavior: 'smooth', block: 'start'});
+}
+
+document.getElementById('confirmPayBtn').addEventListener('click', function() {
+  const btn = this;
+  const status = document.getElementById('payStatus');
+  const txid = document.getElementById('txidInput').value.trim();
+  if (!txid) { status.style.color = '#ff6b6b'; status.textContent = 'Вставьте хэш транзакции (TxID).'; return; }
+  btn.disabled = true; btn.textContent = 'Проверяем...';
+  status.style.color = '#9aa0aa'; status.textContent = '';
+  fetch(API + '/api/confirm-payment', {
+    method: 'POST', headers: {'Content-Type': 'application/json'},
+    body: JSON.stringify({auth: TG_AUTH, txid: txid})
+  }).then(r => r.json()).then(d => {
+    btn.disabled = false; btn.textContent = 'Я оплатил';
+    if (d.ok) {
+      status.style.color = '#6fdc8c';
+      status.textContent = '✓ Оплата подтверждена! Объявление уйдёт на финальную проверку и будет опубликовано в ближайшее время.';
+      document.getElementById('txidInput').disabled = true;
+      btn.style.display = 'none';
+    } else {
+      const msgs = {
+        no_pending: 'Не найден ожидающий платёж — возможно, он уже подтверждён.',
+        used: 'Этот TxID уже был использован ранее.',
+        not_found: 'Платёж не найден в сети. Проверьте перевод и попробуйте снова через 1-3 минуты.',
+      };
+      status.style.color = '#ff6b6b';
+      status.textContent = msgs[d.error] || 'Ошибка проверки. Попробуйте ещё раз через пару минут.';
+    }
+  }).catch(() => {
+    btn.disabled = false; btn.textContent = 'Я оплатил';
+    status.style.color = '#ff6b6b';
+    status.textContent = 'Сервис недоступен, попробуйте позже.';
+  });
+});
 </script>
 </body>
 </html>
