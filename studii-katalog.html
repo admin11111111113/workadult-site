@@ -389,7 +389,11 @@ function renderStudios(){
   document.getElementById('studioCount').textContent = STUDIOS.length ? String(filtered.length) : '';
 
   if(!filtered.length){
-    grid.innerHTML = '<div style="grid-column:1/-1;text-align:center;color:var(--faint);padding:40px;">В этом городе пока нет студий. <a href="studii-podat.html" style="color:var(--accent-3);">Разместите первую →</a></div>';
+    grid.innerHTML = '<div style="grid-column:1/-1;text-align:center;color:var(--faint);padding:40px;">'
+      + 'В этом городе пока нет студий. <a href="studii-podat.html" style="color:var(--accent-3);">Разместите первую →</a>'
+      + '<div style="margin-top:14px;font-size:13.5px;">Ищешь работу вебкам моделью здесь? '
+      + '<a href="https://t.me/Workadult_feedback_bot" target="_blank" rel="noopener noreferrer" style="color:var(--accent-3);">Оставь заявку в Telegram</a> — подберём студию, как только она появится.</div>'
+      + '</div>';
     return;
   }
 

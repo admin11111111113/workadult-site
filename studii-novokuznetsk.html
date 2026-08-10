@@ -297,7 +297,11 @@ function renderStudios(){
   });
   document.getElementById('studioCount').textContent = STUDIOS.length ? (filtered.length + ' студий в Новокузнецке') : '';
   if(!filtered.length){
-    grid.innerHTML = '<div style="grid-column:1/-1;text-align:center;color:var(--faint);padding:40px;">Пока нет студий в Новокузнецке. <a href="studii-podat.html" style="color:var(--accent-3);">Разместите первую →</a></div>';
+    grid.innerHTML = '<div style="grid-column:1/-1;text-align:center;color:var(--faint);padding:40px;">'
+      + 'Пока нет студий в Новокузнецке. <a href="studii-podat.html" style="color:var(--accent-3);">Разместите первую →</a>'
+      + '<div style="margin-top:14px;font-size:13.5px;">Ищешь работу вебкам моделью в Новокузнецке? '
+      + '<a href="https://t.me/Workadult_feedback_bot" target="_blank" rel="noopener noreferrer" style="color:var(--accent-3);">Оставь заявку в Telegram</a> — подберём студию, как только она появится.</div>'
+      + '</div>';
     return;
   }
   grid.innerHTML = filtered.map(function(s){
