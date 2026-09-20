@@ -325,6 +325,7 @@
   <div class="nav-links" id="navLinks">
     <a href="#pricing">Тарифы</a>
     <a href="#app">Приложение</a>
+    <a href="#coomeet">Видеочат</a>
     <a href="#model">Работа</a>
     <a href="/blog.html">Блог</a>
     <a href="/vakansii.html">Вакансии</a>
@@ -511,6 +512,47 @@
       <a href="https://github.com/admin11111111113/workadult-assistant/releases/download/v1.0/WorkadultAssistant.exe" class="btn btn-gold btn-lg" download>⬇ Скачать приложение</a>
       <p class="form-note" style="margin-top:14px;">⚠️ Windows может показать «Система защитила ваш компьютер» — нажмите «Подробнее» → «Выполнить в любом случае».</p>
     </div>
+  </div>
+</section>
+
+<!-- COOMEET WIDGET -->
+<section class="section" id="coomeet">
+  <div class="container">
+    <div class="head">
+      <span class="eyebrow reveal">Видеочат</span>
+      <h2 class="section-title reveal d1">Попробуй прямо сейчас</h2>
+      <p class="section-desc reveal d2">Живое видеообщение — без регистрации, прямо в браузере.</p>
+    </div>
+    <div id="app_container" style="max-width:960px;margin:0 auto;min-height:600px;"></div>
+    <script type="text/javascript">
+      var _app = [];
+      // App language (optional)
+      // Background and colors
+      _app['app_bg_color'] = '#ffffff';
+      _app['app_bg_is_light'] = '1';
+      _app['app_accent_color'] = '#0057E7';
+      _app['app_theme_primary'] = '#f55280';
+      // Layout presets
+      _app['app_layout_desktop_id'] = 'theme-0';
+      _app['app_layout_mobile_id'] = 'theme-0';
+      _app['partner_id'] = '17866058072169';
+      // Feature flags
+      _app['app_hide_friend_chat'] = '1';
+      _app['app_hide_prem_link'] = '0';
+      _app['app_split_mode_default'] = '1';
+      _app['app_combined_language_settings'] = '1';
+      function addApp() {
+        var coomeet = document.createElement('script');
+        coomeet.type = 'text/javascript';
+        coomeet.async = true;
+        coomeet.src = 'https://space.coomeet.com/js/app.js'
+        var s = document.getElementsByTagName('script')[0];
+        s.parentNode.insertBefore(coomeet, s);
+      }
+      document.addEventListener('DOMContentLoaded', function () {
+        addApp();
+      });
+    </script>
   </div>
 </section>
 

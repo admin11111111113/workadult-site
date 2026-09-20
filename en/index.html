@@ -272,11 +272,24 @@
   var demoReady=fetch(ADMIN_API+'/api/demo').then(function(r){return r.json();}).then(function(d){
     DEMO=(d.studios||[]).map(function(s){return {org:s.city,title:s.name,salary:s.percent,contact:s.contact,photo:s.photo};});
   }).catch(function(){});
+  function contactUrl(raw){
+    var c=String(raw||'').trim();
+    if(!c) return '';
+    var low=c.toLowerCase();
+    if(/^(telegram|tg|email|e-?mail|whatsapp|wa|viber|phone|tel\.?)$/.test(low)) return '';
+    if(/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(c)) return 'mailto:'+c;
+    if(/^https?:\/\//i.test(c)) return c;
+    if(/^(www\.)?t\.me\//i.test(c)) return 'https://'+c.replace(/^www\./i,'');
+    if(c.charAt(0)==='@' && c.length>1) return 'https://t.me/'+c.slice(1);
+    if(/^\+?[\d\s\-()]{6,}$/.test(c)) return 'tel:'+c.replace(/[\s\-()]/g,'');
+    if(/^[A-Za-z][A-Za-z0-9_]{4,31}$/.test(c)) return 'https://t.me/'+c;
+    return '';
+  }
   function card(it){
     var contact='';
     if(it.contact){
       var c=String(it.contact);
-      var url=c.charAt(0)==='@'?('https://t.me/'+c.slice(1)):(/^https?:\/\//.test(c)?c:'');
+      var url=contactUrl(c);
       contact=url?('<a class="ct" href="'+esc(url)+'" target="_blank" rel="noopener nofollow">Message &#8594;</a>'):('<span class="ct">'+esc(c)+'</span>');
     }
     var photoHtml = it.photo ? '<img class="hb-photo" src="'+esc(it.photo)+'" alt="" loading="lazy">' : '<div class="hb-photo hb-photo-empty">🏢</div>';

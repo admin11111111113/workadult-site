@@ -615,6 +615,19 @@ document.querySelector('.burger').addEventListener('click', () => {
     if((y.ts||0)!==(x.ts||0)) return (y.ts||0)-(x.ts||0);
     return String(y.date||'').localeCompare(String(x.date||''));
   });}
+  function contactUrl(raw){
+    var c=String(raw||'').trim();
+    if(!c) return '';
+    var low=c.toLowerCase();
+    if(/^(telegram|tg|email|e-?mail|почта|whatsapp|wa|viber|телефон|phone|тел\.?)$/.test(low)) return '';
+    if(/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(c)) return 'mailto:'+c;
+    if(/^https?:\/\//i.test(c)) return c;
+    if(/^(www\.)?t\.me\//i.test(c)) return 'https://'+c.replace(/^www\./i,'');
+    if(c.charAt(0)==='@' && c.length>1) return 'https://t.me/'+c.slice(1);
+    if(/^\+?[\d\s\-()]{6,}$/.test(c)) return 'tel:'+c.replace(/[\s\-()]/g,'');
+    if(/^[A-Za-z][A-Za-z0-9_]{4,31}$/.test(c)) return 'https://t.me/'+c;
+    return '';
+  }
   function card(it){
     var tierClass = (it.tier==='gold'||it.tier==='silver'||it.tier==='bronze') ? ' tier-'+it.tier : '';
     var org=it.org?'<div class="vac-org">'+esc(it.org)+'</div>':'';
@@ -623,7 +636,7 @@ document.querySelector('.burger').addEventListener('click', () => {
     var contact='';
     if(it.contact){
       var c=String(it.contact);
-      var url=c.charAt(0)==='@'?('https://t.me/'+c.slice(1)):(/^https?:\/\//.test(c)?c:'');
+      var url=contactUrl(c);
       contact=url?('<a class="vac-contact" href="'+esc(url)+'" target="_blank" rel="noopener nofollow">Написать ›</a>'):('<div class="vac-contact">'+esc(c)+'</div>');
     }
     return '<div class="post-card'+tierClass+'">'+org+'<div class="vac-title">'+esc(it.title||'')+'</div>'+sal+desc+contact+'</div>';
