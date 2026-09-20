@@ -99,7 +99,7 @@
     <h2>Вход через Telegram — защита от спама и подтверждение, что заявка ваша</h2>
     <div id="tgLoginBox">
       <script async src="https://telegram.org/js/telegram-widget.js?22"
-        data-telegram-login="Workadult_feedback_bot"
+        data-telegram-login="Workadultotvet_bot"
         data-size="large"
         data-radius="8"
         data-onauth="onTgAuth(user)"
@@ -555,11 +555,11 @@ document.getElementById('reportIssueBtn').addEventListener('click', function() {
       document.getElementById('paymentHelp').insertAdjacentHTML('beforeend',
         '<div style="color:#6fdc8c;margin-top:8px;">✓ Сообщение отправлено — мы проверим оплату вручную и ответим в Telegram.</div>');
     } else {
-      alert('Ошибка отправки. Напишите напрямую: @Workadult_feedback_bot');
+      alert('Ошибка отправки. Напишите напрямую: @Workadultotvet_bot');
     }
   }).catch(() => {
     btn.disabled = false; btn.textContent = 'Написать нам';
-    alert('Ошибка сети. Напишите напрямую: @Workadult_feedback_bot');
+    alert('Ошибка сети. Напишите напрямую: @Workadultotvet_bot');
   });
 });
 </script>
