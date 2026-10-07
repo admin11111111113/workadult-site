@@ -196,7 +196,7 @@
       </div>
       <div class="field">
         <label>Размещение</label>
-        <div class="tier-base-note">✓ Обычное размещение — <b id="basePriceLabel">$70</b> (разово, платится всегда, объявление остаётся в каталоге навсегда)</div>
+        <div class="tier-base-note">✓ Обычное размещение — <b id="basePriceLabel">$15</b> (разово, платится всегда, объявление остаётся в каталоге навсегда)</div>
       </div>
       <div class="field">
         <label>Доп. буст (по желанию, отдельно, помесячно) — поднимает место в списке и красит рамку карточки</label>
@@ -221,7 +221,7 @@
         </div>
       </div>
       <div class="field">
-        <div class="total-box">Итого к оплате сейчас: <b id="totalAmountLabel">$70</b></div>
+        <div class="total-box">Итого к оплате сейчас: <b id="totalAmountLabel">$15</b></div>
       </div>
       <button class="submit-btn" type="submit" id="submitBtn">Отправить</button>
       <div id="status"></div>
@@ -263,7 +263,7 @@ let selectedPromoType = 'studio';
 let tierAvail = null;
 
 function renderTierPicker() {
-  document.getElementById('basePriceLabel').textContent = '$' + (tierAvail ? tierAvail.submit_price : 70);
+  document.getElementById('basePriceLabel').textContent = '$' + (tierAvail ? tierAvail.submit_price : 15);
   const box = document.getElementById('tierPicker');
   box.innerHTML = '';
   TIER_META.forEach(t => {
@@ -293,7 +293,7 @@ function renderTierPicker() {
 
   document.getElementById('promoTypeField').style.display = (selectedTier === 'home') ? 'block' : 'none';
 
-  const submitPrice = tierAvail ? tierAvail.submit_price : 70;
+  const submitPrice = tierAvail ? tierAvail.submit_price : 15;
   const boostPrice = selectedTier === 'regular' ? 0 : (selInfo ? selInfo.price : 0);
   document.getElementById('totalAmountLabel').textContent = '$' + (submitPrice + boostPrice) +
     (boostPrice ? (' (' + submitPrice + ' + ' + boostPrice + '/мес)') : '');

@@ -296,6 +296,20 @@ function openArt(s){
   return 'data:image/svg+xml;charset=utf-8,'+encodeURIComponent(svg);
 }
 
+
+/* Свободные цветные места в городе — для карточек «пока не с нами». */
+function loadTierFree(city){
+  var el=document.getElementById('m-tiers'); if(!el) return;
+  fetch('https://workadult-server.onrender.com/api/tier-availability?city='+encodeURIComponent(city)).then(function(r){return r.json();}).then(function(d){
+    if(!d||!d.ok||!d.tiers) return;
+    function free(k){var t=d.tiers[k]||{};return Math.max(0,(t.cap||0)-(t.used||0))+' из '+(t.cap||0);}
+    el.innerHTML='✨ <b>Станьте ярче в городе '+esc(city)+'</b> — выделите студию цветом и поднимитесь выше в списке. Свободно: '
+      +'🥇 '+free('gold')+' золотых · 🥈 '+free('silver')+' серебряных · 🥉 '+free('bronze')+' бронзовых мест. '
+      +'<a href="studii-podat.html" style="display:inline;padding:0;margin:0;background:none;border:0;font-size:inherit;font-weight:700;color:var(--accent-3);text-decoration:underline">Занять место</a>';
+    el.style.display='block';
+  }).catch(function(){});
+}
+
 function displayRating(s){
   if(s.source==='open' && !studioReviews(s.id).length) return {avg:0,cnt:0,none:true};
   var cnt = studioReviews(s.id).length;
@@ -362,7 +376,7 @@ function openStudioModal(id){
   if(s.social_instagram) contacts += '<a href="'+esc(s.social_instagram)+'" target="_blank" rel="noopener">📷 Instagram</a>';
   if(s.social_vk) contacts += '<a href="'+esc(s.social_vk)+'" target="_blank" rel="noopener">VK</a>';
   if(s.url) contacts += '<a href="'+esc(s.url)+'" target="_blank" rel="noopener">🌐 Сайт студии</a>';
-  if(s.source==='open') contacts = '<div style="line-height:1.6"><b>Эта студия пока не с нами.</b><br>Если вы владелец студии — <a style="display:inline;padding:0;margin:0;background:none;border:0;font-size:inherit;font-weight:700;color:var(--accent-3);text-decoration:underline" href="studii-podat.html">зарегистрируйте её</a>, и карточка станет активной: контакты, фото, условия и анкеты моделей из вашего города.<br>Ищешь работу моделью? <a style="display:inline;padding:0;margin:0;background:none;border:0;font-size:inherit;font-weight:700;color:var(--accent-3);text-decoration:underline" href="anketa.html">Оставь анкету</a> — подберём студию.</div>';
+  if(s.source==='open') contacts = '<div style="line-height:1.6"><b>Эта студия пока не с нами.</b><br>Если вы владелец студии — <a style="display:inline;padding:0;margin:0;background:none;border:0;font-size:inherit;font-weight:700;color:var(--accent-3);text-decoration:underline" href="studii-podat.html">зарегистрируйте её</a>, и карточка станет активной: контакты, фото, условия и анкеты моделей из вашего города.<br><div id="m-tiers" style="display:none;margin:10px 0;padding:10px 12px;border-radius:10px;background:rgba(255,234,0,.08);border:1px solid rgba(255,234,0,.25)"></div>Ищешь работу моделью? <a style="display:inline;padding:0;margin:0;background:none;border:0;font-size:inherit;font-weight:700;color:var(--accent-3);text-decoration:underline" href="anketa.html">Оставь анкету</a> — подберём студию.</div>';
   if(!contacts) contacts = '<span style="color:var(--faint)">Контакты появятся после модерации.</span>';
   var rt = displayRating(s);
   var ratingHtml = rt.none ? 'Отзывов пока нет' : '<span class="stars">'+starStr(rt.avg)+'</span>'+(rt.cnt?' '+rt.cnt+' отз.':'');
@@ -384,6 +398,7 @@ function openStudioModal(id){
       + '<button class="btn btn-black" style="width:100%;margin-top:14px;font-size:13px;" onclick="openReview(\''+s.id+'\')">＋ Оставить отзыв</button>'
     + '</div>';
   document.getElementById('studioModalOverlay').classList.add('open');
+  if(s.source==='open') loadTierFree(s.city);
   document.body.style.overflow = 'hidden';
 }
 function closeStudioModal(){document.getElementById('studioModalOverlay').classList.remove('open');document.body.style.overflow='';}
