@@ -157,6 +157,22 @@
 }
 .studio-card.open-src{opacity:.93;transition:opacity .3s;}.studio-card.open-src:hover{opacity:1;}.open-badge{position:absolute;left:8px;bottom:8px;background:rgba(15,15,22,.78);color:#e6e6ee;font-size:11px;font-weight:600;padding:3px 8px;border-radius:6px;z-index:2;}.m-ill{font-size:11.5px;color:var(--faint);margin:-6px 0 10px;text-align:right;}.claim-btn{display:block;text-align:center;margin-top:12px;padding:12px;border-radius:10px;font-weight:700;background:linear-gradient(120deg,#ff4d8d,#a855f7);color:#fff !important;text-decoration:none;}.m-open-note{font-size:12.5px;color:var(--faint);margin-top:12px;line-height:1.5;}
 .m-reviews{margin:4px 0 14px;}.m-rv-head{font-weight:700;margin-bottom:8px;}.m-rv{border:1px solid var(--glass-brd);border-radius:10px;padding:10px 12px;margin-bottom:8px;font-size:14px;}.m-rv-top{display:flex;justify-content:space-between;gap:8px;margin-bottom:4px;}.m-rv-text{line-height:1.5;}.m-rv-meta{font-size:11.5px;color:var(--faint);margin-top:6px;}.rv-badge{font-weight:600;}.rv-off{color:#2bd576;}
+
+/* custom city dropdown (вместо белого системного списка) */
+#cityChips{display:none;}
+.cdd{position:relative;width:100%;max-width:300px;margin:0 auto;z-index:30;}
+.cdd-btn{width:100%;display:flex;align-items:center;justify-content:space-between;gap:10px;background:var(--glass-bg);border:1px solid var(--glass-brd);color:var(--text);border-radius:14px;padding:12px 16px;font:inherit;font-size:14px;font-weight:600;cursor:pointer;backdrop-filter:var(--blur);transition:border-color .2s,box-shadow .2s;}
+.cdd-btn:hover,.cdd.open .cdd-btn{border-color:var(--accent);box-shadow:0 0 0 3px rgba(255,77,141,.15);}
+.cdd-btn .cdd-arrow{transition:transform .25s;opacity:.7;font-size:12px;}
+.cdd.open .cdd-arrow{transform:rotate(180deg);}
+.cdd-panel{position:absolute;left:0;right:0;top:calc(100% + 8px);background:rgba(18,14,30,.97);border:1px solid rgba(255,255,255,.12);border-radius:16px;padding:6px;max-height:340px;overflow-y:auto;box-shadow:0 20px 50px rgba(0,0,0,.55);opacity:0;transform:translateY(-6px);pointer-events:none;transition:opacity .18s,transform .18s;}
+.cdd.open .cdd-panel{opacity:1;transform:none;pointer-events:auto;}
+.cdd-panel::-webkit-scrollbar{width:8px;}.cdd-panel::-webkit-scrollbar-thumb{background:rgba(255,255,255,.18);border-radius:8px;}
+.cdd-item{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:10px 12px;border-radius:10px;cursor:pointer;color:var(--text);font-size:14px;transition:background .15s;}
+.cdd-item:hover{background:rgba(255,255,255,.07);}
+.cdd-item.active{background:linear-gradient(120deg,#ff4d8d,#a855f7);color:#fff;font-weight:700;}
+.cdd-count{font-size:12px;font-weight:700;padding:2px 9px;border-radius:999px;background:rgba(255,77,141,.16);color:#ff8fb6;}
+.cdd-item.active .cdd-count{background:rgba(255,255,255,.22);color:#fff;}
 </style>
 </head>
 
@@ -318,6 +334,44 @@ var DEMO = []; // подтягивается с /api/demo (редактируе�
    пустые города не показываем, пока в них никто не разместился. ---------- */
 var CITY_SLUG_MAP = {'Москва':'studii-moskva','Санкт-Петербург':'studii-sankt-peterburg','Новосибирск':'studii-novosibirsk','Екатеринбург':'studii-ekaterinburg','Казань':'studii-kazan','Нижний Новгород':'studii-nizhniy-novgorod','Челябинск':'studii-chelyabinsk','Красноярск':'studii-krasnoyarsk','Самара':'studii-samara','Уфа':'studii-ufa','Ростов-на-Дону':'studii-rostov-na-donu','Краснодар':'studii-krasnodar','Омск':'studii-omsk','Воронеж':'studii-voronezh','Пермь':'studii-perm','Волгоград':'studii-volgograd','Саратов':'studii-saratov','Тюмень':'studii-tyumen','Барнаул':'studii-barnaul','Ижевск':'studii-izhevsk','Калининград':'studii-kaliningrad','Кемерово':'studii-kemerovo','Томск':'studii-tomsk','Сочи':'studii-sochi','Иркутск':'studii-irkutsk','Анапа':'studii-anapa','Белгород':'studii-belgorod','Бийск':'studii-biysk','Владивосток':'studii-vladivostok','Владимир':'studii-vladimir','Вологда':'studii-vologda','Дзержинск':'studii-dzerzhinsk','Евпатория':'studii-evpatoriya','Иваново':'studii-ivanovo','Йошкар-Ола':'studii-yoshkar-ola','Калуга':'studii-kaluga','Киров':'studii-kirov','Курск':'studii-kursk','Липецк':'studii-lipetsk','Набережные Челны':'studii-naberezhnye-chelny','Нальчик':'studii-nalchik','Нижневартовск':'studii-nizhnevartovsk','Нижнекамск':'studii-nizhnekamsk','Нижний Тагил':'studii-nizhniy-tagil','Новокузнецк':'studii-novokuznetsk','Новороссийск':'studii-novorossiysk','Оренбург':'studii-orenburg','Пенза':'studii-penza','Псков':'studii-pskov','Севастополь':'studii-sevastopol','Симферополь':'studii-simferopol','Ставрополь':'studii-stavropol','Стерлитамак':'studii-sterlitamak','Сургут':'studii-surgut','Таганрог':'studii-taganrog','Тамбов':'studii-tambov','Тверь':'studii-tver','Тольятти':'studii-tolyatti','Тула':'studii-tula','Ульяновск':'studii-ulyanovsk','Чайковский':'studii-chaykovskiy','Чебоксары':'studii-cheboksary','Чита':'studii-chita','Энгельс':'studii-engels','Ярославль':'studii-yaroslavl','Курган':'studii-kurgan','Алматы':'studii-almaty','Тбилиси':'studii-tbilisi','Белград':'studii-belgrad','Пхукет':'studii-phuket','Валенсия':'studii-valensiya','Нячанг':'studii-nyachang','Беларусь':'studii-belarus','Казахстан':'studii-kazakhstan','Кыргызстан':'studii-kyrgyzstan','Молдова':'studii-moldova','Украина':'studii-ukraina'};
 
+/* ---------- Красивый список городов ---------- */
+function buildCityDropdown(cities, counts, total){
+  var sel = document.getElementById('cityChips');
+  var dd = document.getElementById('cityDD');
+  if(!dd){
+    dd = document.createElement('div'); dd.className = 'cdd'; dd.id = 'cityDD';
+    dd.innerHTML = '<button type="button" class="cdd-btn"><span class="cdd-label"></span><span class="cdd-arrow">▼</span></button><div class="cdd-panel" role="listbox"></div>';
+    sel.parentNode.insertBefore(dd, sel.nextSibling);
+    dd.querySelector('.cdd-btn').addEventListener('click', function(e){ e.stopPropagation(); dd.classList.toggle('open'); });
+    document.addEventListener('click', function(){ dd.classList.remove('open'); });
+    document.addEventListener('keydown', function(e){ if(e.key==='Escape') dd.classList.remove('open'); });
+  }
+  var items = [{v:'all', t:'Все города', n:total}].concat(cities.map(function(c){ return {v:c, t:c, n:counts[c]}; }));
+  dd.querySelector('.cdd-panel').innerHTML = items.map(function(it){
+    return '<div class="cdd-item" data-v="'+esc(it.v)+'"><span>'+esc(it.t)+'</span><span class="cdd-count">'+it.n+'</span></div>';
+  }).join('');
+  dd.querySelectorAll('.cdd-item').forEach(function(el){
+    el.addEventListener('click', function(e){
+      e.stopPropagation();
+      sel.value = el.getAttribute('data-v');
+      sel.onchange && sel.onchange();
+      dd.classList.remove('open');
+      syncCityDropdown();
+    });
+  });
+  syncCityDropdown();
+}
+function syncCityDropdown(){
+  var dd = document.getElementById('cityDD'); if(!dd) return;
+  var v = document.getElementById('cityChips').value || 'all';
+  var lab = 'Все города';
+  dd.querySelectorAll('.cdd-item').forEach(function(el){
+    var on = el.getAttribute('data-v') === v;
+    el.classList.toggle('active', on);
+    if(on) lab = el.firstChild.textContent;
+  });
+  dd.querySelector('.cdd-label').textContent = '📍 ' + lab;
+}
 function buildCityChips(){
   var list = STUDIOS.length ? STUDIOS : DEMO;
   var counts = {};
@@ -335,6 +389,7 @@ function buildCityChips(){
     document.getElementById('citySearch').value = activeCity==='all'?'':activeCity;
     renderStudios();
   };
+  buildCityDropdown(cities, counts, list.length);
 }
 
 function renderCityLinks(){
@@ -684,6 +739,7 @@ document.getElementById('citySearch').addEventListener('input', function(){
   activeCity = this.value.trim() ? this.value.trim() : 'all';
   var sel = document.getElementById('cityChips');
   if(sel) sel.value = 'all';
+  syncCityDropdown();
   renderStudios();
 });
 
