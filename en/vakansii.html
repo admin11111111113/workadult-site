@@ -382,7 +382,7 @@ div[style*="background:#fffdf2"] { background: rgba(245,166,35,0.07) !important;
         </label>
         <label style="display:block;">
           <span style="display:block;font-size:13px;font-weight:600;color:#444;margin-bottom:6px;">Contact *</span>
-          <input name="contact" required maxlength="80" placeholder="Telegram, email or phone" style="width:100%;padding:12px 14px;border:1px solid #ddd;border-radius:8px;font-size:15px;box-sizing:border-box;">
+          <input name="contact" required maxlength="80" placeholder="@Telegram username, e-mail or phone" style="width:100%;padding:12px 14px;border:1px solid #ddd;border-radius:8px;font-size:15px;box-sizing:border-box;">
         </label>
         <p style="font-size:12.5px;color:#888;margin:0;">Posting is free — one job per day, Telegram login required. If your studio has a paid colored tier on the site, the job will automatically be highlighted with the same color.</p>
         <button type="submit" class="btn btn-gold" style="margin-top:6px;">Submit</button>
@@ -455,6 +455,14 @@ document.addEventListener('submit', function(e){
   var fd = new FormData(e.target);
   var form = {};
   fd.forEach(function(v,k){ form[k]=v; });
+  if ('contact' in form) {
+    var cv = String(form.contact||'').trim();
+    var cOk = /@[A-Za-z0-9_]{4,}|https?:\/\/|t\.me\/|[^\s@]+@[^\s@]+\.[^\s@]+/.test(cv) || cv.replace(/\D/g,'').length >= 7;
+    if (!cOk) {
+      if (TG_AUTH && TG_AUTH.username) { form.contact = '@' + TG_AUTH.username; }
+      else { alert('Please enter a contact people can reach: @username in Telegram, t.me link, phone or e-mail.'); return; }
+    }
+  }
   var status = document.getElementById('vacancy-status');
   status.textContent = 'Sending…';
   status.style.color='#888';
