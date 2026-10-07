@@ -489,7 +489,7 @@ function loadDemo(){
 }
 function loadCatalog(){
   loadDemo().then(function(){
-  fetch('/studios.json?t='+Date.now()).then(function(r){return r.json();}).then(function(d){
+  fetch(ADMIN_API+'/api/open-studios').then(function(r){return r.json();}).then(function(o){if(!o||!o.ok||!o.studios||!o.studios.length) throw 0;return fetch('/studios.json?t='+Date.now()).then(function(r){return r.json();}).catch(function(){return {studios:[]};}).then(function(j){return {studios:(j.studios||[]).filter(function(s){return s.source!=='open';}).concat(o.studios)};});}).catch(function(){ return fetch('/studios.json?t='+Date.now()).then(function(r){return r.json();}); }).then(function(d){
     var base = (d.studios||[]).filter(function(s){return s.approved!==false;});
     REVIEWS = {};
     fetch(ADMIN_API+'/api/reviews').then(function(r){return r.json();}).catch(function(){return {reviews:[]};})
