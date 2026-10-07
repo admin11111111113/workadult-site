@@ -633,12 +633,12 @@
   fetch(ADMIN_API+'/api/demo').then(function(r){return r.json();}).then(function(d){
     DEMO=(d.studios||[]).map(function(s){return {org:s.city,title:s.name,salary:s.percent,contact:s.contact,photo:s.photo};});
   }).catch(function(){}).then(function(){
-  fetch(ADMIN_API+'/api/listings').then(function(r){return r.json();}).then(function(result){
-    var studios=(result.slots||[]).filter(function(s){return s.listing;}).map(function(s){
-      var l=s.listing;
-      return {org:l.city,title:l.name,salary:l.percent,contact:l.contacts,tier:l.tier,photo:l.cover_photo||l.photo||''};
+  fetch(ADMIN_API+'/api/home-top').then(function(r){return r.json();}).then(function(d){
+    /* «Топ студий» на главной — свой список из админки (вкладка «Главная страница»), порядок как там */
+    var items=(d.items||[]).map(function(l){
+      return {org:l.city,title:l.name,salary:l.percent,contact:l.contact,tier:l.tier,photo:l.photo||''};
     });
-    finish(studios);
+    renderBoard(items);
   }).catch(function(){ renderBoard(DEMO); });
   });
 

@@ -301,15 +301,12 @@
     el.innerHTML=list.slice(0,5).map(card).join('');
   }
   demoReady.then(function(){
-  fetch(ADMIN_API+'/api/listings').then(function(r){return r.json();}).then(function(result){
-    var studios=(result.slots||[]).filter(function(s){return s.listing;}).map(function(s){
-      var l=s.listing;
-      return {org:l.city,title:l.name,salary:l.percent,contact:l.contacts,tier:l.tier,photo:l.cover_photo||l.photo||''};
-    }).sort(function(x,y){
-      var rx=TIER_RANK[x.tier]!=null?TIER_RANK[x.tier]:3, ry=TIER_RANK[y.tier]!=null?TIER_RANK[y.tier]:3;
-      return rx-ry;
+  fetch(ADMIN_API+'/api/home-top').then(function(r){return r.json();}).then(function(d){
+    /* «Топ студий» на главной — свой список из админки (вкладка «Главная страница»), порядок как там */
+    var items=(d.items||[]).map(function(l){
+      return {org:l.city,title:l.name,salary:l.percent,contact:l.contact,tier:l.tier,photo:l.photo||''};
     });
-    renderBoard(studios);
+    renderBoard(items);
   }).catch(function(){ renderBoard(DEMO); });
   });
 })();
