@@ -329,6 +329,22 @@ document.getElementById('cityInput').addEventListener('input', () => {
   clearTimeout(tierFetchTimer);
   tierFetchTimer = setTimeout(refreshTierAvailability, 500);
 });
+/* «Это моя студия» из каталога: подставляем название и город, помечаем заявку */
+var CLAIM_OF = '';
+(function(){
+  var q = new URLSearchParams(location.search);
+  CLAIM_OF = (q.get('claim') || '').slice(0, 80);
+  if (!CLAIM_OF) return;
+  var nm = document.querySelector('input[name=studio]'); if (nm && q.get('name')) nm.value = q.get('name');
+  var ct = document.getElementById('cityInput'); if (ct && q.get('city')) ct.value = q.get('city');
+  var box = document.getElementById('formBox');
+  if (box) {
+    var b = document.createElement('div');
+    b.style.cssText = 'background:rgba(168,85,247,.12);border:1px solid rgba(168,85,247,.45);border-radius:10px;padding:12px 14px;margin-bottom:14px;font-size:14px;line-height:1.5;';
+    b.textContent = '🏷 Подтверждение карточки «' + (q.get('name') || '') + '» (' + (q.get('city') || '') + '). Исправьте всё, что нужно, добавьте фото и контакты, выберите цвет — после оплаты и проверки карточка станет вашей.';
+    box.insertBefore(b, box.firstChild);
+  }
+})();
 renderTierPicker();
 refreshTierAvailability();
 
@@ -453,6 +469,7 @@ function submitStudio(e) {
   data.desired_tier = selectedTier;
   data.notify_waitlist = document.getElementById('waitlistInput').checked;
   data.promo_type = 'studio';
+  if (CLAIM_OF) data.claim_of = CLAIM_OF;
   const btn = document.getElementById('submitBtn');
   const status = document.getElementById('status');
   btn.disabled = true; btn.textContent = 'Отправляю...';

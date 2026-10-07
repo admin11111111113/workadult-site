@@ -133,7 +133,7 @@
 .other-cities a{background:var(--glass-bg);border:1px solid var(--glass-brd);color:var(--muted);border-radius:999px;padding:7px 14px;font-size:13px;font-weight:600;text-decoration:none;transition:.18s;}
 .other-cities a:hover{border-color:var(--accent);color:var(--text);}
 @media(max-width:640px){.cat-hero{padding:96px 0 28px;}.studio-grid{grid-template-columns:1fr;}}
-.studio-card.open-src{filter:grayscale(1);opacity:.78;transition:filter .3s,opacity .3s;}.studio-card.open-src:hover{filter:none;opacity:1;}.m-open-note{font-size:12.5px;color:var(--faint);margin-top:12px;line-height:1.5;}
+.studio-card.open-src{opacity:.93;transition:opacity .3s;}.studio-card.open-src:hover{opacity:1;}.open-badge{position:absolute;left:8px;bottom:8px;background:rgba(15,15,22,.78);color:#e6e6ee;font-size:11px;font-weight:600;padding:3px 8px;border-radius:6px;z-index:2;}.m-ill{font-size:11.5px;color:var(--faint);margin:-6px 0 10px;text-align:right;}.claim-btn{display:block;text-align:center;margin-top:12px;padding:12px;border-radius:10px;font-weight:700;background:linear-gradient(120deg,#ff4d8d,#a855f7);color:#fff !important;text-decoration:none;}.m-open-note{font-size:12.5px;color:var(--faint);margin-top:12px;line-height:1.5;}
 </style>
 </head>
 
@@ -351,6 +351,7 @@ function renderStudios(){
         + photoHtml
         + (rt.none?'':'<span class="card-stars"><span class="stars">'+starStr(rt.avg)+'</span></span>')
         + badge
+        + (s.source==='open'?'<span class="open-badge">Не подтверждена</span>':'')
       + '</div>'
       + '<div class="card-body">'
         + '<div class="studio-name">'+esc(s.name)+'</div>'
@@ -378,7 +379,7 @@ function openStudioModal(id){
   if(s.social_instagram) contacts += '<a href="'+esc(s.social_instagram)+'" target="_blank" rel="noopener">📷 Instagram</a>';
   if(s.social_vk) contacts += '<a href="'+esc(s.social_vk)+'" target="_blank" rel="noopener">VK</a>';
   if(s.url) contacts += '<a href="'+esc(s.url)+'" target="_blank" rel="noopener">🌐 Сайт студии</a>';
-  if(s.source==='open') contacts = '<div style="line-height:1.6"><b>Эта студия пока не с нами.</b><br>Если вы владелец студии — <a style="display:inline;padding:0;margin:0;background:none;border:0;font-size:inherit;font-weight:700;color:var(--accent-3);text-decoration:underline" href="studii-podat.html">зарегистрируйте её</a>, и карточка станет активной: контакты, фото, условия и анкеты моделей из вашего города.<br><div id="m-tiers" style="display:none;margin:10px 0;padding:10px 12px;border-radius:10px;background:rgba(255,234,0,.08);border:1px solid rgba(255,234,0,.25)"></div>Ищешь работу моделью? <a style="display:inline;padding:0;margin:0;background:none;border:0;font-size:inherit;font-weight:700;color:var(--accent-3);text-decoration:underline" href="anketa.html">Оставь анкету</a> — подберём студию.</div>';
+  if(s.source==='open') contacts = '<div style="line-height:1.6"><b>Эта студия пока не с нами.</b><br>Если вы владелец студии — <a style="display:inline;padding:0;margin:0;background:none;border:0;font-size:inherit;font-weight:700;color:var(--accent-3);text-decoration:underline" href="studii-podat.html?claim='+encodeURIComponent(s.id)+'&name='+encodeURIComponent(s.name)+'&city='+encodeURIComponent(s.city)+'">зарегистрируйте её</a>, и карточка станет активной: контакты, фото, условия и анкеты моделей из вашего города.<br><div id="m-tiers" style="display:none;margin:10px 0;padding:10px 12px;border-radius:10px;background:rgba(255,234,0,.08);border:1px solid rgba(255,234,0,.25)"></div><a class="claim-btn" href="studii-podat.html?claim='+encodeURIComponent(s.id)+'&name='+encodeURIComponent(s.name)+'&city='+encodeURIComponent(s.city)+'">🏷 Это моя студия — подтвердить</a><br>Ищешь работу моделью? <a style="display:inline;padding:0;margin:0;background:none;border:0;font-size:inherit;font-weight:700;color:var(--accent-3);text-decoration:underline" href="anketa.html">Оставь анкету</a> — подберём студию.</div>';
   if(!contacts) contacts = '<span style="color:var(--faint)">Контакты появятся после модерации.</span>';
   var rt = displayRating(s);
   var ratingHtml = rt.none ? 'Отзывов пока нет' : '<span class="stars">'+starStr(rt.avg)+'</span>'+(rt.cnt?' '+rt.cnt+' отз.':'');
@@ -387,6 +388,7 @@ function openStudioModal(id){
   modalEl.innerHTML =
       '<div class="m-close" onclick="closeStudioModal()">✕</div>'
     + (photo? '<img class="m-photo" src="'+esc(photo)+'" alt="">' : '')
+    + (s.photo_ill?'<div class="m-body" style="padding-bottom:0"><div class="m-ill">Фото — иллюстрация, не фото этой студии</div></div>':'')
     + '<div class="m-body">'
       + tierChip
       + '<div class="m-name">'+esc(s.name)+'</div>'
@@ -503,9 +505,13 @@ function loadCatalog(){
           phone: l.phone || '', url: l.url || '',
           social_telegram: l.social_telegram || '', social_instagram: l.social_instagram || '',
           social_vk: l.social_vk || '', photos: l.photos || [], cover_photo: l.cover_photo || l.photo || '',
-          features: l.features || [], tier: l.tier || 'regular', verified: true, admin_rating: l.admin_rating || null
+          features: l.features || [], tier: l.tier || 'regular', verified: true, admin_rating: l.admin_rating || null, claim_of: l.claim_of || ''
         };
       });
+      /* студия подтвердила серую карточку — показываем только настоящую */
+      var claimed = {};
+      paid.forEach(function(p){ if(p.claim_of) claimed[p.claim_of]=1; claimed[(String(p.name)+'|'+String(p.city)).toLowerCase()]=1; });
+      base = base.filter(function(b){ return !(b.source==='open' && (claimed[b.id] || claimed[(String(b.name)+'|'+String(b.city)).toLowerCase()])); });
       STUDIOS = base.concat(paid);
       renderStudios();
       renderOtherCities();
