@@ -234,7 +234,7 @@
 
 <div style="height:70px;"></div>
 
-<section id="open-list" style="padding:36px 0;"><div class="container"><h2 style="font-size:22px;margin:0 0 10px;">Вебкам студии Волгограда в каталоге (1)</h2><p style="color:var(--muted);font-size:14px;margin:0 0 12px;">Студии, которые набирают моделей. Данные из открытых источников — нажми на карточку выше, чтобы увидеть контакты.</p><p style="font-size:15px;line-height:1.9;margin:0;">YourSecret</p></div></section>
+<section id="open-list" style="padding:36px 0;"><div class="container"><h2 style="font-size:22px;margin:0 0 10px;">Вебкам студии Волгограда в каталоге (1)</h2><p style="color:var(--muted);font-size:14px;margin:0 0 12px;">Студии, которые набирают моделей. Эти студии пока не подключены к Workadult. Владелец студии может зарегистрировать её и получать анкеты моделей.</p><p style="font-size:15px;line-height:1.9;margin:0;">YourSecret</p></div></section>
 <footer>
   <div class="container">
     <div class="footer-grid">
@@ -364,6 +364,7 @@ function openStudioModal(id){
   if(s.social_instagram) contacts += '<a href="'+esc(s.social_instagram)+'" target="_blank" rel="noopener">📷 Instagram</a>';
   if(s.social_vk) contacts += '<a href="'+esc(s.social_vk)+'" target="_blank" rel="noopener">VK</a>';
   if(s.url) contacts += '<a href="'+esc(s.url)+'" target="_blank" rel="noopener">🌐 Сайт студии</a>';
+  if(s.source==='open') contacts = '<div style="line-height:1.6"><b>Эта студия пока не с нами.</b><br>Если вы владелец студии — <a href="studii-podat.html">зарегистрируйте её</a>, и карточка станет активной: контакты, фото, условия и анкеты моделей из вашего города.<br>Ищешь работу моделью? <a href="anketa.html">Оставь анкету</a> — подберём студию.</div>';
   if(!contacts) contacts = '<span style="color:var(--faint)">Контакты появятся после модерации.</span>';
   var rt = displayRating(s);
   var ratingHtml = rt.none ? 'Отзывов пока нет' : '<span class="stars">'+starStr(rt.avg)+'</span>'+(rt.cnt?' '+rt.cnt+' отз.':'');
@@ -381,7 +382,7 @@ function openStudioModal(id){
       + (s.desc?'<div class="m-desc">'+esc(s.desc)+'</div>':'')
       + (feat?'<div class="m-features">'+feat+'</div>':'')
       + '<div style="margin-bottom:14px;font-size:13px;color:var(--muted)">'+ratingHtml+'</div>'
-      + '<div class="m-contacts">'+contacts+'</div>'+(s.source==='open'?'<div class="m-open-note">Данные из открытых источников, Workadult не проверял эту студию. Это ваша студия? <a href="https://t.me/Workadultotvet_bot" target="_blank" rel="noopener">Подтвердите или удалите карточку</a>.</div>':'')
+      + '<div class="m-contacts">'+contacts+'</div>'
       + '<button class="btn btn-black" style="width:100%;margin-top:14px;font-size:13px;" onclick="openReview(\''+s.id+'\')">＋ Оставить отзыв</button>'
     + '</div>';
   document.getElementById('studioModalOverlay').classList.add('open');
