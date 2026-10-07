@@ -99,7 +99,7 @@
     <h2>Вход через Telegram — защита от спама и подтверждение, что заявка ваша</h2>
     <div id="tgLoginBox">
       <script async src="https://telegram.org/js/telegram-widget.js?22"
-        data-telegram-login="Workadultotvet_bot"
+        data-telegram-login="Workadult_feedback_bot"
         data-size="large"
         data-radius="8"
         data-onauth="onTgAuth(user)"
@@ -291,7 +291,7 @@ function renderTierPicker() {
   const selFull = selectedTier !== 'regular' && selInfo && !selInfo.available;
   wl.classList.toggle('show', !!selFull);
 
-  document.getElementById('promoTypeField').style.display = (selectedTier === 'home') ? 'block' : 'none';
+  document.getElementById('promoTypeField').style.display = 'none';
 
   const submitPrice = tierAvail ? tierAvail.submit_price : 15;
   const boostPrice = selectedTier === 'regular' ? 0 : (selInfo ? selInfo.price : 0);
@@ -452,7 +452,7 @@ function submitStudio(e) {
   delete data.logo_url;
   data.desired_tier = selectedTier;
   data.notify_waitlist = document.getElementById('waitlistInput').checked;
-  data.promo_type = selectedTier === 'home' ? selectedPromoType : 'studio';
+  data.promo_type = 'studio';
   const btn = document.getElementById('submitBtn');
   const status = document.getElementById('status');
   btn.disabled = true; btn.textContent = 'Отправляю...';

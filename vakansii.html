@@ -343,11 +343,11 @@ div[style*="background:#fffdf2"] { background: rgba(245,166,35,0.07) !important;
     <p style="color:#555;font-size:16px;line-height:1.7;margin-bottom:24px;">
       Студия ищет сотрудников — разместите вакансию. Модель ищет работу — разместите резюме.
     </p>
-    <div class="studio-perk" style="background:#fff8e1;border:1px solid #f0d27a;border-radius:12px;padding:14px 18px;margin:0 0 24px;font-size:15px;line-height:1.6;color:#333;">📩 <b>Студиям:</b> студии, оплатившие размещение в каталоге, бесплатно публикуют вакансии и получают анкеты моделей из своего города. Новые кандидатки приходят к вам напрямую.</div>
+    <div class="studio-perk" style="background:#fff8e1;border:1px solid #f0d27a;border-radius:12px;padding:14px 18px;margin:0 0 24px;font-size:15px;line-height:1.6;color:#333;">📩 <b>Студиям:</b> публикация вакансий бесплатная — одна в сутки, нужен только вход через Telegram. Студии из каталога дополнительно получают анкеты моделей из своего города.</div>
 
     <div id="tg-login-box">
       <script async src="https://telegram.org/js/telegram-widget.js?22"
-        data-telegram-login="Workadultotvet_bot"
+        data-telegram-login="Workadult_feedback_bot"
         data-size="large"
         data-radius="8"
         data-onauth="onTelegramAuth(user)"
@@ -385,7 +385,7 @@ div[style*="background:#fffdf2"] { background: rgba(245,166,35,0.07) !important;
           <span style="display:block;font-size:13px;font-weight:600;color:#444;margin-bottom:6px;">Контакт для связи *</span>
           <input name="contact" required maxlength="80" placeholder="Telegram, email или телефон" style="width:100%;padding:12px 14px;border:1px solid #ddd;border-radius:8px;font-size:15px;box-sizing:border-box;">
         </label>
-        <p style="font-size:12.5px;color:#888;margin:0;">Для студий, оплативших размещение в каталоге, публикация бесплатная. Если у вашей студии оплачен цветной тариф на сайте — вакансия автоматически подсветится тем же цветом.</p>
+        <p style="font-size:12.5px;color:#888;margin:0;">Публикация бесплатная — одна вакансия в сутки. Если у вашей студии оплачен цветной тариф на сайте — вакансия автоматически подсветится тем же цветом.</p>
         <p id="vacancy-quota-status" style="font-size:13px;margin:0;"></p>
         <button type="submit" class="btn btn-gold" style="margin-top:6px;">Отправить заявку</button>
         <p id="vacancy-status" style="font-size:14px;margin:0;"></p>
@@ -404,7 +404,7 @@ div[style*="background:#fffdf2"] { background: rgba(245,166,35,0.07) !important;
       <div class="section-label">💼 Для студий</div>
       <h3 class="vac-col-title">Вакансии</h3>
       <p style="color:#777;font-size:14px;margin:0 0 4px;">Открытые вакансии и предложения от студий.</p>
-      <div class="studio-perk" style="background:#fff8e1;border:1px solid #f0d27a;border-radius:12px;padding:14px 18px;margin:10px 0 14px;font-size:15px;line-height:1.6;color:#333;">📩 <b>Студиям:</b> студии, оплатившие размещение в каталоге, бесплатно публикуют вакансии и получают анкеты моделей из своего города. Новые кандидатки приходят к вам напрямую.</div>
+      <div class="studio-perk" style="background:#fff8e1;border:1px solid #f0d27a;border-radius:12px;padding:14px 18px;margin:10px 0 14px;font-size:15px;line-height:1.6;color:#333;">📩 <b>Студиям:</b> публикация вакансий бесплатная — одна в сутки, нужен только вход через Telegram. Студии из каталога дополнительно получают анкеты моделей из своего города.</div>
       <div class="post-grid" id="vac-list"></div>
       <div class="pager" id="vac-pager"></div>
       <a href="#post-box" class="btn btn-gold" style="margin-top:12px;display:inline-block;">➕ Разместить вакансию</a>
@@ -456,14 +456,14 @@ function refreshVacancyQuota(){
   fetch(API + '/api/vacancy-status?tg_id=' + encodeURIComponent(TG_AUTH.id))
     .then(function(r){return r.json();}).then(function(d){
       if (!d.ok) { el.textContent = ''; return; }
-      var freq = d.posts_per_week === 2 ? '2 вакансии в неделю' : '1 вакансию в неделю';
-      var upsell = d.vip ? '' : ' — <a href="studii-podat.html" style="color:#c62828;">золото/буст на главной даёт 2 в неделю →</a>';
+      var freq = '1 вакансия в сутки, бесплатно';
+      var upsell = '';
       if (d.can_post) {
         el.style.color = '#2e7d32';
         el.innerHTML = '✓ Можно опубликовать вакансию прямо сейчас (лимит: ' + freq + ')' + upsell;
       } else {
         el.style.color = '#c62828';
-        el.innerHTML = 'Следующую вакансию можно опубликовать через ' + d.wait_days + ' дн. (лимит: ' + freq + ')' + upsell;
+        el.innerHTML = 'Следующую вакансию можно опубликовать через ' + d.wait_hours + ' ч. (лимит: ' + freq + ')' + upsell;
       }
     }).catch(function(){ el.textContent = ''; });
 }
@@ -552,7 +552,7 @@ document.addEventListener('submit', function(e){
       status.textContent = '✓ Заявка отправлена! Мы проверим и опубликуем вакансию.';
       status.style.color='#2e7d32'; e.target.reset();
     } else if (d.error === 'cooldown') {
-      status.textContent = d.message || 'Можно публиковать не чаще раза в неделю.';
+      status.textContent = d.message || 'Бесплатно — одна вакансия в сутки.';
       status.style.color='#c62828';
     } else {
       status.textContent = 'Ошибка отправки. Проверьте поля и попробуйте снова.';
