@@ -493,7 +493,7 @@ function loadCatalog(){
     });
     fetch(ADMIN_API+'/api/listings').then(function(r){return r.json();}).catch(function(){return {slots:[]};})
     .then(function(result){
-      var paid = (result.slots || []).filter(function(s){return s.listing;}).map(function(s){
+      var paid = (result.slots || []).filter(function(s){return s.listing && !s.listing.is_test;}).map(function(s){
         var l = s.listing;
         return {
           id: 'paid-' + s.slot, name: l.name, city: l.city, formats: l.formats || [],
