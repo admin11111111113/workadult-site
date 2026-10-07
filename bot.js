@@ -89,6 +89,7 @@ async function submitAnketa(event) {
     `📱 Telegram: ${data.telegram}\n` +
     `🌍 Страна: ${data.country || "—"}\n` +
     `💬 Опыт: ${data.experience || "—"}\n` +
+    (data.invited_by ? `🤝 Пригласила: ${data.invited_by}\n` : "") +
     `📝 Примечание: ${data.note || "—"}` + srcTag();
   const ok = await sendToTelegram("feedback", text);
   btn.disabled = false; btn.textContent = "Отправить анкету";
