@@ -133,6 +133,7 @@
 .other-cities a{background:var(--glass-bg);border:1px solid var(--glass-brd);color:var(--muted);border-radius:999px;padding:7px 14px;font-size:13px;font-weight:600;text-decoration:none;transition:.18s;}
 .other-cities a:hover{border-color:var(--accent);color:var(--text);}
 @media(max-width:640px){.cat-hero{padding:96px 0 28px;}.studio-grid{grid-template-columns:1fr;}}
+.studio-card.open-src{filter:grayscale(1);opacity:.78;transition:filter .3s,opacity .3s;}.studio-card.open-src:hover{filter:none;opacity:1;}.m-open-note{font-size:12.5px;color:var(--faint);margin-top:12px;line-height:1.5;}
 </style>
 </head>
 
@@ -172,7 +173,7 @@
 </div>
 
 <section class="cat-section">
-  <p id="work-link" style="margin-top:14px;">Хочешь работать из дома без студии? Смотри <a href="/stavropol.html">работа вебкам моделью в Ставрополе</a>.</p>
+  <p id="work-link" style="margin:0 auto 18px;text-align:center;color:var(--muted);font-size:15px;max-width:680px;">Хочешь работать из дома без студии? Смотри <a href="/stavropol.html">работа вебкам моделью в Ставрополе</a>.</p>
   <h2>Вебкам студии Ставрополя: как выбрать</h2>
   <p class="sub">Что нужно знать перед тем, как откликнуться на вакансию вебкам студии в Ставрополе.</p>
   <div class="geo-intro" style="text-align:left;max-width:820px;">
@@ -270,7 +271,7 @@ var ADMIN_API = 'https://workadult-server.onrender.com';
 var STUDIOS = [], REVIEWS = {};
 var FMT = {studio:'В студии',home:'Из дома',pair:'Парой',guys:'Для парней',nonnude:'Non Nude',trans:'Принимаем транссексуалов'};
 var FEAT = {weekly_pay:'Еженедельные выплаты',flexible_schedule:'Гибкий график',housing:'Предоставляем проживание',training:'Обучение новичков',city_center:'В центре города',near_metro:'Рядом с метро'};
-var TIER_RANK = {gold:0,silver:1,bronze:2,regular:3};
+var TIER_RANK = {gold:0,silver:1,bronze:2,regular:3,open:4};
 var DEMO = []; // подтягивается с /api/demo (редактируется в админке), см. loadDemo()
 
 function esc(t){return String(t==null?'':t).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
@@ -282,7 +283,22 @@ function fmtPercent(v){
 function starStr(a){var f=Math.round(a),s='';for(var i=0;i<5;i++)s+=i<f?'★':'☆';return s;}
 function studioReviews(id){return REVIEWS[id]||[];}
 function avgRating(id){var r=studioReviews(id);if(!r.length)return 0;var s=0;r.forEach(function(x){s+=(+x.rating||0);});return s/r.length;}
+
+/* Карточки из открытых источников: уникальная абстрактная обложка (не фото студии). */
+function openArt(s){
+  var str=String(s.id||s.name), h=0; for(var i=0;i<str.length;i++){h=(h*31+str.charCodeAt(i))>>>0;}
+  function rnd(){h=(h*1664525+1013904223)>>>0;return h/4294967296;}
+  var pal=[['#ff5f8f','#7b2ff7'],['#00c6ff','#0072ff'],['#f7971e','#ffd200'],['#11998e','#38ef7d'],['#fc466b','#3f5efb'],['#8e2de2','#4a00e0'],['#ee0979','#ff6a00'],['#43cea2','#185a9d'],['#f953c6','#b91d73'],['#30cfd0','#330867'],['#ff9a9e','#fad0c4'],['#a18cd1','#fbc2eb']];
+  var p=pal[Math.floor(rnd()*pal.length)], ang=Math.floor(rnd()*360), shapes='';
+  for(var k=0;k<5;k++){shapes+='<circle cx="'+Math.floor(rnd()*400)+'" cy="'+Math.floor(rnd()*300)+'" r="'+(30+Math.floor(rnd()*110))+'" fill="#fff" fill-opacity="'+(0.06+rnd()*0.14).toFixed(2)+'"/>';}
+  for(var j=0;j<3;j++){var y=Math.floor(rnd()*300);shapes+='<path d="M0 '+y+' Q200 '+(y+Math.floor(rnd()*160-80))+' 400 '+(y+Math.floor(rnd()*80-40))+'" stroke="#fff" stroke-opacity=".18" stroke-width="'+(2+Math.floor(rnd()*5))+'" fill="none"/>';}
+  var ini=String(s.name||'?').replace(/[^0-9A-Za-zА-Яа-яЁё ]/g,'').trim().split(/\s+/).slice(0,2).map(function(w){return w.charAt(0);}).join('').toUpperCase()||'★';
+  var svg='<svg xmlns="http://www.w3.org/2000/svg" width="400" height="300" viewBox="0 0 400 300"><defs><linearGradient id="g" gradientTransform="rotate('+ang+' .5 .5)"><stop offset="0" stop-color="'+p[0]+'"/><stop offset="1" stop-color="'+p[1]+'"/></linearGradient></defs><rect width="400" height="300" fill="url(#g)"/>'+shapes+'<text x="200" y="172" text-anchor="middle" font-family="Inter,Arial,sans-serif" font-size="84" font-weight="800" fill="#fff" fill-opacity=".92">'+ini.replace(/&/g,'&amp;').replace(/</g,'&lt;')+'</text></svg>';
+  return 'data:image/svg+xml;charset=utf-8,'+encodeURIComponent(svg);
+}
+
 function displayRating(s){
+  if(s.source==='open' && !studioReviews(s.id).length) return {avg:0,cnt:0,none:true};
   var cnt = studioReviews(s.id).length;
   if(cnt) return {avg: avgRating(s.id), cnt: cnt};
   var vip = (s.tier==='gold' || s.tier==='home');
@@ -310,15 +326,15 @@ function renderStudios(){
   }
   grid.innerHTML = filtered.map(function(s){
     var tierClass = (s.tier==='gold'||s.tier==='silver'||s.tier==='bronze') ? ' tier-'+s.tier : '';
-    var photo = s.cover_photo || (s.photos&&s.photos[0]) || s.photo || '';
+    var photo = s.cover_photo || (s.photos&&s.photos[0]) || s.photo || (s.source==='open'?openArt(s):'');
     var photoHtml = photo ? '<img class="card-photo" src="'+esc(photo)+'" alt="" loading="lazy">' : '<div class="card-photo ph-empty">🏢</div>';
     var fmt = (s.formats||[]).map(function(f){return '<span class="fmt-tag">'+(FMT[f]||f)+'</span>';}).join('');
     var rt = displayRating(s);
     var badge = (!s.tier || s.tier==='regular') ? (s.verified? '<span class="card-badge badge-ver">✓</span>':'') : '';
-    return '<div class="studio-card'+tierClass+'" onclick="openStudioModal(\''+s.id+'\')">'
+    return '<div class="studio-card'+tierClass+(s.source==='open'?' open-src':'')+'" onclick="openStudioModal(\''+s.id+'\')">'
       + '<div class="card-photo-wrap">'
         + photoHtml
-        + '<span class="card-stars"><span class="stars">'+starStr(rt.avg)+'</span></span>'
+        + (rt.none?'':'<span class="card-stars"><span class="stars">'+starStr(rt.avg)+'</span></span>')
         + badge
       + '</div>'
       + '<div class="card-body">'
@@ -335,7 +351,7 @@ function openStudioModal(id){
   var list = STUDIOS.length ? STUDIOS : DEMO;
   var s = list.filter(function(x){return String(x.id)===String(id);})[0];
   if(!s) return;
-  var photo = s.cover_photo || (s.photos&&s.photos[0]) || s.photo || '';
+  var photo = s.cover_photo || (s.photos&&s.photos[0]) || s.photo || (s.source==='open'?openArt(s):'');
   var fmt = (s.formats||[]).map(function(f){return '<span class="fmt-tag">'+(FMT[f]||f)+'</span>';}).join('');
   var feat = (s.features||[]).map(function(f){return '<div class="m-feature">'+(FEAT[f]||f)+'</div>';}).join('');
   var isPaidTier = (s.tier==='gold'||s.tier==='silver'||s.tier==='bronze');
@@ -349,7 +365,7 @@ function openStudioModal(id){
   if(s.url) contacts += '<a href="'+esc(s.url)+'" target="_blank" rel="noopener">🌐 Сайт студии</a>';
   if(!contacts) contacts = '<span style="color:var(--faint)">Контакты появятся после модерации.</span>';
   var rt = displayRating(s);
-  var ratingHtml = '<span class="stars">'+starStr(rt.avg)+'</span>'+(rt.cnt?' '+rt.cnt+' отз.':'');
+  var ratingHtml = rt.none ? 'Отзывов пока нет' : '<span class="stars">'+starStr(rt.avg)+'</span>'+(rt.cnt?' '+rt.cnt+' отз.':'');
   var modalEl = document.getElementById('studioModal');
   modalEl.className = 'studio-modal' + (isPaidTier ? ' tier-'+s.tier : '');
   modalEl.innerHTML =
@@ -364,7 +380,7 @@ function openStudioModal(id){
       + (s.desc?'<div class="m-desc">'+esc(s.desc)+'</div>':'')
       + (feat?'<div class="m-features">'+feat+'</div>':'')
       + '<div style="margin-bottom:14px;font-size:13px;color:var(--muted)">'+ratingHtml+'</div>'
-      + '<div class="m-contacts">'+contacts+'</div>'
+      + '<div class="m-contacts">'+contacts+'</div>'+(s.source==='open'?'<div class="m-open-note">Данные из открытых источников, Workadult не проверял эту студию. Это ваша студия? <a href="https://t.me/Workadultotvet_bot" target="_blank" rel="noopener">Подтвердите или удалите карточку</a>.</div>':'')
       + '<button class="btn btn-black" style="width:100%;margin-top:14px;font-size:13px;" onclick="openReview(\''+s.id+'\')">＋ Оставить отзыв</button>'
     + '</div>';
   document.getElementById('studioModalOverlay').classList.add('open');
