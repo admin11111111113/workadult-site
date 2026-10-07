@@ -134,6 +134,7 @@
 .other-cities a:hover{border-color:var(--accent);color:var(--text);}
 @media(max-width:640px){.cat-hero{padding:96px 0 28px;}.studio-grid{grid-template-columns:1fr;}}
 .studio-card.open-src{opacity:.93;transition:opacity .3s;}.studio-card.open-src:hover{opacity:1;}.open-badge{position:absolute;left:8px;bottom:8px;background:rgba(15,15,22,.78);color:#e6e6ee;font-size:11px;font-weight:600;padding:3px 8px;border-radius:6px;z-index:2;}.m-ill{font-size:11.5px;color:var(--faint);margin:-6px 0 10px;text-align:right;}.claim-btn{display:block;text-align:center;margin-top:12px;padding:12px;border-radius:10px;font-weight:700;background:linear-gradient(120deg,#ff4d8d,#a855f7);color:#fff !important;text-decoration:none;}.m-open-note{font-size:12.5px;color:var(--faint);margin-top:12px;line-height:1.5;}
+.m-reviews{margin:4px 0 14px;}.m-rv-head{font-weight:700;margin-bottom:8px;}.m-rv{border:1px solid var(--glass-brd);border-radius:10px;padding:10px 12px;margin-bottom:8px;font-size:14px;}.m-rv-top{display:flex;justify-content:space-between;gap:8px;margin-bottom:4px;}.m-rv-text{line-height:1.5;}.m-rv-meta{font-size:11.5px;color:var(--faint);margin-top:6px;}.rv-badge{font-weight:600;}.rv-off{color:#2bd576;}
 </style>
 </head>
 
@@ -311,6 +312,18 @@ function loadTierFree(city){
   }).catch(function(){});
 }
 
+/* Отзывы в карточке студии: свои пометки, никаких «анонимов-заглушек» */
+function reviewsHtml(id){
+  var list = studioReviews(id).slice().sort(function(a,b){ return (b.official?1:0)-(a.official?1:0) || String(b.date||'').localeCompare(String(a.date||'')); });
+  if(!list.length) return '';
+  return '<div class="m-reviews"><div class="m-rv-head">Отзывы ('+list.length+')</div>' + list.map(function(r){
+    var n = Math.max(0, Math.min(5, +r.rating||0));
+    var badge = r.official ? '<span class="rv-badge rv-off">✓ Проверено Workadult</span>'
+              : (r.edited ? '<span class="rv-badge">отредактировано модератором</span>' : '<span class="rv-badge">одобрено модератором</span>');
+    return '<div class="m-rv"><div class="m-rv-top"><b>'+esc(r.author||'Аноним')+'</b> <span class="stars">'+'★'.repeat(n)+'☆'.repeat(5-n)+'</span></div>'
+      + '<div class="m-rv-text">'+esc(r.text||'')+'</div><div class="m-rv-meta">'+badge+(r.date?' · '+esc(r.date):'')+'</div></div>';
+  }).join('') + '</div>';
+}
 function displayRating(s){
   if(s.source==='open' && !studioReviews(s.id).length) return {avg:0,cnt:0,none:true};
   var cnt = studioReviews(s.id).length;
@@ -397,6 +410,7 @@ function openStudioModal(id){
       + (s.desc?'<div class="m-desc">'+esc(s.desc)+'</div>':'')
       + (feat?'<div class="m-features">'+feat+'</div>':'')
       + '<div style="margin-bottom:14px;font-size:13px;color:var(--muted)">'+ratingHtml+'</div>'
+      + reviewsHtml(s.id)
       + '<div class="m-contacts">'+contacts+'</div>'
       + '<button class="btn btn-black" style="width:100%;margin-top:14px;font-size:13px;" onclick="openReview(\''+s.id+'\')">＋ Оставить отзыв</button>'
     + '</div>';
