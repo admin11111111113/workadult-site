@@ -42,6 +42,31 @@
 </script>
 <noscript><div><img src="https://mc.yandex.ru/watch/109925310" style="position:absolute; left:-9999px;" alt="" /></div></noscript>
 <!-- /Yandex.Metrika counter -->
+<style>
+.order-page{position:relative;min-height:100vh;padding:120px 0 80px;color:#fff;
+  background:linear-gradient(105deg,rgba(7,4,15,.92) 0%,rgba(8,0,20,.78) 45%,rgba(60,0,80,.6) 100%),url(images/hero-cover.jpg) center/cover fixed;}
+.order-page .section-label{color:#ff4d8d;}
+.order-page .section-title{color:#fff;}
+.order-page .op-card{background:rgba(20,10,35,.55);border:1px solid rgba(255,255,255,.12);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);
+  border-radius:20px;box-shadow:0 20px 60px rgba(0,0,0,.45);}
+.order-page #selectedPlan{padding:22px 30px;margin-bottom:28px;max-width:680px;border-left:4px solid #22c55e;}
+.order-page .op-muted{font-size:12px;color:rgba(255,255,255,.6);text-transform:uppercase;letter-spacing:2px;margin-bottom:8px;}
+.order-page #planName{font-size:22px;font-weight:800;color:#fff;}
+.order-page .form-wrap{margin:0;max-width:680px;background:rgba(20,10,35,.55)!important;border:1px solid rgba(255,255,255,.12);
+  backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);box-shadow:0 20px 60px rgba(0,0,0,.45);}
+.order-page .form-group label{color:rgba(255,255,255,.9);}
+.order-page .form-group input,.order-page .form-group select,.order-page .form-group textarea{background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.18);color:#fff;color-scheme:dark;}
+.order-page .form-group input::placeholder{color:rgba(255,255,255,.45);}
+.order-page .form-group input:focus{border-color:#ff4d8d;outline:none;box-shadow:0 0 0 3px rgba(255,77,141,.2);}
+.order-page .form-note{color:rgba(255,255,255,.6);}
+.order-page hr{border:none;border-top:1px solid rgba(255,255,255,.14);margin:32px 0;}
+.order-page .op-qr{width:180px;height:180px;border-radius:12px;display:block;margin:0 auto 16px;background:#fff;padding:8px;}
+.order-page .op-addr{font-family:monospace;font-size:13px;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.15);color:#fff;padding:12px;border-radius:10px;word-break:break-all;cursor:pointer;}
+.order-page .op-hint{font-size:12px;color:rgba(255,255,255,.5);margin-top:8px;}
+.order-page .btn-black{background:linear-gradient(100deg,#ff4d8d,#a855f7);color:#fff;border:none;}
+.order-page .form-success{color:#fff;}
+@media (max-width:700px){.order-page{padding:100px 0 60px;background-attachment:scroll;}}
+</style>
 </head>
 <body>
 
@@ -58,18 +83,18 @@
   <button class="burger"><span></span><span></span><span></span></button>
 </nav>
 
-<section style="padding-top:100px;background:#f5f5f5;min-height:100vh;">
+<section class="order-page">
   <div class="container">
     <h2 class="section-label">Оформить заказ</h2>
     <h1 class="section-title">Форма заказа</h1>
 
     <!-- Выбранный тариф -->
-    <div id="selectedPlan" style="display:none;background:#fff;border-radius:8px;padding:24px 32px;margin-bottom:32px;border-left:4px solid var(--green);box-shadow:0 2px 12px rgba(0,0,0,0.06);max-width:680px;">
-      <div style="font-size:12px;color:#888;text-transform:uppercase;letter-spacing:2px;margin-bottom:8px;">Выбранный тариф</div>
-      <div id="planName" style="font-size:22px;font-weight:700;"></div>
+    <div id="selectedPlan" class="op-card" style="display:none;">
+      <div class="op-muted">Выбранный тариф</div>
+      <div id="planName"></div>
     </div>
 
-    <div class="form-wrap" style="margin:0;max-width:680px;">
+    <div class="form-wrap">
       <form onsubmit="submitOrder(event)" id="orderForm">
         <input type="hidden" name="product" id="orderProduct">
 
@@ -95,14 +120,14 @@
           <input type="date" name="date" required>
         </div>
 
-        <hr style="border:none;border-top:1px solid #eee;margin:32px 0;">
+        <hr>
 
         <div style="text-align:center;margin-bottom:24px;">
-          <div style="font-size:13px;font-weight:700;text-transform:uppercase;letter-spacing:2px;color:#888;margin-bottom:16px;">Оплата USDT TRC20</div>
-          <img src="images/usdt_qr.png" alt="QR USDT TRC20" style="width:180px;height:180px;border:1px solid #eee;border-radius:8px;display:block;margin:0 auto 16px;">
-          <div style="font-size:12px;color:#888;margin-bottom:8px;">Адрес кошелька:</div>
-          <div style="font-family:monospace;font-size:13px;background:#f5f5f5;padding:12px;border-radius:6px;word-break:break-all;cursor:pointer;" onclick="navigator.clipboard.writeText('TG8568ZR6nUDKp6k6yHLYbUYLPKZyP1z9c');this.textContent='✅ Скопировано!';setTimeout(()=>this.textContent='TG8568ZR6nUDKp6k6yHLYbUYLPKZyP1z9c',2000)">TG8568ZR6nUDKp6k6yHLYbUYLPKZyP1z9c</div>
-          <div style="font-size:12px;color:#aaa;margin-top:8px;">Нажмите на адрес чтобы скопировать</div>
+          <div class="op-muted" style="font-size:13px;font-weight:700;margin-bottom:16px;">Оплата USDT TRC20</div>
+          <img src="images/usdt_qr.png" alt="QR USDT TRC20" class="op-qr">
+          <div class="op-hint" style="margin:0 0 8px;">Адрес кошелька:</div>
+          <div class="op-addr" onclick="navigator.clipboard.writeText('TG8568ZR6nUDKp6k6yHLYbUYLPKZyP1z9c');this.textContent='✅ Скопировано!';setTimeout(()=>this.textContent='TG8568ZR6nUDKp6k6yHLYbUYLPKZyP1z9c',2000)">TG8568ZR6nUDKp6k6yHLYbUYLPKZyP1z9c</div>
+          <div class="op-hint">Нажмите на адрес, чтобы скопировать</div>
         </div>
 
         <div class="form-group">
