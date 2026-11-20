@@ -102,6 +102,7 @@ async function goLive() {
   if (!ok) return hint("⚠️ OBS не подключён — запусти OBS и подожди, пока вверху OBS станет зелёным");
   // Порядок важен для Bonga: сначала на сайте «Начать трансляцию» (откроется консоль), ПОТОМ OBS (вывод bonga
   // стартует вместе с ним — галочка синхр. запуска), и через ~35 сек второе «Начать трансляцию» в консоли.
+  GOLOG.length = 0;
   await sitesGo("pre");
   hint("⏳ Готовлю сайты (Bonga — «Начать трансляцию»)… через 12 сек запущу OBS");
   await new Promise(z => setTimeout(z, 12000));
@@ -122,7 +123,7 @@ async function goLive() {
 // только на адреса страниц эфира и просим перезагрузить, на шаге 2 — обычный набор без перезагрузки.
 const GO_PAGES = { cb: ["https://chaturbate.com/b/*", "https://*.chaturbate.com/b/*"], sc: ["https://*.stripchat.com/*broadcast*", "https://*.mywebcamroom.com/*broadcast*"],
   bc: ["https://*.bongamodels.com/*"], mv: ["https://www.manyvids.com/live/cam/*"] };
-let GO_UNTIL = 0;
+let GO_UNTIL = 0; const GOLOG = [];
 // which: "pre" — до OBS (Bonga, ManyVids), "post" — после старта OBS (Chaturbate, Stripchat: перезагрузить и «ОК»/«Начать шоу»)
 async function sitesGo(which) {
   const keys = which === "pre" ? ["bc", "mv"] : ["cb", "sc"];
@@ -131,7 +132,8 @@ async function sitesGo(which) {
   await pushScripts();                                               // обычный набор (уже с GO_UNTIL), без перезагрузки
   if (which === "pre") {
     call("openTab", { url: "https://rf.bongamodels.com/", prefix: "https://rf.bongamodels.com/", pinned: true });
-    call("openTab", { url: localStorage.go_mv || "https://www.manyvids.com/live/cam/bad_secret", prefix: "https://www.manyvids.com/live/cam/", pinned: true });
+    const mv = /\/live\/cam\//.test(localStorage.go_mv || "") ? localStorage.go_mv : "https://www.manyvids.com/live/cam/bad_secret";   // старый go_mv мог быть dashboard
+    call("openTab", { url: mv, prefix: "https://www.manyvids.com/live/cam/", pinned: true });
   } else {
     const sc = "https://ru.mywebcamroom.com/start-broadcasting";     // её Stripchat — зеркало mywebcamroom
     call("openTab", { url: sc, prefix: "https://ru.mywebcamroom.com/", pinned: true });
@@ -255,8 +257,12 @@ function onExt(m) {
   }
   if (m.type === "login") dot(m.p, m.ok);
   const NAME = { cb: "Chaturbate", sc: "Stripchat", bc: "Bonga", mv: "ManyVids" };
-  if (m.type === "golog") { $("#st").title = NAME[m.p] + ": " + m.text; hint("▶ " + NAME[m.p] + ": " + esc(m.text)); }
-  if (m.type === "golearn" && m.url && localStorage["go_" + m.p] !== m.url) localStorage["go_" + m.p] = m.url;
+  if (m.type === "golog") {                                         // журнал запуска: последние 8 строк, не затираем
+    GOLOG.push(new Date().toTimeString().slice(0, 8) + " " + NAME[m.p] + ": " + m.text); GOLOG.splice(0, GOLOG.length - 8);
+    hint("▶ Запуск сайтов:<br><small style='font-size:15px'>" + GOLOG.map(esc).join("<br>") + "</small>");
+  }
+  // запоминаем только ManyVids (у Bonga 2-й шаг в консоли — её открывать напрямую нельзя)
+  if (m.type === "golearn" && m.p === "mv" && /\/live\/cam\//.test(m.url || "")) localStorage.go_mv = m.url;
   if (m.type === "live") { LIVE[m.p] = { on: !!m.on, st: m.st, t: Date.now() }; dot(m.p, !!m.on); showTot(); }
   if (m.type === "lovlog") hint("🎀 " + esc(m.text.replace(/^Lovense: /, "Lovense: ")));
   if (m.type === "lovsites") {

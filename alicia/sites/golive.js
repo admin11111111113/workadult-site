@@ -7,7 +7,7 @@
   const P = /chaturbate/.test(H) ? "cb" : /stripchat|mywebcamroom/.test(H) ? "sc" : /bonga/.test(H) ? "bc" : /manyvids/.test(H) ? "mv" : "";
   if (!P) return;
   const send = m => { try { return chrome.runtime.sendMessage(m); } catch (e) { return Promise.resolve(null); } };
-  const vis = e => e && e.offsetParent !== null && !e.disabled && !/disabled/i.test(e.className || "") && e.getAttribute("aria-disabled") !== "true";
+  const vis = e => e && e.getClientRects().length > 0 && getComputedStyle(e).visibility !== "hidden" && !e.disabled && !/disabled/i.test(e.className || "") && e.getAttribute("aria-disabled") !== "true";
   const txt = e => (e.innerText || e.value || "").replace(/[^\p{L}\p{N} ]+/gu, " ").replace(/\s+/g, " ").trim();   // «Настроить стрим →» → «Настроить стрим»
   // срок автозапуска вшит панелью в код (GO_UNTIL) — работает с любым помощником; + старый путь через sessionStorage
   if (typeof GO_UNTIL !== "undefined" && GO_UNTIL > Date.now() && GO_UNTIL > +(sessionStorage.aliciaGo || 0)) sessionStorage.aliciaGo = GO_UNTIL;
@@ -42,6 +42,11 @@
       }
   }
   setInterval(step, 1000);
+  // отчёт для панели: где оказались и видна ли кнопка запуска (через 6 сек после загрузки, только во время автозапуска)
+  if (until() > Date.now()) setTimeout(() => {
+    const has = STREAM ? [...document.querySelectorAll("button,a,[role=button]")].some(b => vis(b) && STREAM.test(txt(b))) : null;
+    log("страница " + location.pathname + (STREAM ? (has ? " — кнопка запуска есть" : " — кнопки запуска НЕТ") : ""));
+  }, 6000);
 
   // команда панели: включить режим «запуск эфира» на 90 сек (переживает перезагрузку вкладки — sessionStorage)
   // команду забирает только «своя» вкладка (а не, скажем, вкладка сообщений того же сайта)
