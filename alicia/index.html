@@ -1,0 +1,122 @@
+<!doctype html><html lang="ru"><head><meta charset="utf-8"><title>Панель</title>
+<meta name="robots" content="noindex,nofollow"><meta name="viewport" content="width=device-width,initial-scale=1">
+<style>
+*{box-sizing:border-box}body{margin:0;font:16px/1.4 Segoe UI,Arial;background:#121319;color:#eee;height:100vh;display:flex;flex-direction:column}
+#top{display:flex;gap:8px;padding:8px;background:#1b1d26;align-items:center;flex-wrap:wrap}
+.pl{background:#262a36;border-radius:10px;padding:6px 12px;font-weight:600}.pl small{display:block;font-weight:400;color:#9aa;font-size:12px}
+.dot{display:inline-block;width:10px;height:10px;border-radius:50%;background:#666;margin-right:6px}.ok{background:#2ecc71}.no{background:#e74c3c}
+#main{flex:1;display:grid;grid-template-columns:minmax(0,1.3fr) minmax(0,1fr);gap:10px;padding:10px;min-height:0}
+#cam{background:#000;border-radius:12px;width:100%;aspect-ratio:16/9;object-fit:contain}
+.btns{display:flex;gap:8px;margin:8px 0;flex-wrap:wrap;align-items:center}button{font:inherit;font-weight:600;border:0;border-radius:10px;padding:12px 18px;cursor:pointer;background:#2f3445;color:#fff}
+.go{background:#e8364f}.y{background:#c98a14}.g{background:#3a6}button:disabled{opacity:.4}
+#st{color:#aab}#hint{background:#2a1f3a;border:2px solid #8a5cff;border-radius:12px;padding:12px;font-size:22px;font-weight:700;min-height:70px}
+.col{display:flex;flex-direction:column;min-height:0;gap:8px}.box{background:#1b1d26;border-radius:12px;padding:8px;overflow:auto;flex:1;min-height:0}
+.tip{padding:6px 8px;border-radius:8px;background:#233024;margin-bottom:5px}.tip b{color:#7ee08a}.chat{padding:3px 6px;color:#ccd;font-size:14px}
+#setup{position:fixed;inset:0;background:#000c;display:none;align-items:center;justify-content:center}#setup div{background:#1f2230;padding:20px;border-radius:14px;max-width:440px}
+input{font:inherit;padding:8px;border-radius:8px;border:1px solid #444;background:#0f1116;color:#fff;width:100%;margin:8px 0}
+</style></head><body>
+<div id="top">
+ <div class="pl"><span class="dot" id="d-obs"></span>OBS<small id="s-obs">…</small></div>
+ <div class="pl"><span class="dot" id="d-ext"></span>Помощник<small id="s-ext">…</small></div>
+ <div class="pl"><span class="dot" id="d-cb"></span>Chaturbate<small id="t-cb">0 tk</small></div>
+ <div class="pl"><span class="dot" id="d-sc"></span>Stripchat<small id="t-sc">0 tk</small></div>
+ <div class="pl"><span class="dot"></span>Bongacams<small>скоро</small></div>
+ <div class="pl"><span class="dot"></span>ManyVids<small>скоро</small></div>
+ <div class="pl" style="margin-left:auto">Сегодня<small id="t-all">0 tk</small></div>
+</div>
+<div id="main">
+ <div class="col">
+  <img id="cam" alt="">
+  <div class="btns"><button class="go" id="b-go" onclick="goLive()">▶ Начать эфир</button><button class="y" id="b-pause" onclick="pause()">⏸ Пауза</button>
+   <button onclick="stopLive()">⏹ Закончить</button><button class="g" id="b-rec" onclick="rec()">⏺ Снять видео</button><span id="st"></span></div>
+  <div id="hint">Подсказки появятся тут, когда начнётся эфир 💋</div>
+ </div>
+ <div class="col"><b>💰 Донаты</b><div class="box" id="wall"></div><b>💬 Комната</b><div class="box" id="chat" style="flex:.7"></div></div>
+</div>
+<div id="setup"><div><b>Подключение OBS</b><p style="color:#aab;font-size:14px">В OBS: Сервис → Настройки сервера WebSocket → включить сервер, нажать «Показать данные подключения», скопировать пароль сюда.</p>
+ <input id="pw" type="password" placeholder="пароль WebSocket"><button onclick="savePw()">Подключить</button></div></div>
+<script>
+const EXT = "bpjfaaponmehpfmndenonaffigcbmfne", PAUSE = "Пауза", $ = s => document.querySelector(s);
+const MENU = {"I want you baby":"скажи «I want you too, baby» и пошли воздушный поцелуй","Show your feet":"покажи ножки 👣","Play with nipples":"поиграй с сосками","c2c":"он хочет c2c — открой его камеру",
+ "Finger in pussy":"пальчик в киску","Finger in ass":"пальчик в попку","Spank myself":"шлёпни себя","Anal plug in the ass":"вставь пробку","All naked":"разденься полностью",
+ "Playing with clitoris":"поиграй с клитором","Change my outfit":"смени наряд","Domi in the ass":"Domi к попке","Sex machine control":"дай ему управление секс-машиной",
+ "Riding a small dildo":"поскачи на маленьком дилдо","Fuck myself with big dildo":"большой дилдо","ATM":"ATM — только в привате","Give flowers":"он подарил цветы 🌹 — мило поблагодари",
+ "Have a glass of wine":"выпей бокал вина за него 🍷"};
+const norm = s => (s || "").replace(/[^\w ]/g, "").trim().toLowerCase();
+function act(w) { w = norm(w); for (const k in MENU) if (w && w.startsWith(norm(k))) return MENU[k]; return ""; }
+const esc = s => String(s ?? "").replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"})[c]);
+const day = new Date().toLocaleDateString("sv"), TOT = JSON.parse(localStorage["tot" + day] || '{"cb":0,"sc":0}');
+function showTot() { $("#t-cb").textContent = TOT.cb + " tk"; $("#t-sc").textContent = TOT.sc + " tk"; $("#t-all").textContent = (TOT.cb + TOT.sc) + " tk"; localStorage["tot" + day] = JSON.stringify(TOT); }
+showTot();
+function hint(t) { $("#hint").innerHTML = t; }
+function dot(k, on, txt) { $("#d-" + k).className = "dot " + (on ? "ok" : "no"); if (txt !== undefined && $("#s-" + k)) $("#s-" + k).textContent = txt; }
+
+// ── OBS (obs-websocket 5, на её компе)
+let ws, rid = 0, W = {}, ok = false, lastBytes = 0, lastT = 0, prevScene = null;
+async function sha(s) { return btoa(String.fromCharCode(...new Uint8Array(await crypto.subtle.digest("SHA-256", new TextEncoder().encode(s))))); }
+function obs() {
+  ws = new WebSocket("ws://127.0.0.1:4455");
+  ws.onmessage = async e => {
+    const m = JSON.parse(e.data);
+    if (m.op === 0) {
+      const d = { rpcVersion: 1 };
+      if (m.d.authentication) {
+        const pw = localStorage.obspw || ""; if (!pw) { $("#setup").style.display = "flex"; return; }
+        d.authentication = await sha((await sha(pw + m.d.authentication.salt)) + m.d.authentication.challenge);
+      }
+      ws.send(JSON.stringify({ op: 1, d }));
+    } else if (m.op === 2) { ok = true; $("#setup").style.display = "none"; dot("obs", true, "подключён"); }
+    else if (m.op === 7) { const f = W[m.d.requestId]; delete W[m.d.requestId]; f && f(m.d); }
+  };
+  ws.onclose = e => { ok = false; dot("obs", false, e.code === 4009 ? "неверный пароль" : "не найден — запусти OBS");
+    if (e.code === 4009) $("#setup").style.display = "flex"; setTimeout(obs, 3000); };
+}
+function req(t, data) { return new Promise(r => { if (!ok) return r({}); const id = "r" + (++rid); W[id] = x => r(x.responseData || {});
+  ws.send(JSON.stringify({ op: 6, d: { requestType: t, requestId: id, requestData: data } })); }); }
+function savePw() { localStorage.obspw = $("#pw").value; try { ws.close(); } catch (e) {} }
+async function scene() { const s = await req("GetCurrentProgramScene"); return s.currentProgramSceneName || s.sceneName; }
+setInterval(async () => { if (!ok) return; const s = await scene(); if (!s) return;
+  const im = await req("GetSourceScreenshot", { sourceName: s, imageFormat: "jpg", imageWidth: 960, imageCompressionQuality: 70 });
+  if (im.imageData) $("#cam").src = im.imageData; }, 700);
+setInterval(async () => { if (!ok) return; const st = await req("GetStreamStatus"), r = await req("GetRecordStatus"), s = await scene();
+  let kb = ""; if (st.outputActive) { const now = Date.now(); if (lastT) kb = Math.round((st.outputBytes - lastBytes) * 8 / (now - lastT)) + " кбит/с"; lastBytes = st.outputBytes; lastT = now; }
+  $("#st").textContent = (st.outputActive ? "● В ЭФИРЕ " + (st.outputTimecode || "").slice(0, 8) + " " + kb : "эфир выключен") + (s === PAUSE ? " · ПАУЗА" : "") + (r.outputActive ? " · ⏺ запись" : "");
+  $("#b-go").disabled = !!st.outputActive; $("#b-pause").textContent = s === PAUSE ? "▶ Вернуться" : "⏸ Пауза";
+  $("#b-rec").textContent = r.outputActive ? "⏹ Сохранить видео" : "⏺ Снять видео"; }, 2000);
+async function goLive() { port && port.postMessage({ type: "open" }); await req("StartStream"); hint("Эфир пошёл! Улыбнись и скажи «Hi guys, welcome!» 💋"); }
+async function stopLive() { if (confirm("Закончить эфир?")) { await req("StopStream"); hint("Эфир закончен. Отдыхай 💜"); } }
+async function pause() {
+  const s = await scene();
+  if (s === PAUSE) { const l = await req("GetSceneList"); await req("SetCurrentProgramScene", { sceneName: prevScene || l.scenes.find(x => x.sceneName !== PAUSE).sceneName }); return; }
+  const l = await req("GetSceneList");
+  if (!l.scenes.some(x => x.sceneName === PAUSE)) { await req("CreateScene", { sceneName: PAUSE });
+    await req("CreateInput", { sceneName: PAUSE, inputName: "Пауза — текст", inputKind: "text_gdiplus_v3", inputSettings: { text: "Скоро вернусь 💋", font: { face: "Arial", size: 96, style: "Bold" } } }); }
+  prevScene = s; await req("SetCurrentProgramScene", { sceneName: PAUSE });
+}
+async function rec() { const r = await req("GetRecordStatus");
+  if (r.outputActive) { const x = await req("StopRecord"); hint("Видео сохранено ✅ " + esc(x.outputPath || "")); } else await req("StartRecord"); }
+obs();
+
+// ── помощник (расширение Alicia Helper)
+let port = null;
+function ext() {
+  try { port = chrome.runtime.connect(EXT); } catch (e) { dot("ext", false, "не установлен"); return setTimeout(ext, 5000); }
+  port.onMessage.addListener(onExt);
+  port.onDisconnect.addListener(() => { port = null; dot("ext", false, "нет связи"); setTimeout(ext, 3000); });
+  port.postMessage({ type: "ping" });
+}
+function onExt(m) {
+  if (m.type === "pong") dot("ext", true, "на связи");
+  if (m.type === "login") dot(m.p, m.ok);
+  if (m.type === "tip") {
+    TOT[m.p] = (TOT[m.p] || 0) + m.tk; showTot(); const a = act(m.what);
+    $("#wall").insertAdjacentHTML("afterbegin", `<div class="tip"><b>${esc(m.who)}</b> ${m.tk} tk · ${m.p === "cb" ? "Chaturbate" : "Stripchat"}${m.what ? " — " + esc(m.what) : ""}${a ? "<br>👉 " + esc(a) : ""}</div>`);
+    hint(`💰 <b>${esc(m.who)}</b> дал ${m.tk} tk${a ? "<br>👉 " + esc(a) : ""}<br>Скажи: «Thank you ${esc(m.who)} 😘»`);
+  }
+  if (m.type === "chat" && m.text) {
+    $("#chat").insertAdjacentHTML("afterbegin", `<div class="chat"><b>${esc(m.who)}</b>: ${esc(m.text)}</div>`);
+    if (/\b(hi|hello|hey)\b|привет/i.test(m.text)) hint(`👋 Скажи: «Hello ${esc(m.who)}!» и улыбнись`);
+  }
+}
+if (window.chrome && chrome.runtime && chrome.runtime.connect) ext(); else dot("ext", false, "нужен Chrome с помощником");
+</script></body></html>
