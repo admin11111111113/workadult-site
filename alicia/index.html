@@ -108,6 +108,7 @@ const SITES = [
   { id: "sc", file: "sites/sc.js", matches: ["https://*.stripchat.com/*"] },
   { id: "cb", file: "sites/cb.js", matches: ["https://chaturbate.com/b/*", "https://*.chaturbate.com/b/*"] },
   { id: "lovense", file: "sites/lovense.js", matches: ["https://*.lovense.com/*"] },
+  { id: "badge", file: "sites/badge.js", matches: ["https://chaturbate.com/b/*", "https://*.chaturbate.com/b/*", "https://*.stripchat.com/*", "https://*.bongamodels.com/*"] },
 ];
 const LIVE = [
   { url: "https://vi.stripchat.com/start-broadcasting", prefix: "https://vi.stripchat.com/start-broadcasting" },
@@ -140,13 +141,14 @@ let LOV = { sites: null };
 async function lovense() {
   if (!port) return;
   const ex = await call("exts"); let le = Array.isArray(ex) ? ex.find(e => /lovense/i.test(e.name) && e.id !== EXT) : null;
+  if (le) LOV.ext = le.id;
   if (le && !le.enabled) { await call("enableExt", { id: le.id }); le.enabled = true; }
   let toys = null;
   for (const b of LBASES) {
     const r = await call("fetch", { url: b + "/command", method: "POST", headers: { "content-type": "application/json", "X-platform": "Alicia" }, body: JSON.stringify({ command: "GetToys" }), timeout: 2500 });
     if (r.error || !r.text) continue;
     try { const j = JSON.parse(r.text); let t = (j.data || {}).toys || {}; if (typeof t === "string") t = JSON.parse(t || "{}");
-      toys = Object.values(t).map(x => ({ name: x.nickName || x.name, on: String(x.status) === "1", battery: x.battery })); break; } catch (e) {}
+      toys = Object.values(t).map(x => ({ name: x.nickName || x.name, on: String(x.status) === "1", battery: x.battery })); LOV.base = b; break; } catch (e) {}
   }
   if ((!toys || !toys.length) && LOV.toys && LOV.toys.length) toys = LOV.toys;
   const on = (toys || []).filter(x => x.on), have = (LOV.have || []).length;
@@ -156,7 +158,30 @@ async function lovense() {
 }
 setInterval(lovense, 15000);
 function lovOpen() { call("openTab", { url: LOV_PAGE, prefix: "https://rugextension.lovense.com/", focus: true }); }
+// Тест игрушки: короткая вибрация (+ толчки машины) через Lovense Connect на ПК, 3 сек.
+async function lovTest() {
+  const bases = LOV.base ? [LOV.base, ...LBASES.filter(b => b !== LOV.base)] : LBASES;
+  for (const b of bases) {
+    const r = await call("fetch", { url: b + "/command", method: "POST", headers: { "content-type": "application/json", "X-platform": "Alicia" },
+      body: JSON.stringify({ command: "Function", action: "Vibrate:12,Thrusting:12", timeSec: 3, apiVer: 1 }), timeout: 3000 });
+    if (r.error || !r.text) continue;
+    let j = {}; try { j = JSON.parse(r.text); } catch (e) {}
+    LOV.base = b; return hint(String(j.code) === "200" || j.type === "OK" ? "📳 Игрушка: тест отправлен ✅" : "📳 Lovense ответил: " + esc(r.text.slice(0, 120)));
+  }
+  hint("📳 Не достучалась до Lovense Connect на ПК — он запущен?");
+}
+// Ссылка управления делается только в окне расширения Lovense — открываем его вкладкой, там жмёшь «Ссылка управления»
+async function lovLink() {
+  const r = LOV.ext ? await call("openTab", { url: `chrome-extension://${LOV.ext}/pages/chrome_popup.html`, focus: true }) : { error: 1 };
+  if (r.error) lovOpen();
+  hint("🔗 Открыла Lovense — нажми «Ссылка управления» и скопируй ссылку фанату");
+}
 function onExt(m) {
+  if (m.type === "badge") {
+    if (m.act === "test") lovTest();
+    else if (m.act === "link") lovLink();
+    else if (m.act === "panel") call("openTab", { url: location.href, prefix: location.origin + location.pathname, focus: true });
+  }
   if (m.type === "login") dot(m.p, m.ok);
   if (m.type === "lovlog") hint("🎀 " + esc(m.text.replace(/^Lovense: /, "Lovense: ")));
   if (m.type === "lovsites") {
