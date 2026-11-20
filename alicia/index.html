@@ -21,8 +21,8 @@ input{font:inherit;padding:8px;border-radius:8px;border:1px solid #444;backgroun
  <div class="pl" style="cursor:pointer" onclick="lovOpen()" title="Открыть панель Lovense"><span class="dot" id="d-lov"></span>🎀 Lovense<small id="s-lov">…</small></div>
  <div class="pl"><span class="dot" id="d-cb"></span>Chaturbate<small id="t-cb">0 tk</small></div>
  <div class="pl"><span class="dot" id="d-sc"></span>Stripchat<small id="t-sc">0 tk</small></div>
- <div class="pl"><span class="dot"></span>Bongacams<small>скоро</small></div>
- <div class="pl"><span class="dot"></span>ManyVids<small>скоро</small></div>
+ <div class="pl"><span class="dot" id="d-bc"></span>Bongacams<small id="s-bc">через OBS</small></div>
+ <div class="pl"><span class="dot"></span>ManyVids<small>эфир с сайта</small></div>
  <div class="pl" style="margin-left:auto">Сегодня<small id="t-all">0 tk</small></div>
 </div>
 <div id="main">
@@ -84,6 +84,10 @@ setInterval(async () => { if (!ok) return; const st = await req("GetStreamStatus
   // сколько потоков реально уходит: основной сервис + цели obs-multi-rtmp (все rtmp-выходы OBS)
   const ol = ((await req("GetOutputList")).outputs || []).filter(o => /rtmp|ffmpeg_mpegts|whip/i.test(o.outputKind || ""));
   const nOut = ol.filter(o => o.outputActive).length;
+  // ManyVids берёт камеру прямо с сайта — в OBS его нет. Bonga идёт из OBS: ищем её выход по имени (цель multi-rtmp)
+  const bo = ol.find(o => /bonga/i.test(o.outputName || ""));
+  if (bo) dot("bc", bo.outputActive, bo.outputActive ? "идёт из OBS" : "OBS не шлёт");
+  else $("#s-bc").textContent = (st.outputActive && nOut > 1 ? "через OBS (" + nOut + " потока)" : "через OBS");
   $("#st").textContent = (st.outputActive ? "● В ЭФИРЕ " + (st.outputTimecode || "").slice(0, 8) + " " + kb + " · потоков " + nOut + " из " + Math.max(ol.length, 1) : "эфир выключен") + (s === PAUSE ? " · ПАУЗА" : "") + (r.outputActive ? " · ⏺ запись" : "");
   $("#b-go").disabled = !!st.outputActive; $("#b-pause").textContent = s === PAUSE ? "▶ Вернуться" : "⏸ Пауза";
   $("#b-rec").textContent = r.outputActive ? "⏹ Сохранить видео" : "⏺ Снять видео"; }, 2000);
@@ -108,7 +112,7 @@ const SITES = [
   { id: "sc", file: "sites/sc.js", matches: ["https://*.stripchat.com/*"] },
   { id: "cb", file: "sites/cb.js", matches: ["https://chaturbate.com/b/*", "https://*.chaturbate.com/b/*"] },
   { id: "lovense", file: "sites/lovense.js", matches: ["https://*.lovense.com/*"] },
-  { id: "badge", file: "sites/badge.js", matches: ["https://chaturbate.com/b/*", "https://*.chaturbate.com/b/*", "https://*.stripchat.com/*", "https://*.bongamodels.com/*"] },
+  { id: "badge", file: "sites/badge.js", matches: ["https://chaturbate.com/b/*", "https://*.chaturbate.com/b/*", "https://*.stripchat.com/*", "https://*.bongamodels.com/*", "https://www.manyvids.com/*"] },
 ];
 const LIVE = [
   { url: "https://vi.stripchat.com/start-broadcasting", prefix: "https://vi.stripchat.com/start-broadcasting" },
