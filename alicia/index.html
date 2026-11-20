@@ -18,7 +18,7 @@ input{font:inherit;padding:8px;border-radius:8px;border:1px solid #444;backgroun
 <div id="top">
  <div class="pl"><span class="dot" id="d-obs"></span>OBS<small id="s-obs">…</small></div>
  <div class="pl"><span class="dot" id="d-ext"></span>Помощник<small id="s-ext">…</small></div>
- <div class="pl" style="cursor:pointer" onclick="port&&port.postMessage({type:'lovenseOpen'})" title="Открыть панель Lovense"><span class="dot" id="d-lov"></span>🎀 Lovense<small id="s-lov">…</small></div>
+ <div class="pl" style="cursor:pointer" onclick="lovOpen()" title="Открыть панель Lovense"><span class="dot" id="d-lov"></span>🎀 Lovense<small id="s-lov">…</small></div>
  <div class="pl"><span class="dot" id="d-cb"></span>Chaturbate<small id="t-cb">0 tk</small></div>
  <div class="pl"><span class="dot" id="d-sc"></span>Stripchat<small id="t-sc">0 tk</small></div>
  <div class="pl"><span class="dot"></span>Bongacams<small>скоро</small></div>
@@ -84,7 +84,7 @@ setInterval(async () => { if (!ok) return; const st = await req("GetStreamStatus
   $("#st").textContent = (st.outputActive ? "● В ЭФИРЕ " + (st.outputTimecode || "").slice(0, 8) + " " + kb : "эфир выключен") + (s === PAUSE ? " · ПАУЗА" : "") + (r.outputActive ? " · ⏺ запись" : "");
   $("#b-go").disabled = !!st.outputActive; $("#b-pause").textContent = s === PAUSE ? "▶ Вернуться" : "⏸ Пауза";
   $("#b-rec").textContent = r.outputActive ? "⏹ Сохранить видео" : "⏺ Снять видео"; }, 2000);
-async function goLive() { port && port.postMessage({ type: "open" }); await req("StartStream"); hint("Эфир пошёл! Улыбнись и скажи «Hi guys, welcome!» 💋"); }
+async function goLive() { for (const x of LIVE) call("openTab", { ...x, pinned: true }); await req("StartStream"); hint("Эфир пошёл! Улыбнись и скажи «Hi guys, welcome!» 💋"); }
 async function stopLive() { if (confirm("Закончить эфир?")) { await req("StopStream"); hint("Эфир закончен. Отдыхай 💜"); } }
 async function pause() {
   const s = await scene();
@@ -98,24 +98,61 @@ async function rec() { const r = await req("GetRecordStatus");
   if (r.outputActive) { const x = await req("StopRecord"); hint("Видео сохранено ✅ " + esc(x.outputPath || "")); } else await req("StartRecord"); }
 obs();
 
-// ── помощник (расширение Alicia Helper)
-let port = null;
+// ── помощник (расширение Alicia Helper 1.x — исполнитель; вся логика тут, на сайте)
+let port = null, RID = 0; const WAIT = {};
+const SITES = [
+  { id: "sc", file: "sites/sc.js", matches: ["https://*.stripchat.com/*"] },
+  { id: "cb", file: "sites/cb.js", matches: ["https://chaturbate.com/b/*", "https://*.chaturbate.com/b/*"] },
+  { id: "lovense", file: "sites/lovense.js", matches: ["https://*.lovense.com/*"] },
+];
+const LIVE = [
+  { url: "https://vi.stripchat.com/start-broadcasting", prefix: "https://vi.stripchat.com/start-broadcasting" },
+  { url: "https://chaturbate.com/b/_skitlstrynka_/", prefix: "https://chaturbate.com/b/" },
+];
+const LOV_PAGE = "https://rugextension.lovense.com/cam_model/pages/settings/";
+function call(op, data = {}) { return new Promise(r => { if (!port) return r({ error: "нет связи" }); const rid = ++RID; WAIT[rid] = r;
+  port.postMessage({ op, rid, ...data }); setTimeout(() => { if (WAIT[rid]) { delete WAIT[rid]; r({ error: "timeout" }); } }, 15000); }); }
+async function hash(s) { return [...new Uint8Array(await crypto.subtle.digest("SHA-256", new TextEncoder().encode(s)))].slice(0, 8).map(b => b.toString(16).padStart(2, "0")).join(""); }
+async function pushScripts() {
+  const list = await Promise.all(SITES.map(async x => ({ id: x.id, matches: x.matches, code: await (await fetch(x.file + "?v=" + Date.now(), { cache: "no-store" })).text() })));
+  const h = await hash(JSON.stringify(list)), was = await call("get", { key: "scriptsHash" });
+  if (h !== was) { const r = await call("scripts", { list, reload: !!was }); if (!r.error) await call("set", { key: "scriptsHash", val: h }); }
+}
 function ext() {
   try { port = chrome.runtime.connect(EXT); } catch (e) { dot("ext", false, "не установлен"); return setTimeout(ext, 5000); }
-  port.onMessage.addListener(onExt);
+  port.onMessage.addListener(m => { if (m.type === "res") { const f = WAIT[m.rid]; delete WAIT[m.rid]; f && f(m.res); } else onExt(m); });
   port.onDisconnect.addListener(() => { port = null; dot("ext", false, "нет связи"); setTimeout(ext, 3000); });
-  port.postMessage({ type: "ping" }); port.postMessage({ type: "lovense", fix: true });
+  call("ping").then(async r => {
+    if (r.error) return;
+    lovense();
+    if (!r.us) { dot("ext", false, "включи «Разрешить пользовательские скрипты»"); hint("⚙️ В chrome://extensions → Alicia Helper → Сведения включи «Разрешить пользовательские скрипты» (Allow user scripts), потом обнови эту страницу"); return; }
+    dot("ext", true, "на связи v" + r.v); pushScripts();
+  });
 }
-setInterval(() => port && port.postMessage({ type: "lovense", fix: true }), 15000);
-function onExt(m) {
-  if (m.type === "pong") dot("ext", true, "на связи");
-  if (m.type === "login") dot(m.p, m.ok);
-  if (m.type === "lovense") {
-    const t = m.toys || [], on = t.filter(x => x.on);
-    const txt = m.ext === "none" ? "нет расширения Lovense" : m.ext === "off" ? "расширение выключено" :
-      on.length ? on.map(x => x.name + (x.battery != null ? " " + x.battery + "%" : "")).join(", ") : (m.toys ? "игрушка не подключена" : "открой Lovense Remote");
-    dot("lov", m.ext === "on" && on.length > 0, txt);
+// Lovense: расширение Lovense Cam Extension (включаем, если выключено) + игрушки через Lovense Remote/Connect на ПК
+const LBASES = ["https://127-0-0-1.lovense.club:30010", "https://127.0.0.1:30010", "http://127.0.0.1:20010", "https://127-0-0-1.lovense.club:34568", "http://127.0.0.1:34567"];
+let LOV = { sites: null };
+async function lovense() {
+  if (!port) return;
+  const ex = await call("exts"); let le = Array.isArray(ex) ? ex.find(e => /lovense/i.test(e.name) && e.id !== EXT) : null;
+  if (le && !le.enabled) { await call("enableExt", { id: le.id }); le.enabled = true; }
+  let toys = null;
+  for (const b of LBASES) {
+    const r = await call("fetch", { url: b + "/command", method: "POST", headers: { "content-type": "application/json", "X-platform": "Alicia" }, body: JSON.stringify({ command: "GetToys" }), timeout: 2500 });
+    if (r.error || !r.text) continue;
+    try { const j = JSON.parse(r.text); let t = (j.data || {}).toys || {}; if (typeof t === "string") t = JSON.parse(t || "{}");
+      toys = Object.values(t).map(x => ({ name: x.nickName || x.name, on: String(x.status) === "1", battery: x.battery })); break; } catch (e) {}
   }
+  const on = (toys || []).filter(x => x.on);
+  const txt = !le ? "нет расширения Lovense" : LOV.sites === 0 ? "в Lovense не добавлены сайты" :
+    on.length ? on.map(x => x.name + (x.battery != null ? " " + x.battery + "%" : "")).join(", ") : toys ? "игрушка не подключена" : "запусти Lovense Connect на ПК";
+  dot("lov", !!le && on.length > 0 && LOV.sites !== 0, txt);
+}
+setInterval(lovense, 15000);
+function lovOpen() { call("openTab", { url: LOV_PAGE, prefix: "https://rugextension.lovense.com/", focus: true }); }
+function onExt(m) {
+  if (m.type === "login") dot(m.p, m.ok);
+  if (m.type === "lovsites") { LOV.sites = m.n; if (m.n === 0) hint("🎀 В Lovense не добавлены сайты: на странице Lovense нажми «+ Добавить сайт с камерами» и добавь Chaturbate, Stripchat, Bongacams, ManyVids"); lovense(); }
   if (m.type === "tip") {
     TOT[m.p] = (TOT[m.p] || 0) + m.tk; showTot(); const a = act(m.what);
     $("#wall").insertAdjacentHTML("afterbegin", `<div class="tip"><b>${esc(m.who)}</b> ${m.tk} tk · ${m.p === "cb" ? "Chaturbate" : "Stripchat"}${m.what ? " — " + esc(m.what) : ""}${a ? "<br>👉 " + esc(a) : ""}</div>`);
