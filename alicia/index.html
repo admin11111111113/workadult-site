@@ -115,7 +115,7 @@ async function goLive() {
 // Работает с ЛЮБЫМ помощником (и 1.0): срок «жми кнопки до …» вшиваем прямо в код скрипта (GO_UNTIL),
 // а перезагрузку страниц эфира делает старая операция scripts(reload) — на шаге 1 все скрипты регистрируем
 // только на адреса страниц эфира и просим перезагрузить, на шаге 2 — обычный набор без перезагрузки.
-const GO_PAGES = { cb: ["https://chaturbate.com/b/*", "https://*.chaturbate.com/b/*"], sc: ["https://*.stripchat.com/*broadcast*"],
+const GO_PAGES = { cb: ["https://chaturbate.com/b/*", "https://*.chaturbate.com/b/*"], sc: ["https://*.stripchat.com/*broadcast*", "https://*.mywebcamroom.com/*broadcast*"],
   bc: ["https://*.bongamodels.com/*"], mv: ["https://www.manyvids.com/live/cam/*"] };
 let GO_UNTIL = 0;
 async function sitesGo() {
@@ -125,6 +125,8 @@ async function sitesGo() {
   await pushScripts();                                               // обычный набор (уже с GO_UNTIL), без перезагрузки
   const bc = localStorage.go_bc || "https://rf.bongamodels.com/", mv = localStorage.go_mv || "https://www.manyvids.com/live/cam/bad_secret";
   call("openTab", { url: bc, prefix: "https://rf.bongamodels.com/", pinned: true });
+  const sc = localStorage.go_sc || "https://ru.mywebcamroom.com/start-broadcasting";        // её Stripchat — зеркало mywebcamroom
+  call("openTab", { url: sc, prefix: sc.split("/").slice(0, 3).join("/") + "/start-broadcasting", pinned: true });
   call("openTab", { url: mv, prefix: "https://www.manyvids.com/live/cam/", pinned: true });
   hint("✅ OBS шлёт поток. Запускаю сайты: CB/SC — «ОК», Bonga — «Стримить», ManyVids — «GO LIVE»…");
 }
@@ -150,13 +152,13 @@ obs();
 // ── помощник (расширение Alicia Helper 1.x — исполнитель; вся логика тут, на сайте)
 let port = null, RID = 0, HV = 1; const WAIT = {};
 const SITES = [
-  { id: "sc", file: "sites/sc.js", matches: ["https://*.stripchat.com/*"] },
+  { id: "sc", file: "sites/sc.js", matches: ["https://*.stripchat.com/*", "https://*.mywebcamroom.com/*"] },
   { id: "cb", file: "sites/cb.js", matches: ["https://chaturbate.com/b/*", "https://*.chaturbate.com/b/*"] },
   { id: "lovense", file: "sites/lovense.js", matches: ["https://*.lovense.com/*"] },
   // автозапуск эфира на сайтах (любой помощник; GO_UNTIL вшивается в код)
-  { id: "golive", go: 1, file: "sites/golive.js", matches: ["https://chaturbate.com/b/*", "https://*.chaturbate.com/b/*", "https://*.stripchat.com/*", "https://*.bongamodels.com/*", "https://www.manyvids.com/*"] },
-  { id: "golivem", minHV: 1.2, go: 1, file: "sites/golive_main.js", world: "MAIN", runAt: "document_start", matches: ["https://chaturbate.com/b/*", "https://*.chaturbate.com/b/*", "https://*.stripchat.com/*"] },
-  { id: "badge", file: "sites/badge.js", matches: ["https://chaturbate.com/b/*", "https://*.chaturbate.com/b/*", "https://*.stripchat.com/*", "https://*.bongamodels.com/*", "https://www.manyvids.com/*"] },
+  { id: "golive", go: 1, file: "sites/golive.js", matches: ["https://chaturbate.com/b/*", "https://*.chaturbate.com/b/*", "https://*.stripchat.com/*", "https://*.mywebcamroom.com/*", "https://*.bongamodels.com/*", "https://www.manyvids.com/*"] },
+  { id: "golivem", minHV: 1.2, go: 1, file: "sites/golive_main.js", world: "MAIN", runAt: "document_start", matches: ["https://chaturbate.com/b/*", "https://*.chaturbate.com/b/*", "https://*.stripchat.com/*", "https://*.mywebcamroom.com/*"] },
+  { id: "badge", file: "sites/badge.js", matches: ["https://chaturbate.com/b/*", "https://*.chaturbate.com/b/*", "https://*.stripchat.com/*", "https://*.mywebcamroom.com/*", "https://*.bongamodels.com/*", "https://www.manyvids.com/*"] },
 ];
 const LOV_PAGE = "https://rugextension.lovense.com/cam-model/pages/settings/";   // cam_model (с _) = 404
 function call(op, data = {}) { return new Promise(r => { if (!port) return r({ error: "нет связи" }); const rid = ++RID; WAIT[rid] = r;
@@ -165,7 +167,7 @@ async function hash(s) { return [...new Uint8Array(await crypto.subtle.digest("S
 const CODE = {};
 async function pushScripts(o = {}) {
   // step1 = список адресов страниц эфира: все скрипты только на них + перезагрузка (только эти вкладки)
-  const dom = u => u.split("/")[2].split(".").slice(-2).join(".");          // "https://*.stripchat.com/*" → "stripchat.com"
+  const dom = u => u.split("/")[2].split(".").slice(-2).join(".");          // "https://*.stripchat.com/*", "https://*.mywebcamroom.com/*" → "stripchat.com"
   const list = (await Promise.all(SITES.filter(x => (x.minHV || 1) <= HV).map(async x => {
     const code = CODE[x.file] || (CODE[x.file] = await (await fetch(x.file + "?v=" + Date.now(), { cache: "no-store" })).text());
     const doms = x.matches.map(dom), m = o.step1 ? o.step1.filter(s => doms.includes(dom(s))) : x.matches;

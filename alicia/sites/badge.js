@@ -36,7 +36,7 @@
   m.addEventListener("pointermove", e => { if (!drag) return; const dx = e.clientX - drag.x, dy = e.clientY - drag.y;
     if (Math.abs(dx) + Math.abs(dy) > 5) drag.moved = true; if (drag.moved) { pos.x = drag.px + dx; pos.y = drag.py + dy; place(); } });
   m.addEventListener("pointerup", () => { if (drag && !drag.moved) toggle(!w.classList.contains("open")); else localStorage.aliciaBadgePos = JSON.stringify(pos); drag = null; });
-  const PLAT = /chaturbate/.test(location.hostname) ? "chaturbate" : /stripchat/.test(location.hostname) ? "stripchat"
+  const PLAT = /chaturbate/.test(location.hostname) ? "chaturbate" : /stripchat|mywebcamroom/.test(location.hostname) ? "stripchat"
     : /bonga/.test(location.hostname) ? "bongacams" : /manyvids/.test(location.hostname) ? "manyvids" : "";
   // окно выбора времени и готовой ссылки
   const box = document.createElement("div"); box.className = "x"; w.appendChild(box);
