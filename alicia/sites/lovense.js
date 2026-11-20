@@ -16,8 +16,11 @@
   function mySites() {
     const t = document.body.innerText || "", i = t.search(/Мои Вебкам-сайты|My Cam Sites|My Webcam Sites/i);
     if (i < 0) return null;
-    const part = t.slice(i, i + 600), n = +((/\((\d+)\)/.exec(part) || [])[1] || 0);
-    return { n, have: NEED.filter(s => new RegExp(s, "i").test(part.slice(part.indexOf(")") + 1))) };
+    let part = t.slice(i, i + 3000); const j = part.search(/Что нового|What's new/i); if (j > 0) part = part.slice(0, j);
+    const n = +((/\((\d+)\)/.exec(part) || [])[1] || 0);
+    // плюс названия в левом меню под «Вебкам-сайт» — там все сайты списком
+    const menu = [...document.querySelectorAll(".el-menu-item")].map(txt).join("\n");
+    return { n, have: NEED.filter(s => new RegExp("(^|\\n)\\s*" + s + "\\s*(\\n|$)", "i").test(part.slice(part.indexOf(")") + 1) + "\n" + menu)) };
   }
   function toys() {
     const out = [];
@@ -36,21 +39,24 @@
     inp.focus(); set.call(inp, v); inp.dispatchEvent(new Event("input", { bubbles: true })); inp.dispatchEvent(new KeyboardEvent("keyup", { bubbles: true }));
   }
 
+  // Окно «Добавить вебкам-сайт» (проверено 20.11 на 31.6.9): «+» = .addsite у пункта «Вебкам-сайт»,
+  // поле поиска readonly (печатать бесполезно) — кликаем пункт списка по тексту; настройки копируем с Chaturbate; «Готово».
   async function addOne(name) {
-    const add = byText("button,a,div,span", /^\+?\s*Добавить сайт с камерами$|^\+?\s*Add (cam|webcam) site/i);
-    if (!add) return "нет кнопки «Добавить сайт»";
+    const add = document.querySelector(".addsite") || byText("button,a,div,span", /^\+?\s*Добавить сайт с камерами$|^\+?\s*Add (cam|webcam) site/i);
+    if (!add) return "нет кнопки «+» у «Вебкам-сайт»";
     add.click();
     const inp = await waitFor(() => [...document.querySelectorAll("input")].find(i => vis(i) && /Начните вводить|Start typing|search/i.test(i.placeholder || "")));
     if (!inp) return "не открылось окно";
-    inp.click(); type(inp, name); await sleep(800);
-    const item = await waitFor(() => [...document.querySelectorAll("li,.el-select-dropdown__item,[role=option]")].find(e => vis(e) && txt(e).toLowerCase() === name.toLowerCase()));
-    if (!item) return "нет " + name + " в списке";
-    item.click(); await sleep(600);
     const dlg = inp.closest(".el-dialog,[role=dialog]") || document;
-    const ok = [...dlg.querySelectorAll("button")].reverse().find(b => vis(b) && !b.disabled && !/отмена|cancel|close|закрыть/i.test(txt(b)) && txt(b));
-    if (ok) ok.click();
-    await sleep(1500);
-    const close = [...document.querySelectorAll(".el-dialog__headerbtn,[aria-label=Close]")].find(vis); if (close && vis(inp)) close.click();
+    inp.click(); await sleep(700);
+    const item = await waitFor(() => [...document.querySelectorAll(".el-select-dropdown__item,[role=option]")].find(e => txt(e).toLowerCase() === name.toLowerCase()));
+    if (!item) { const c = dlg.querySelector(".el-dialog__headerbtn"); c && c.click(); return "нет " + name + " в списке"; }
+    item.scrollIntoView({ block: "nearest" }); item.click(); await sleep(700);
+    const copy = [...dlg.querySelectorAll(".el-radio")].find(e => vis(e) && /Копировать|Copy/i.test(txt(e)));
+    if (copy) { copy.click(); await sleep(700); }
+    const ok = await waitFor(() => [...dlg.querySelectorAll("button")].find(b => vis(b) && !b.disabled && /^(Готово|Done|OK|Confirm|Подтвердить)$/i.test(txt(b))), 4000);
+    if (!ok) { const c = dlg.querySelector(".el-dialog__headerbtn"); c && c.click(); return "не нажалась «Готово» для " + name; }
+    ok.click(); await sleep(2500);
     return "";
   }
 

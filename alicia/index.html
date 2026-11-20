@@ -81,7 +81,10 @@ setInterval(async () => { if (!ok) return; const s = await scene(); if (!s) retu
   if (im.imageData) $("#cam").src = im.imageData; }, 700);
 setInterval(async () => { if (!ok) return; const st = await req("GetStreamStatus"), r = await req("GetRecordStatus"), s = await scene();
   let kb = ""; if (st.outputActive) { const now = Date.now(); if (lastT) kb = Math.round((st.outputBytes - lastBytes) * 8 / (now - lastT)) + " кбит/с"; lastBytes = st.outputBytes; lastT = now; }
-  $("#st").textContent = (st.outputActive ? "● В ЭФИРЕ " + (st.outputTimecode || "").slice(0, 8) + " " + kb : "эфир выключен") + (s === PAUSE ? " · ПАУЗА" : "") + (r.outputActive ? " · ⏺ запись" : "");
+  // сколько потоков реально уходит: основной сервис + цели obs-multi-rtmp (все rtmp-выходы OBS)
+  const ol = ((await req("GetOutputList")).outputs || []).filter(o => /rtmp|ffmpeg_mpegts|whip/i.test(o.outputKind || ""));
+  const nOut = ol.filter(o => o.outputActive).length;
+  $("#st").textContent = (st.outputActive ? "● В ЭФИРЕ " + (st.outputTimecode || "").slice(0, 8) + " " + kb + " · потоков " + nOut + " из " + Math.max(ol.length, 1) : "эфир выключен") + (s === PAUSE ? " · ПАУЗА" : "") + (r.outputActive ? " · ⏺ запись" : "");
   $("#b-go").disabled = !!st.outputActive; $("#b-pause").textContent = s === PAUSE ? "▶ Вернуться" : "⏸ Пауза";
   $("#b-rec").textContent = r.outputActive ? "⏹ Сохранить видео" : "⏺ Снять видео"; }, 2000);
 async function goLive() { for (const x of LIVE) call("openTab", { ...x, pinned: true });
@@ -109,8 +112,9 @@ const SITES = [
 const LIVE = [
   { url: "https://vi.stripchat.com/start-broadcasting", prefix: "https://vi.stripchat.com/start-broadcasting" },
   { url: "https://chaturbate.com/b/_skitlstrynka_/", prefix: "https://chaturbate.com/b/" },
+  { url: "https://rf.bongamodels.com/chat-console", prefix: "https://rf.bongamodels.com/chat-console" },
 ];
-const LOV_PAGE = "https://rugextension.lovense.com/cam_model/pages/settings/";
+const LOV_PAGE = "https://rugextension.lovense.com/cam-model/pages/settings/";   // cam_model (с _) = 404
 function call(op, data = {}) { return new Promise(r => { if (!port) return r({ error: "нет связи" }); const rid = ++RID; WAIT[rid] = r;
   port.postMessage({ op, rid, ...data }); setTimeout(() => { if (WAIT[rid]) { delete WAIT[rid]; r({ error: "timeout" }); } }, 15000); }); }
 async function hash(s) { return [...new Uint8Array(await crypto.subtle.digest("SHA-256", new TextEncoder().encode(s)))].slice(0, 8).map(b => b.toString(16).padStart(2, "0")).join(""); }
