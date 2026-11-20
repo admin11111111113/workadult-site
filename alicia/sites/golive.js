@@ -9,7 +9,15 @@
   const send = m => { try { return chrome.runtime.sendMessage(m); } catch (e) { return Promise.resolve(null); } };
   const vis = e => e && e.offsetParent !== null && !e.disabled && !/disabled/i.test(e.className || "") && e.getAttribute("aria-disabled") !== "true";
   const txt = e => (e.innerText || e.value || "").trim().replace(/\s+/g, " ");
+  // срок автозапуска вшит панелью в код (GO_UNTIL) — работает с любым помощником; + старый путь через sessionStorage
+  if (typeof GO_UNTIL !== "undefined" && GO_UNTIL > Date.now() && GO_UNTIL > +(sessionStorage.aliciaGo || 0)) sessionStorage.aliciaGo = GO_UNTIL;
   const until = () => +(sessionStorage.aliciaGo || 0);
+  // системные confirm/alert сайта на время автозапуска отвечают «ОК» (в мир страницы — через <script>, если сайт позволит)
+  if (until() > Date.now() && (P === "cb" || P === "sc")) try {
+    const s = document.createElement("script");
+    s.textContent = "(()=>{const on=()=>+(sessionStorage.aliciaGo||0)>Date.now(),c=confirm,a=alert;window.confirm=function(){return on()?true:c.apply(this,arguments)};window.alert=function(){return on()?void 0:a.apply(this,arguments)}})()";
+    (document.head || document.documentElement).appendChild(s); s.remove();
+  } catch (e) {}
   const log = t => send({ type: "golog", p: P, text: t });
 
   const OK = /^(ok|ок|okay|confirm|подтвердить|подтверждаю|да|yes|continue|продолжить|xác nhận|đồng ý|tiếp tục|i confirm|i agree)$/i;

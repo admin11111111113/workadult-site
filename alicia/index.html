@@ -112,17 +112,21 @@ async function goLive() {
 }
 // Сайты: CB/SC — перезагрузить страницу эфира и нажать «ОК»; Bonga — «Стримить» (и ещё раз на новой странице); ManyVids — «Go Live».
 // Сами кнопки жмёт sites/golive.js; тут — команды и перезагрузка.
+// Работает с ЛЮБЫМ помощником (и 1.0): срок «жми кнопки до …» вшиваем прямо в код скрипта (GO_UNTIL),
+// а перезагрузку страниц эфира делает старая операция scripts(reload) — на шаге 1 все скрипты регистрируем
+// только на адреса страниц эфира и просим перезагрузить, на шаге 2 — обычный набор без перезагрузки.
+const GO_PAGES = { cb: ["https://chaturbate.com/b/*", "https://*.chaturbate.com/b/*"], sc: ["https://*.stripchat.com/*broadcast*"],
+  bc: ["https://*.bongamodels.com/*"], mv: ["https://www.manyvids.com/live/cam/*"] };
+let GO_UNTIL = 0;
 async function sitesGo() {
-  if (HV < 1.2) return hint("✅ OBS шлёт поток.<br>⚠️ Сайты пока запускай сама (обнови помощник до 1.2 — будет само): CB/SC — обнови страницу и «ОК», Bonga — «Стримить», ManyVids — «Go Live»");
-  const go = p => call("push", { ch: "go-" + p, cmd: { go: 1, ms: 120000 } });
-  await go("cb"); await go("sc"); await go("bc"); await go("bc"); await go("mv");
-  await new Promise(z => setTimeout(z, 3000));                      // вкладки успевают забрать команду
-  call("reload", { re: "^https://([a-z]+\\.)?chaturbate\\.com/b/" });
-  call("reload", { re: "^https://([a-z]+\\.)?stripchat\\.com/.*broadcast" });
+  GO_UNTIL = Date.now() + 150000;
+  const all = Object.values(GO_PAGES).flat();
+  await pushScripts({ step1: all });                                 // перезагрузка вкладок эфира с включённым автозапуском
+  await pushScripts();                                               // обычный набор (уже с GO_UNTIL), без перезагрузки
   const bc = localStorage.go_bc || "https://rf.bongamodels.com/", mv = localStorage.go_mv || "https://www.manyvids.com/live/cam/bad_secret";
   call("openTab", { url: bc, prefix: "https://rf.bongamodels.com/", pinned: true });
-  if (mv) call("openTab", { url: mv, prefix: mv, pinned: true });
-  else hint("✅ OBS шлёт, CB/SC/Bonga запускаю.<br>ManyVids: открой разок страницу стриминга MV — запомню её и дальше буду жать «Go Live» сама");
+  call("openTab", { url: mv, prefix: "https://www.manyvids.com/live/cam/", pinned: true });
+  hint("✅ OBS шлёт поток. Запускаю сайты: CB/SC — «ОК», Bonga — «Стримить», ManyVids — «GO LIVE»…");
 }
 let LIVE_T = 0;
 setInterval(() => {                                                 // через 60 сек после старта: какие сайты так и не увидели эфир
@@ -149,17 +153,25 @@ const SITES = [
   { id: "sc", file: "sites/sc.js", matches: ["https://*.stripchat.com/*"] },
   { id: "cb", file: "sites/cb.js", matches: ["https://chaturbate.com/b/*", "https://*.chaturbate.com/b/*"] },
   { id: "lovense", file: "sites/lovense.js", matches: ["https://*.lovense.com/*"] },
-  // автозапуск эфира на сайтах (помощник 1.2+: команды push/poll, перезагрузка вкладок, MAIN-мир)
-  { id: "golive", minHV: 1.2, file: "sites/golive.js", matches: ["https://chaturbate.com/b/*", "https://*.chaturbate.com/b/*", "https://*.stripchat.com/*", "https://*.bongamodels.com/*", "https://www.manyvids.com/*"] },
-  { id: "golivem", minHV: 1.2, file: "sites/golive_main.js", world: "MAIN", runAt: "document_start", matches: ["https://chaturbate.com/b/*", "https://*.chaturbate.com/b/*", "https://*.stripchat.com/*"] },
+  // автозапуск эфира на сайтах (любой помощник; GO_UNTIL вшивается в код)
+  { id: "golive", go: 1, file: "sites/golive.js", matches: ["https://chaturbate.com/b/*", "https://*.chaturbate.com/b/*", "https://*.stripchat.com/*", "https://*.bongamodels.com/*", "https://www.manyvids.com/*"] },
+  { id: "golivem", minHV: 1.2, go: 1, file: "sites/golive_main.js", world: "MAIN", runAt: "document_start", matches: ["https://chaturbate.com/b/*", "https://*.chaturbate.com/b/*", "https://*.stripchat.com/*"] },
   { id: "badge", file: "sites/badge.js", matches: ["https://chaturbate.com/b/*", "https://*.chaturbate.com/b/*", "https://*.stripchat.com/*", "https://*.bongamodels.com/*", "https://www.manyvids.com/*"] },
 ];
 const LOV_PAGE = "https://rugextension.lovense.com/cam-model/pages/settings/";   // cam_model (с _) = 404
 function call(op, data = {}) { return new Promise(r => { if (!port) return r({ error: "нет связи" }); const rid = ++RID; WAIT[rid] = r;
   port.postMessage({ op, rid, ...data }); setTimeout(() => { if (WAIT[rid]) { delete WAIT[rid]; r({ error: "timeout" }); } }, 15000); }); }
 async function hash(s) { return [...new Uint8Array(await crypto.subtle.digest("SHA-256", new TextEncoder().encode(s)))].slice(0, 8).map(b => b.toString(16).padStart(2, "0")).join(""); }
-async function pushScripts() {
-  const list = await Promise.all(SITES.filter(x => (x.minHV || 1) <= HV).map(async x => ({ id: x.id, matches: x.matches, allFrames: !!x.allFrames, world: x.world, runAt: x.runAt, code: await (await fetch(x.file + "?v=" + Date.now(), { cache: "no-store" })).text() })));
+const CODE = {};
+async function pushScripts(o = {}) {
+  // step1 = список адресов страниц эфира: все скрипты только на них + перезагрузка (только эти вкладки)
+  const dom = u => u.split("/")[2].split(".").slice(-2).join(".");          // "https://*.stripchat.com/*" → "stripchat.com"
+  const list = (await Promise.all(SITES.filter(x => (x.minHV || 1) <= HV).map(async x => {
+    const code = CODE[x.file] || (CODE[x.file] = await (await fetch(x.file + "?v=" + Date.now(), { cache: "no-store" })).text());
+    const doms = x.matches.map(dom), m = o.step1 ? o.step1.filter(s => doms.includes(dom(s))) : x.matches;
+    return { id: x.id, matches: m, allFrames: !!x.allFrames, world: x.world, runAt: x.runAt, code: (x.go ? "var GO_UNTIL=" + GO_UNTIL + ";\n" : "") + code };
+  }))).filter(x => x.matches.length);
+  if (o.step1) { const r = await call("scripts", { list, reload: true }); await call("set", { key: "scriptsHash", val: "" }); return r; }
   const h = await hash(JSON.stringify(list)), was = await call("get", { key: "scriptsHash" });
   if (h !== was) { const r = await call("scripts", { list, reload: false }); /* открытые вкладки НЕ перезагружаем — эфир/подтверждения */ if (!r.error) await call("set", { key: "scriptsHash", val: h }); }
 }
@@ -171,7 +183,7 @@ function ext() {
     if (r.error) return;
     lovense();
     if (!r.us) { dot("ext", false, "включи «Разрешить пользовательские скрипты»"); hint("⚙️ В chrome://extensions → Alicia Helper → Сведения включи «Разрешить пользовательские скрипты» (Allow user scripts), потом обнови эту страницу"); return; }
-    HV = parseFloat(r.v) || 1; dot("ext", true, "на связи v" + r.v + (HV < 1.2 ? " · обнови до 1.2" : "")); pushScripts();
+    HV = parseFloat(r.v) || 1; dot("ext", true, "на связи v" + r.v); pushScripts();
   });
 }
 // Lovense: расширение Lovense Cam Extension (включаем, если выключено) + игрушки через Lovense Remote/Connect на ПК
