@@ -112,9 +112,6 @@ const SITES = [
   { id: "sc", file: "sites/sc.js", matches: ["https://*.stripchat.com/*"] },
   { id: "cb", file: "sites/cb.js", matches: ["https://chaturbate.com/b/*", "https://*.chaturbate.com/b/*"] },
   { id: "lovense", file: "sites/lovense.js", matches: ["https://*.lovense.com/*"] },
-  // окно расширения Lovense (iframe) — нужны allFrames/MAIN, работают с помощником 1.1+
-  { id: "clinkm", file: "sites/clink_main.js", matches: ["https://rugextension.lovense.com/cam-model/pages/popup.html*"], allFrames: true, world: "MAIN" },
-  { id: "clinkb", file: "sites/clink_bridge.js", matches: ["https://rugextension.lovense.com/cam-model/pages/popup.html*"], allFrames: true },
   { id: "badge", file: "sites/badge.js", matches: ["https://chaturbate.com/b/*", "https://*.chaturbate.com/b/*", "https://*.stripchat.com/*", "https://*.bongamodels.com/*", "https://www.manyvids.com/*"] },
 ];
 const LIVE = [
@@ -177,19 +174,12 @@ async function lovTest() {
   }
   hint("📳 Не достучалась до Lovense Connect на ПК — он запущен?");
 }
-// Ссылка управления: Lovense делает её только в своём окне. Помощник 1.1+ — держим окно Lovense закреплённой вкладкой
-// и жмём там всё сами (clink_main.js), ссылка возвращается в значок и сюда. Старый помощник — просто открываем окно.
-async function lovLink(min, platform) {
+// Ссылка управления: Lovense делает её только внутри своего окна, а Chrome не пускает скрипты внутрь окна
+// чужого расширения (проверено 20.11) и создание идёт через их фон, не через сайт. Поэтому просто открываем окно Lovense.
+async function lovLink() {
   const url = LOV.ext ? `chrome-extension://${LOV.ext}/pages/chrome_popup.html` : "";
-  if (HV < 1.1 || !url) {
-    const r = url ? await call("openTab", { url, focus: true }) : { error: 1 }; if (r.error) lovOpen();
-    call("push", { ch: "badge", cmd: { type: "clink", err: "Открыла Lovense — там «Ссылка управления» (обнови помощник до 1.1, будет само)" } });
-    return hint("🔗 Открыла Lovense — нажми «Ссылка управления» и скопируй ссылку фанату");
-  }
-  const t = await call("openTab", { url, prefix: url, pinned: true });
-  if (!t.existed) await new Promise(r => setTimeout(r, 6000));             // окну Lovense надо прогрузиться
-  await call("push", { ch: "lov", cmd: { type: "clink", min, platform, rid: Date.now() } });
-  hint("🔗 Делаю ссылку управления на " + min + " мин…");
+  const r = url ? await call("openTab", { url, prefix: url, focus: true }) : { error: 1 }; if (r.error) lovOpen();
+  hint("🔗 Открыла Lovense — «Ссылка управления» → время → «Создать новую ссылку» → «Копировать» и отправь мемберу");
 }
 function onExt(m) {
   if (m.type === "clinkres") {
@@ -198,7 +188,7 @@ function onExt(m) {
   }
   if (m.type === "badge") {
     if (m.act === "test") lovTest();
-    else if (m.act === "link") lovLink(m.min || 5, m.platform || "");
+    else if (m.act === "link") lovLink();
     else if (m.act === "panel") call("openTab", { url: location.href, prefix: location.origin + location.pathname, focus: true });
   }
   if (m.type === "login") dot(m.p, m.ok);

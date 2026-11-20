@@ -65,9 +65,9 @@
   });
   sh.querySelectorAll(".b").forEach(b => b.addEventListener("click", () => {
     const a = b.dataset.a; toggle(false);
-    if (a === "link") return show("<b>🔗 Ссылка управления — на сколько?</b>" + [1, 3, 5, 10, 15].map(m => `<button data-min="${m}">${m} мин</button>`).join(""));
+    // Ссылку управления Lovense делает только в своём окне (Chrome не пускает нас внутрь) — открываем его
     send({ type: "badge", act: a, site: location.hostname });
-    say(a === "test" ? "Вибрирую…" : "Открываю панель");
+    say(a === "test" ? "Вибрирую…" : a === "link" ? "Открываю Lovense → «Ссылка управления»" : "Открываю панель");
   }));
   (document.body || document.documentElement).appendChild(host);
 })();
