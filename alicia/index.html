@@ -100,13 +100,18 @@ function reqS(t, data) { return new Promise(r => { if (!ok) return r({ requestSt
 async function goLive() {
   call("openTab", { url: LOV_PAGE, prefix: "https://rugextension.lovense.com/", pinned: true });
   if (!ok) return hint("⚠️ OBS не подключён — запусти OBS и подожди, пока вверху OBS станет зелёным");
+  // Порядок важен для Bonga: сначала на сайте «Начать трансляцию» (откроется консоль), ПОТОМ OBS (вывод bonga
+  // стартует вместе с ним — галочка синхр. запуска), и через ~35 сек второе «Начать трансляцию» в консоли.
+  await sitesGo("pre");
+  hint("⏳ Готовлю сайты (Bonga — «Начать трансляцию»)… через 12 сек запущу OBS");
+  await new Promise(z => setTimeout(z, 12000));
   hint("⏳ Запускаю OBS…");
   const r = await reqS("StartStream"), s = r.requestStatus || {};
   if (!s.result && s.code !== 500) return hint("⚠️ OBS не запустил трансляцию: " + esc(s.comment || ("код " + s.code)) + "<br>Проверь в OBS: Настройки → Трансляция → сервис и ключ");
   for (let i = 0; i < 10; i++) {                                   // ждём, что поток реально пошёл
     await new Promise(z => setTimeout(z, 1000));
     const st = await req("GetStreamStatus");
-    if (st.outputActive && !st.outputReconnecting) { LIVE_T = Date.now(); hint("✅ OBS шлёт поток. Запускаю сайты…<br>Улыбнись и скажи «Hi guys, welcome!» 💋"); return sitesGo(); }
+    if (st.outputActive && !st.outputReconnecting) { LIVE_T = Date.now(); await new Promise(z => setTimeout(z, 3000)); sitesGo("post"); return hint("✅ OBS шлёт поток. Сайты дожимаю сами: Stripchat «Начать шоу» ~20 сек, Bonga второе «Начать трансляцию» ~35 сек<br>Улыбнись и скажи «Hi guys, welcome!» 💋"); }
   }
   hint("⚠️ OBS не смог подключиться к сайту (поток не пошёл). Проверь ключ трансляции в OBS и интернет");
 }
@@ -118,17 +123,19 @@ async function goLive() {
 const GO_PAGES = { cb: ["https://chaturbate.com/b/*", "https://*.chaturbate.com/b/*"], sc: ["https://*.stripchat.com/*broadcast*", "https://*.mywebcamroom.com/*broadcast*"],
   bc: ["https://*.bongamodels.com/*"], mv: ["https://www.manyvids.com/live/cam/*"] };
 let GO_UNTIL = 0;
-async function sitesGo() {
-  GO_UNTIL = Date.now() + 150000;
-  const all = Object.values(GO_PAGES).flat();
-  await pushScripts({ step1: all });                                 // перезагрузка вкладок эфира с включённым автозапуском
+// which: "pre" — до OBS (Bonga, ManyVids), "post" — после старта OBS (Chaturbate, Stripchat: перезагрузить и «ОК»/«Начать шоу»)
+async function sitesGo(which) {
+  const keys = which === "pre" ? ["bc", "mv"] : ["cb", "sc"];
+  if (which === "pre") GO_UNTIL = Date.now() + 240000;
+  await pushScripts({ step1: keys.flatMap(k => GO_PAGES[k]) });    // перезагрузка нужных вкладок с включённым автозапуском
   await pushScripts();                                               // обычный набор (уже с GO_UNTIL), без перезагрузки
-  const bc = localStorage.go_bc || "https://rf.bongamodels.com/", mv = localStorage.go_mv || "https://www.manyvids.com/live/cam/bad_secret";
-  call("openTab", { url: bc, prefix: "https://rf.bongamodels.com/", pinned: true });
-  const sc = localStorage.go_sc || "https://ru.mywebcamroom.com/start-broadcasting";        // её Stripchat — зеркало mywebcamroom
-  call("openTab", { url: sc, prefix: sc.split("/").slice(0, 3).join("/") + "/start-broadcasting", pinned: true });
-  call("openTab", { url: mv, prefix: "https://www.manyvids.com/live/cam/", pinned: true });
-  hint("✅ OBS шлёт поток. Запускаю сайты: CB/SC — «ОК», Bonga — «Стримить», ManyVids — «GO LIVE»…");
+  if (which === "pre") {
+    call("openTab", { url: "https://rf.bongamodels.com/", prefix: "https://rf.bongamodels.com/", pinned: true });
+    call("openTab", { url: localStorage.go_mv || "https://www.manyvids.com/live/cam/bad_secret", prefix: "https://www.manyvids.com/live/cam/", pinned: true });
+  } else {
+    const sc = "https://ru.mywebcamroom.com/start-broadcasting";     // её Stripchat — зеркало mywebcamroom
+    call("openTab", { url: sc, prefix: "https://ru.mywebcamroom.com/", pinned: true });
+  }
 }
 let LIVE_T = 0;
 setInterval(() => {                                                 // через 60 сек после старта: какие сайты так и не увидели эфир

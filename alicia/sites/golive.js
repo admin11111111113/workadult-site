@@ -25,7 +25,9 @@
                : P === "mv" ? /^(go live|start live|start streaming|go live now)$/i
                : P === "sc" ? /^(настроить стрим|начать шоу|set up (a )?stream|start (the )?show|thiết lập phát sóng|bắt đầu (buổi diễn|show))$/i : null;
   const dialogs = () => [...document.querySelectorAll("[role=dialog],[role=alertdialog],.modal,dialog,[class*=modal i],[class*=dialog i],[class*=popup i],[class*=overlay i]")].filter(e => e.offsetParent !== null);
-  const clicked = new WeakSet();
+  const clicked = new WeakSet(), loadT = Date.now(), path = location.pathname;
+  // второй шаг ждёт, пока OBS начнёт слать: Bonga /console — 2-е «Начать трансляцию» через 35 сек, SC комната — «Начать шоу» через 20 сек
+  const delay = P === "bc" && /^\/console/.test(path) ? 35000 : P === "sc" && !/start-broadcasting/.test(path) ? 20000 : 0;
 
   function step() {
     if (Date.now() > until()) return;
@@ -33,6 +35,7 @@
       if (vis(b) && OK.test(txt(b)) && !clicked.has(b)) { const t = txt(b); clicked.add(b); b.click(); log("нажала «" + t + "»"); }
     if (STREAM) for (const b of document.querySelectorAll("button,a,[role=button],input[type=button],input[type=submit]" + (P === "mv" ? ",[class*=go-live-button]" : "")))
       if (vis(b) && STREAM.test(txt(b)) && !clicked.has(b)) {
+        if (Date.now() - loadT < delay) continue;
         const k = "aliciaClick:" + location.pathname, last = +(sessionStorage[k] || 0);
         if (Date.now() - last < 25000) continue;                      // одну и ту же кнопку не дёргаем чаще раза в 25 сек
         const t = txt(b); clicked.add(b); sessionStorage[k] = Date.now(); b.click(); log("нажала «" + t + "»");
