@@ -87,8 +87,8 @@ setInterval(async () => { if (!ok) return; const st = await req("GetStreamStatus
   $("#st").textContent = (st.outputActive ? "● В ЭФИРЕ " + (st.outputTimecode || "").slice(0, 8) + " " + kb + " · потоков " + nOut + " из " + Math.max(ol.length, 1) : "эфир выключен") + (s === PAUSE ? " · ПАУЗА" : "") + (r.outputActive ? " · ⏺ запись" : "");
   $("#b-go").disabled = !!st.outputActive; $("#b-pause").textContent = s === PAUSE ? "▶ Вернуться" : "⏸ Пауза";
   $("#b-rec").textContent = r.outputActive ? "⏹ Сохранить видео" : "⏺ Снять видео"; }, 2000);
-async function goLive() { for (const x of LIVE) call("openTab", { ...x, pinned: true });
-  const u = LOV_PAGE + "?alicia=" + Date.now(); call("openTab", { url: u, prefix: u, pinned: true }); await req("StartStream"); hint("Эфир пошёл! Улыбнись и скажи «Hi guys, welcome!» 💋"); }
+// Вкладки эфира она открывает сама — новые не плодим (каждая новая просит камеру/подтверждения). Lovense — только если её нет совсем.
+async function goLive() { call("openTab", { url: LOV_PAGE, prefix: "https://rugextension.lovense.com/", pinned: true }); await req("StartStream"); hint("Эфир пошёл! Улыбнись и скажи «Hi guys, welcome!» 💋"); }
 async function stopLive() { if (confirm("Закончить эфир?")) { await req("StopStream"); hint("Эфир закончен. Отдыхай 💜"); } }
 async function pause() {
   const s = await scene();
@@ -121,7 +121,7 @@ async function hash(s) { return [...new Uint8Array(await crypto.subtle.digest("S
 async function pushScripts() {
   const list = await Promise.all(SITES.map(async x => ({ id: x.id, matches: x.matches, code: await (await fetch(x.file + "?v=" + Date.now(), { cache: "no-store" })).text() })));
   const h = await hash(JSON.stringify(list)), was = await call("get", { key: "scriptsHash" });
-  if (h !== was) { const r = await call("scripts", { list, reload: !!was }); if (!r.error) await call("set", { key: "scriptsHash", val: h }); }
+  if (h !== was) { const r = await call("scripts", { list, reload: false }); /* открытые вкладки НЕ перезагружаем — эфир/подтверждения */ if (!r.error) await call("set", { key: "scriptsHash", val: h }); }
 }
 function ext() {
   try { port = chrome.runtime.connect(EXT); } catch (e) { dot("ext", false, "не установлен"); return setTimeout(ext, 5000); }

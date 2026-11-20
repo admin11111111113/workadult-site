@@ -7,11 +7,6 @@
   const sleep = ms => new Promise(r => setTimeout(r, ms));
   const vis = e => e && e.offsetParent !== null;
   const txt = e => (e.innerText || "").trim();
-  const fresh = /[?&]alicia=/.test(location.search);
-
-  // старые вкладки Lovense закрываем, когда панель открыла свежую
-  if (fresh) localStorage.aliciaTab = Date.now() + "";
-  else window.addEventListener("storage", e => { if (e.key === "aliciaTab") window.close(); });
 
   function mySites() {
     const t = document.body.innerText || "", i = t.search(/Мои Вебкам-сайты|My Cam Sites|My Webcam Sites/i);
@@ -77,7 +72,8 @@
 
   (async () => {
     await waitFor(() => mySites(), 15000);
-    if (fresh) await autoAdd(); else report();
+    const s = mySites();                       // добавляем только если чего-то не хватает (вкладки не переоткрываем)
+    if (s && NEED.some(x => !s.have.includes(x)) && /\/pages\/settings/.test(location.pathname)) await autoAdd(); else report(true);
     setInterval(report, 10000);
   })();
 })();
