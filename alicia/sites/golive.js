@@ -22,7 +22,7 @@
     if (Date.now() > until()) return;
     for (const d of dialogs()) for (const b of d.querySelectorAll("button,a,[role=button],input[type=button],input[type=submit]"))
       if (vis(b) && OK.test(txt(b)) && !clicked.has(b)) { const t = txt(b); clicked.add(b); b.click(); log("нажала «" + t + "»"); }
-    if (STREAM) for (const b of document.querySelectorAll("button,a,[role=button],input[type=button],input[type=submit]"))
+    if (STREAM) for (const b of document.querySelectorAll("button,a,[role=button],input[type=button],input[type=submit]" + (P === "mv" ? ",[class*=go-live-button]" : "")))
       if (vis(b) && STREAM.test(txt(b)) && !clicked.has(b)) {
         const k = "aliciaClick:" + location.pathname, last = +(sessionStorage[k] || 0);
         if (Date.now() - last < 25000) continue;                      // одну и ту же кнопку не дёргаем чаще раза в 25 сек

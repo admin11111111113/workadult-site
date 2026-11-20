@@ -119,7 +119,7 @@ async function sitesGo() {
   await new Promise(z => setTimeout(z, 3000));                      // вкладки успевают забрать команду
   call("reload", { re: "^https://([a-z]+\\.)?chaturbate\\.com/b/" });
   call("reload", { re: "^https://([a-z]+\\.)?stripchat\\.com/.*broadcast" });
-  const bc = localStorage.go_bc || "https://rf.bongamodels.com/", mv = localStorage.go_mv;
+  const bc = localStorage.go_bc || "https://rf.bongamodels.com/", mv = localStorage.go_mv || "https://www.manyvids.com/live/cam/bad_secret";
   call("openTab", { url: bc, prefix: "https://rf.bongamodels.com/", pinned: true });
   if (mv) call("openTab", { url: mv, prefix: mv, pinned: true });
   else hint("✅ OBS шлёт, CB/SC/Bonga запускаю.<br>ManyVids: открой разок страницу стриминга MV — запомню её и дальше буду жать «Go Live» сама");
