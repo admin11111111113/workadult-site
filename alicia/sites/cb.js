@@ -15,4 +15,11 @@
     if (seen.size > 2000) seen.clear();
   }).observe(document.body, { childList: true, subtree: true });
   send({ type: "login", p: "cb", ok: !/login|auth/.test(location.pathname) });
+  // видит ли Chaturbate эфир: room_status offline / public / private / away …
+  const room = (location.pathname.match(/^\/b\/([^/]+)/) || [])[1] || "_skitlstrynka_";
+  async function live() {
+    try { const d = await (await fetch(`/api/chatvideocontext/${room}/`, { credentials: "include" })).json();
+      send({ type: "live", p: "cb", on: !!d.room_status && d.room_status !== "offline", st: d.room_status || "" }); } catch (e) {}
+  }
+  live(); setInterval(live, 10000);
 })();

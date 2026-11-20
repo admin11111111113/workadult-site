@@ -47,7 +47,9 @@ const norm = s => (s || "").replace(/[^\w ]/g, "").trim().toLowerCase();
 function act(w) { w = norm(w); for (const k in MENU) if (w && w.startsWith(norm(k))) return MENU[k]; return ""; }
 const esc = s => String(s ?? "").replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"})[c]);
 const day = new Date().toLocaleDateString("sv"), TOT = JSON.parse(localStorage["tot" + day] || '{"cb":0,"sc":0}');
-function showTot() { $("#t-cb").textContent = TOT.cb + " tk"; $("#t-sc").textContent = TOT.sc + " tk"; $("#t-all").textContent = (TOT.cb + TOT.sc) + " tk"; localStorage["tot" + day] = JSON.stringify(TOT); }
+const LIVE = {};                                                    // p → {on, st} — видит ли сайт эфир (из sc.js / cb.js)
+function showTot() { const L = p => !LIVE[p] ? "" : LIVE[p].on ? "🔴 в эфире · " : "не в эфире · ";
+  $("#t-cb").textContent = L("cb") + TOT.cb + " tk"; $("#t-sc").textContent = L("sc") + TOT.sc + " tk"; $("#t-all").textContent = (TOT.cb + TOT.sc) + " tk"; localStorage["tot" + day] = JSON.stringify(TOT); }
 showTot();
 function hint(t) { $("#hint").innerHTML = t; }
 function dot(k, on, txt) { $("#d-" + k).className = "dot " + (on ? "ok" : "no"); if (txt !== undefined && $("#s-" + k)) $("#s-" + k).textContent = txt; }
@@ -92,7 +94,28 @@ setInterval(async () => { if (!ok) return; const st = await req("GetStreamStatus
   $("#b-go").disabled = !!st.outputActive; $("#b-pause").textContent = s === PAUSE ? "▶ Вернуться" : "⏸ Пауза";
   $("#b-rec").textContent = r.outputActive ? "⏹ Сохранить видео" : "⏺ Снять видео"; }, 2000);
 // Вкладки эфира она открывает сама — новые не плодим (каждая новая просит камеру/подтверждения). Lovense — только если её нет совсем.
-async function goLive() { call("openTab", { url: LOV_PAGE, prefix: "https://rugextension.lovense.com/", pinned: true }); await req("StartStream"); hint("Эфир пошёл! Улыбнись и скажи «Hi guys, welcome!» 💋"); }
+// запрос с ответом-статусом (req() глотает ошибки OBS)
+function reqS(t, data) { return new Promise(r => { if (!ok) return r({ requestStatus: { result: false, comment: "OBS не подключён" } }); const id = "r" + (++rid); W[id] = x => r(x);
+  ws.send(JSON.stringify({ op: 6, d: { requestType: t, requestId: id, requestData: data } })); setTimeout(() => { if (W[id]) { delete W[id]; r({ requestStatus: { result: false, comment: "OBS не ответил" } }); } }, 8000); }); }
+async function goLive() {
+  call("openTab", { url: LOV_PAGE, prefix: "https://rugextension.lovense.com/", pinned: true });
+  if (!ok) return hint("⚠️ OBS не подключён — запусти OBS и подожди, пока вверху OBS станет зелёным");
+  hint("⏳ Запускаю OBS…");
+  const r = await reqS("StartStream"), s = r.requestStatus || {};
+  if (!s.result && s.code !== 500) return hint("⚠️ OBS не запустил трансляцию: " + esc(s.comment || ("код " + s.code)) + "<br>Проверь в OBS: Настройки → Трансляция → сервис и ключ");
+  for (let i = 0; i < 10; i++) {                                   // ждём, что поток реально пошёл
+    await new Promise(z => setTimeout(z, 1000));
+    const st = await req("GetStreamStatus");
+    if (st.outputActive && !st.outputReconnecting) { LIVE_T = Date.now(); return hint("✅ OBS шлёт поток. Через ~30 сек сайты покажут «в эфире» вверху.<br>Улыбнись и скажи «Hi guys, welcome!» 💋"); }
+  }
+  hint("⚠️ OBS не смог подключиться к сайту (поток не пошёл). Проверь ключ трансляции в OBS и интернет");
+}
+let LIVE_T = 0;
+setInterval(() => {                                                 // через 60 сек после старта: какие сайты так и не увидели эфир
+  if (!LIVE_T || Date.now() - LIVE_T < 60000) return; LIVE_T = 0;
+  const off = ["cb", "sc"].filter(p => LIVE[p] && !LIVE[p].on).map(p => p === "cb" ? "Chaturbate" : "Stripchat");
+  if (off.length) hint("⚠️ OBS шлёт, но " + off.join(" и ") + " эфир не видит. Открой страницу эфира и проверь, что там выбран OBS / внешний кодировщик и ключ совпадает");
+}, 5000);
 async function stopLive() { if (confirm("Закончить эфир?")) { await req("StopStream"); hint("Эфир закончен. Отдыхай 💜"); } }
 async function pause() {
   const s = await scene();
@@ -113,11 +136,6 @@ const SITES = [
   { id: "cb", file: "sites/cb.js", matches: ["https://chaturbate.com/b/*", "https://*.chaturbate.com/b/*"] },
   { id: "lovense", file: "sites/lovense.js", matches: ["https://*.lovense.com/*"] },
   { id: "badge", file: "sites/badge.js", matches: ["https://chaturbate.com/b/*", "https://*.chaturbate.com/b/*", "https://*.stripchat.com/*", "https://*.bongamodels.com/*", "https://www.manyvids.com/*"] },
-];
-const LIVE = [
-  { url: "https://vi.stripchat.com/start-broadcasting", prefix: "https://vi.stripchat.com/start-broadcasting" },
-  { url: "https://chaturbate.com/b/_skitlstrynka_/", prefix: "https://chaturbate.com/b/" },
-  { url: "https://rf.bongamodels.com/chat-console", prefix: "https://rf.bongamodels.com/chat-console" },
 ];
 const LOV_PAGE = "https://rugextension.lovense.com/cam-model/pages/settings/";   // cam_model (с _) = 404
 function call(op, data = {}) { return new Promise(r => { if (!port) return r({ error: "нет связи" }); const rid = ++RID; WAIT[rid] = r;
@@ -192,6 +210,7 @@ function onExt(m) {
     else if (m.act === "panel") call("openTab", { url: location.href, prefix: location.origin + location.pathname, focus: true });
   }
   if (m.type === "login") dot(m.p, m.ok);
+  if (m.type === "live") { LIVE[m.p] = { on: !!m.on, st: m.st, t: Date.now() }; dot(m.p, !!m.on); showTot(); }
   if (m.type === "lovlog") hint("🎀 " + esc(m.text.replace(/^Lovense: /, "Lovense: ")));
   if (m.type === "lovsites") {
     LOV.sites = m.n; LOV.have = m.have || []; LOV.toys = m.toys || [];

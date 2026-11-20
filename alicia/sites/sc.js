@@ -18,4 +18,11 @@
     } catch (e) {}
   }
   tick(); setInterval(tick, 4000);
+  // видит ли Stripchat эфир (status: off / public / private / p2p …)
+  async function live() {
+    try { const d = await (await fetch(`/api/front/v2/models/${UID}/cam`, { credentials: "include" })).json(), u = d.user || d.cam || d;
+      const st = (JSON.stringify(d).match(/"status":"([^"]+)"/) || [])[1] || "", on = /"isLive":true/.test(JSON.stringify(d)) || (st && st !== "off");
+      send({ type: "live", p: "sc", on, st }); } catch (e) {}
+  }
+  live(); setInterval(live, 10000);
 })();
