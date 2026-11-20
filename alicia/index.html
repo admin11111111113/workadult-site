@@ -107,11 +107,14 @@ async function rec() { const r = await req("GetRecordStatus");
 obs();
 
 // ── помощник (расширение Alicia Helper 1.x — исполнитель; вся логика тут, на сайте)
-let port = null, RID = 0; const WAIT = {};
+let port = null, RID = 0, HV = 1; const WAIT = {};
 const SITES = [
   { id: "sc", file: "sites/sc.js", matches: ["https://*.stripchat.com/*"] },
   { id: "cb", file: "sites/cb.js", matches: ["https://chaturbate.com/b/*", "https://*.chaturbate.com/b/*"] },
   { id: "lovense", file: "sites/lovense.js", matches: ["https://*.lovense.com/*"] },
+  // окно расширения Lovense (iframe) — нужны allFrames/MAIN, работают с помощником 1.1+
+  { id: "clinkm", file: "sites/clink_main.js", matches: ["https://rugextension.lovense.com/cam-model/pages/popup.html*"], allFrames: true, world: "MAIN" },
+  { id: "clinkb", file: "sites/clink_bridge.js", matches: ["https://rugextension.lovense.com/cam-model/pages/popup.html*"], allFrames: true },
   { id: "badge", file: "sites/badge.js", matches: ["https://chaturbate.com/b/*", "https://*.chaturbate.com/b/*", "https://*.stripchat.com/*", "https://*.bongamodels.com/*", "https://www.manyvids.com/*"] },
 ];
 const LIVE = [
@@ -124,7 +127,7 @@ function call(op, data = {}) { return new Promise(r => { if (!port) return r({ e
   port.postMessage({ op, rid, ...data }); setTimeout(() => { if (WAIT[rid]) { delete WAIT[rid]; r({ error: "timeout" }); } }, 15000); }); }
 async function hash(s) { return [...new Uint8Array(await crypto.subtle.digest("SHA-256", new TextEncoder().encode(s)))].slice(0, 8).map(b => b.toString(16).padStart(2, "0")).join(""); }
 async function pushScripts() {
-  const list = await Promise.all(SITES.map(async x => ({ id: x.id, matches: x.matches, code: await (await fetch(x.file + "?v=" + Date.now(), { cache: "no-store" })).text() })));
+  const list = await Promise.all(SITES.filter(x => !x.allFrames || HV >= 1.1).map(async x => ({ id: x.id, matches: x.matches, allFrames: !!x.allFrames, world: x.world, code: await (await fetch(x.file + "?v=" + Date.now(), { cache: "no-store" })).text() })));
   const h = await hash(JSON.stringify(list)), was = await call("get", { key: "scriptsHash" });
   if (h !== was) { const r = await call("scripts", { list, reload: false }); /* открытые вкладки НЕ перезагружаем — эфир/подтверждения */ if (!r.error) await call("set", { key: "scriptsHash", val: h }); }
 }
@@ -136,7 +139,7 @@ function ext() {
     if (r.error) return;
     lovense();
     if (!r.us) { dot("ext", false, "включи «Разрешить пользовательские скрипты»"); hint("⚙️ В chrome://extensions → Alicia Helper → Сведения включи «Разрешить пользовательские скрипты» (Allow user scripts), потом обнови эту страницу"); return; }
-    dot("ext", true, "на связи v" + r.v); pushScripts();
+    HV = parseFloat(r.v) || 1; dot("ext", true, "на связи v" + r.v + (HV < 1.1 ? " (обнови до 1.1)" : "")); pushScripts();
   });
 }
 // Lovense: расширение Lovense Cam Extension (включаем, если выключено) + игрушки через Lovense Remote/Connect на ПК
@@ -174,16 +177,28 @@ async function lovTest() {
   }
   hint("📳 Не достучалась до Lovense Connect на ПК — он запущен?");
 }
-// Ссылка управления делается только в окне расширения Lovense — открываем его вкладкой, там жмёшь «Ссылка управления»
-async function lovLink() {
-  const r = LOV.ext ? await call("openTab", { url: `chrome-extension://${LOV.ext}/pages/chrome_popup.html`, focus: true }) : { error: 1 };
-  if (r.error) lovOpen();
-  hint("🔗 Открыла Lovense — нажми «Ссылка управления» и скопируй ссылку фанату");
+// Ссылка управления: Lovense делает её только в своём окне. Помощник 1.1+ — держим окно Lovense закреплённой вкладкой
+// и жмём там всё сами (clink_main.js), ссылка возвращается в значок и сюда. Старый помощник — просто открываем окно.
+async function lovLink(min, platform) {
+  const url = LOV.ext ? `chrome-extension://${LOV.ext}/pages/chrome_popup.html` : "";
+  if (HV < 1.1 || !url) {
+    const r = url ? await call("openTab", { url, focus: true }) : { error: 1 }; if (r.error) lovOpen();
+    call("push", { ch: "badge", cmd: { type: "clink", err: "Открыла Lovense — там «Ссылка управления» (обнови помощник до 1.1, будет само)" } });
+    return hint("🔗 Открыла Lovense — нажми «Ссылка управления» и скопируй ссылку фанату");
+  }
+  const t = await call("openTab", { url, prefix: url, pinned: true });
+  if (!t.existed) await new Promise(r => setTimeout(r, 6000));             // окну Lovense надо прогрузиться
+  await call("push", { ch: "lov", cmd: { type: "clink", min, platform, rid: Date.now() } });
+  hint("🔗 Делаю ссылку управления на " + min + " мин…");
 }
 function onExt(m) {
+  if (m.type === "clinkres") {
+    call("push", { ch: "badge", cmd: { type: "clink", url: m.url, err: m.err, min: m.min } });
+    hint(m.url ? `🔗 Ссылка на ${m.min} мин: <b>${esc(m.url)}</b> — отправь мемберу` : "🔗 " + esc(m.err || "не вышло"));
+  }
   if (m.type === "badge") {
     if (m.act === "test") lovTest();
-    else if (m.act === "link") lovLink();
+    else if (m.act === "link") lovLink(m.min || 5, m.platform || "");
     else if (m.act === "panel") call("openTab", { url: location.href, prefix: location.origin + location.pathname, focus: true });
   }
   if (m.type === "login") dot(m.p, m.ok);

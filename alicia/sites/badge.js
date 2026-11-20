@@ -36,9 +36,38 @@
   m.addEventListener("pointermove", e => { if (!drag) return; const dx = e.clientX - drag.x, dy = e.clientY - drag.y;
     if (Math.abs(dx) + Math.abs(dy) > 5) drag.moved = true; if (drag.moved) { pos.x = drag.px + dx; pos.y = drag.py + dy; place(); } });
   m.addEventListener("pointerup", () => { if (drag && !drag.moved) toggle(!w.classList.contains("open")); else localStorage.aliciaBadgePos = JSON.stringify(pos); drag = null; });
+  const PLAT = /chaturbate/.test(location.hostname) ? "chaturbate" : /stripchat/.test(location.hostname) ? "stripchat"
+    : /bonga/.test(location.hostname) ? "bongacams" : /manyvids/.test(location.hostname) ? "manyvids" : "";
+  // окно выбора времени и готовой ссылки
+  const box = document.createElement("div"); box.className = "x"; w.appendChild(box);
+  sh.querySelector("style").textContent += `.x{position:absolute;right:72px;bottom:0;background:#1f2230;color:#fff;border-radius:12px;padding:10px;display:none;width:250px;box-shadow:0 4px 14px #0008}
+   .x b{display:block;margin-bottom:6px}.x button{font:inherit;border:0;border-radius:8px;padding:6px 10px;margin:3px;cursor:pointer;background:#2ecc71;color:#fff}
+   .x input{width:100%;box-sizing:border-box;font:12px monospace;padding:6px;border-radius:6px;border:0;margin:6px 0}`;
+  const show = h => { box.innerHTML = h + `<button data-z="0" style="background:#444">✕</button>`; box.style.display = "block"; };
+  box.addEventListener("click", async e => {
+    const t = e.target; if (!t.dataset) return;
+    if (t.dataset.z) box.style.display = "none";
+    if (t.dataset.min) {
+      send({ type: "badge", act: "link", min: +t.dataset.min, platform: PLAT, site: location.hostname });
+      show("<b>⏳ Делаю ссылку на " + t.dataset.min + " мин…</b>");
+      for (let i = 0; i < 40; i++) {
+        await new Promise(r => setTimeout(r, 1000));
+        let r = null; try { r = await chrome.runtime.sendMessage({ type: "poll", ch: "badge" }); } catch (x) {}
+        if (r && r.type === "clink") {
+          if (r.url) show(`<b>🔗 Ссылка на ${r.min} мин готова</b><input readonly value="${r.url}"><button data-copy="1">Скопировать</button>`);
+          else show("<b>⚠️ " + (r.err || "не вышло") + "</b>");
+          return;
+        }
+      }
+      show("<b>⚠️ Нет ответа. Панель открыта? Lovense запущен?</b>");
+    }
+    if (t.dataset.copy) { const i = box.querySelector("input"); i.select(); try { await navigator.clipboard.writeText(i.value); } catch (x) { document.execCommand("copy"); } t.textContent = "Скопировано ✅"; }
+  });
   sh.querySelectorAll(".b").forEach(b => b.addEventListener("click", () => {
-    const a = b.dataset.a; send({ type: "badge", act: a, site: location.hostname });
-    say(a === "test" ? "Вибрирую…" : a === "link" ? "Открываю Lovense → «Ссылка управления»" : "Открываю панель"); toggle(false);
+    const a = b.dataset.a; toggle(false);
+    if (a === "link") return show("<b>🔗 Ссылка управления — на сколько?</b>" + [1, 3, 5, 10, 15].map(m => `<button data-min="${m}">${m} мин</button>`).join(""));
+    send({ type: "badge", act: a, site: location.hostname });
+    say(a === "test" ? "Вибрирую…" : "Открываю панель");
   }));
   (document.body || document.documentElement).appendChild(host);
 })();
