@@ -233,6 +233,12 @@ function onExt(m) {
     call("push", { ch: "badge", cmd: { type: "clink", url: m.url, err: m.err, min: m.min } });
     hint(m.url ? `🔗 Ссылка на ${m.min} мин: <b>${esc(m.url)}</b> — отправь мемберу` : "🔗 " + esc(m.err || "не вышло"));
   }
+  if (m.type === "lovprobe") {
+    const ifr = (m.iframes || []).length, info = `Lovense на ${esc(m.site)}: на странице ${m.dom}, в тени ${m.shadow}, во фреймах ${ifr}` +
+      (m.sample && m.sample.length ? " · " + esc(m.sample.join(" ")) : "") + (ifr ? " · " + esc(m.iframes.join(" ")) : "");
+    LOV.probe = info; setTimeout(() => hint("🔗 Открыла Lovense — «Ссылка управления» → «Создать новую ссылку» → «Копировать»<br><small style='font-size:13px;color:#aab'>🔎 " + info + "</small>"
+      + (m.linkTxt ? "<br>Текущая ссылка: <b>" + esc(m.linkTxt) + "</b>" : "")), 300);
+  }
   if (m.type === "badge") {
     if (m.act === "test") lovTest();
     else if (m.act === "link") lovLink();

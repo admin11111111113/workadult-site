@@ -65,7 +65,18 @@
   });
   sh.querySelectorAll(".b").forEach(b => b.addEventListener("click", () => {
     const a = b.dataset.a; toggle(false);
-    // Ссылку управления Lovense делает только в своём окне (Chrome не пускает нас внутрь) — открываем его
+    // Ссылку управления Lovense делает только в своём окне (Chrome не пускает нас внутрь) — открываем его.
+    // Разведка: как на этой странице устроен зелёный значок Lovense (DOM / shadow / iframe) — чтобы потом жать его самим.
+    if (a === "link") {
+      const fr = [...document.querySelectorAll("iframe")].map(f => f.src || "").filter(s => /lovense/i.test(s)).map(s => s.split("?")[0].slice(-60));
+      let dom = 0, sh = 0, sample = [];
+      const walk = (r, d) => { for (const e of r.querySelectorAll("*")) { const c = (e.id + " " + (typeof e.className === "string" ? e.className : "")).trim();
+        if (/lovense|lvs|clink|controllink|control-link/i.test(c)) { d ? sh++ : dom++; if (sample.length < 4) sample.push(e.tagName.toLowerCase() + (e.id ? "#" + e.id : "") + "." + c.split(/\s+/).slice(0, 2).join(".")); }
+        if (e.shadowRoot && e !== host) walk(e.shadowRoot, 1); } };
+      try { walk(document, 0); } catch (x) {}
+      const linkTxt = (document.body.innerText.match(/https:\/\/c\.lovense\.com\/ccl\/\w+/) || [])[0] || "";
+      send({ type: "lovprobe", site: location.hostname, iframes: fr, dom, shadow: sh, sample, linkTxt });
+    }
     send({ type: "badge", act: a, site: location.hostname });
     say(a === "test" ? "Вибрирую…" : a === "link" ? "Открываю Lovense → «Ссылка управления»" : "Открываю панель");
   }));
