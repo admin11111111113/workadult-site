@@ -18,6 +18,7 @@ input{font:inherit;padding:8px;border-radius:8px;border:1px solid #444;backgroun
 <div id="top">
  <div class="pl"><span class="dot" id="d-obs"></span>OBS<small id="s-obs">…</small></div>
  <div class="pl"><span class="dot" id="d-ext"></span>Помощник<small id="s-ext">…</small></div>
+ <div class="pl" style="cursor:pointer" onclick="port&&port.postMessage({type:'lovenseOpen'})" title="Открыть панель Lovense"><span class="dot" id="d-lov"></span>🎀 Lovense<small id="s-lov">…</small></div>
  <div class="pl"><span class="dot" id="d-cb"></span>Chaturbate<small id="t-cb">0 tk</small></div>
  <div class="pl"><span class="dot" id="d-sc"></span>Stripchat<small id="t-sc">0 tk</small></div>
  <div class="pl"><span class="dot"></span>Bongacams<small>скоро</small></div>
@@ -103,11 +104,18 @@ function ext() {
   try { port = chrome.runtime.connect(EXT); } catch (e) { dot("ext", false, "не установлен"); return setTimeout(ext, 5000); }
   port.onMessage.addListener(onExt);
   port.onDisconnect.addListener(() => { port = null; dot("ext", false, "нет связи"); setTimeout(ext, 3000); });
-  port.postMessage({ type: "ping" });
+  port.postMessage({ type: "ping" }); port.postMessage({ type: "lovense", fix: true });
 }
+setInterval(() => port && port.postMessage({ type: "lovense", fix: true }), 15000);
 function onExt(m) {
   if (m.type === "pong") dot("ext", true, "на связи");
   if (m.type === "login") dot(m.p, m.ok);
+  if (m.type === "lovense") {
+    const t = m.toys || [], on = t.filter(x => x.on);
+    const txt = m.ext === "none" ? "нет расширения Lovense" : m.ext === "off" ? "расширение выключено" :
+      on.length ? on.map(x => x.name + (x.battery != null ? " " + x.battery + "%" : "")).join(", ") : (m.toys ? "игрушка не подключена" : "открой Lovense Remote");
+    dot("lov", m.ext === "on" && on.length > 0, txt);
+  }
   if (m.type === "tip") {
     TOT[m.p] = (TOT[m.p] || 0) + m.tk; showTot(); const a = act(m.what);
     $("#wall").insertAdjacentHTML("afterbegin", `<div class="tip"><b>${esc(m.who)}</b> ${m.tk} tk · ${m.p === "cb" ? "Chaturbate" : "Stripchat"}${m.what ? " — " + esc(m.what) : ""}${a ? "<br>👉 " + esc(a) : ""}</div>`);
