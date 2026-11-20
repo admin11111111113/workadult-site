@@ -84,7 +84,8 @@ setInterval(async () => { if (!ok) return; const st = await req("GetStreamStatus
   $("#st").textContent = (st.outputActive ? "● В ЭФИРЕ " + (st.outputTimecode || "").slice(0, 8) + " " + kb : "эфир выключен") + (s === PAUSE ? " · ПАУЗА" : "") + (r.outputActive ? " · ⏺ запись" : "");
   $("#b-go").disabled = !!st.outputActive; $("#b-pause").textContent = s === PAUSE ? "▶ Вернуться" : "⏸ Пауза";
   $("#b-rec").textContent = r.outputActive ? "⏹ Сохранить видео" : "⏺ Снять видео"; }, 2000);
-async function goLive() { for (const x of LIVE) call("openTab", { ...x, pinned: true }); await req("StartStream"); hint("Эфир пошёл! Улыбнись и скажи «Hi guys, welcome!» 💋"); }
+async function goLive() { for (const x of LIVE) call("openTab", { ...x, pinned: true });
+  const u = LOV_PAGE + "?alicia=" + Date.now(); call("openTab", { url: u, prefix: u, pinned: true }); await req("StartStream"); hint("Эфир пошёл! Улыбнись и скажи «Hi guys, welcome!» 💋"); }
 async function stopLive() { if (confirm("Закончить эфир?")) { await req("StopStream"); hint("Эфир закончен. Отдыхай 💜"); } }
 async function pause() {
   const s = await scene();
@@ -143,16 +144,23 @@ async function lovense() {
     try { const j = JSON.parse(r.text); let t = (j.data || {}).toys || {}; if (typeof t === "string") t = JSON.parse(t || "{}");
       toys = Object.values(t).map(x => ({ name: x.nickName || x.name, on: String(x.status) === "1", battery: x.battery })); break; } catch (e) {}
   }
-  const on = (toys || []).filter(x => x.on);
-  const txt = !le ? "нет расширения Lovense" : LOV.sites === 0 ? "в Lovense не добавлены сайты" :
+  if ((!toys || !toys.length) && LOV.toys && LOV.toys.length) toys = LOV.toys;
+  const on = (toys || []).filter(x => x.on), have = (LOV.have || []).length;
+  const txt = !le ? "нет расширения Lovense" : LOV.sites === 0 ? "в Lovense не добавлены сайты" : (LOV.sites != null && have < 4) ? "в Lovense сайтов " + have + " из 4" :
     on.length ? on.map(x => x.name + (x.battery != null ? " " + x.battery + "%" : "")).join(", ") : toys ? "игрушка не подключена" : "запусти Lovense Connect на ПК";
-  dot("lov", !!le && on.length > 0 && LOV.sites !== 0, txt);
+  dot("lov", !!le && on.length > 0 && (LOV.sites == null || have >= 4), txt + (have ? " · сайтов " + have + "/4" : ""));
 }
 setInterval(lovense, 15000);
 function lovOpen() { call("openTab", { url: LOV_PAGE, prefix: "https://rugextension.lovense.com/", focus: true }); }
 function onExt(m) {
   if (m.type === "login") dot(m.p, m.ok);
-  if (m.type === "lovsites") { LOV.sites = m.n; if (m.n === 0) hint("🎀 В Lovense не добавлены сайты: на странице Lovense нажми «+ Добавить сайт с камерами» и добавь Chaturbate, Stripchat, Bongacams, ManyVids"); lovense(); }
+  if (m.type === "lovlog") hint("🎀 " + esc(m.text.replace(/^Lovense: /, "Lovense: ")));
+  if (m.type === "lovsites") {
+    LOV.sites = m.n; LOV.have = m.have || []; LOV.toys = m.toys || [];
+    const miss = (m.need || []).filter(x => !LOV.have.includes(x));
+    if (m.done) hint(miss.length ? "🎀 Lovense: не добавились " + miss.join(", ") + " — добавь вручную на странице Lovense" : "🎀 Lovense подключён ко всем 4 сайтам ✅");
+    lovense();
+  }
   if (m.type === "tip") {
     TOT[m.p] = (TOT[m.p] || 0) + m.tk; showTot(); const a = act(m.what);
     $("#wall").insertAdjacentHTML("afterbegin", `<div class="tip"><b>${esc(m.who)}</b> ${m.tk} tk · ${m.p === "cb" ? "Chaturbate" : "Stripchat"}${m.what ? " — " + esc(m.what) : ""}${a ? "<br>👉 " + esc(a) : ""}</div>`);
