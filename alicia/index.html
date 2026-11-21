@@ -26,6 +26,13 @@ input{font:inherit;padding:8px;border-radius:8px;border:1px solid #444;backgroun
  <div class="pl"><span class="dot" id="d-mv"></span>ManyVids<small id="s-mv">эфир с сайта</small><label class="au"><input type="checkbox" id="a-mv" onchange="autoSet('mv',this.checked)"> авто</label></div>
  <div class="pl" style="margin-left:auto">Сегодня<small id="t-all">0 tk</small></div>
 </div>
+<div id="privbar" style="display:none;background:#e8364f;color:#fff;font-weight:800;font-size:20px;padding:8px 14px;text-align:center"></div>
+<div id="priv" style="position:fixed;inset:0;background:#000b;display:none;align-items:center;justify-content:center;z-index:50">
+ <div style="background:#1f1020;border:4px solid #e8364f;border-radius:18px;padding:24px 28px;max-width:560px;text-align:center;box-shadow:0 0 40px #e8364f88">
+  <div style="font-size:34px;font-weight:900">🔒 ПРИВАТ</div><div style="font-size:20px;margin:6px 0">запрос на <b id="privp"></b></div>
+  <div id="privt" style="color:#ddd;margin:10px 0 18px;font-size:16px"></div>
+  <button class="g" style="font-size:22px;padding:14px 30px" onclick="privAns('accept')">✅ Принять</button> <button style="font-size:22px;padding:14px 30px" onclick="privAns('decline')">✖ Отклонить</button>
+  <div id="privst" style="margin-top:10px;color:#ffd76a"></div></div></div>
 <div id="main">
  <div class="col">
   <!-- место под окно OBS «Проектор — предпросмотр» (видео в самой панели убрано — тормозило) -->
@@ -37,7 +44,7 @@ input{font:inherit;padding:8px;border-radius:8px;border:1px solid #444;backgroun
    <button onclick="lovVib(5)">Слабо</button><button onclick="lovVib(12)">Средне</button><button onclick="lovVib(20)">Сильно</button><button onclick="lovVib(0)">⏹ Стоп</button></div>
   <div id="hint">Подсказки появятся тут, когда начнётся эфир 💋</div>
  </div>
- <div class="col"><b>💰 Донаты</b><div class="box" id="wall"></div><b>🤖 Бот пишет в личку</b><div class="box" id="bot" style="flex:.6"></div><b>💬 Комнаты</b>
+ <div class="col"><b>💰 Донаты</b><div class="box" id="wall"></div><b>💌 Личка — он пишет (жёлтым), бот отвечает (синим)</b><div class="box" id="bot" style="flex:.6"></div><b>💬 Комнаты</b>
   <div id="rooms"><div class="room"><b>Chaturbate</b><div class="box" id="chat-cb"></div></div><div class="room"><b>Stripchat</b><div class="box" id="chat-sc"></div></div>
    <div class="room"><b>Bongacams</b><div class="box" id="chat-bc"></div></div><div class="room"><b>ManyVids</b><div class="box" id="chat-mv"></div></div></div></div>
 </div>
@@ -300,6 +307,9 @@ function onExt(m) {
     $("#wall").insertAdjacentHTML("afterbegin", `<div class="tip"><b>${esc(m.who)}</b> ${m.tk} tk · ${({ cb: "Chaturbate", sc: "Stripchat", bc: "Bongacams", mv: "ManyVids" })[m.p] || m.p}${m.what ? " — " + esc(m.what) : ""}${a ? "<br>👉 " + esc(a) : ""}</div>`);
     hint(`💰 <b>${esc(m.who)}</b> дал ${m.tk} tk${a ? "<br>👉 " + esc(a) : ""}<br>Скажи: «Thank you ${esc(m.who)} 😘»`);
   }
+  if (m.type === "privreq") privShow(m.p, m.text);
+  if (m.type === "privgone" && PRIVREQ === m.p) privHide();
+  if (m.type === "private") privOn(m.p, m.on);
   if (m.type === "probe") admEv("🔎 " + (NAME[m.p] || m.p) + " " + m.text);   // разведка — только в журнал владельца
   if (m.type === "chat" && m.text) {
     const box = $("#chat-" + m.p) || $("#chat-cb"); box.insertAdjacentHTML("afterbegin", `<div class="chat"><b>${esc(m.who)}</b>: ${esc(m.text)}</div>`);
@@ -325,6 +335,28 @@ async function admSend() {
   try { const r = await fetch(ADM_URL, { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify(st) }); if (!r.ok) throw 0; }
   catch (e) { ADM_EV.unshift(...ev); }                               // не ушло — события отправим в следующий раз
 }
+// ── ПРИВАТ: запрос с сайта → большое окно тут; «Принять/Отклонить» уходит на сайт (golive.js нажмёт кнопку сам)
+let PRIVREQ = null, PRIVLIVE = {};
+const PN4 = { cb: "Chaturbate", sc: "Stripchat", bc: "Bongacams", mv: "ManyVids" };
+function ding() { try { const a = new AudioContext(); [880, 1175, 1568, 1175, 1568].forEach((f, i) => { const o = a.createOscillator(), g = a.createGain(); o.frequency.value = f; o.connect(g); g.connect(a.destination);
+  g.gain.setValueAtTime(.2, a.currentTime + i * .15); g.gain.exponentialRampToValueAtTime(.001, a.currentTime + i * .15 + .14); o.start(a.currentTime + i * .15); o.stop(a.currentTime + i * .15 + .15); }); } catch (e) {} }
+function privShow(p, text) {
+  PRIVREQ = p; $("#privp").textContent = PN4[p] || p; $("#privt").textContent = text || ""; $("#privst").textContent = ""; $("#priv").style.display = "flex"; ding();
+  admEv("🔒 запрос привата на " + (PN4[p] || p) + ": " + (text || ""));
+}
+function privHide() { PRIVREQ = null; $("#priv").style.display = "none"; }
+async function privAns(act) {
+  if (!PRIVREQ) return; $("#privst").textContent = act === "accept" ? "⏳ принимаю на сайте…" : "⏳ отклоняю…";
+  try { await fetch("https://alicia-link.videorils.workers.dev/pcmd?p=" + PRIVREQ, { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ w: "alicia-panel", act }) }); }
+  catch (e) { $("#privst").textContent = "⚠ нет связи — нажми на сайте"; return; }
+  admEv(act === "accept" ? "🔒 приняла приват" : "🔒 отклонила приват"); setTimeout(privHide, 6000);
+}
+function privOn(p, on) {
+  PRIVLIVE[p] = on; const any = Object.keys(PRIVLIVE).filter(k => PRIVLIVE[k]);
+  $("#privbar").style.display = any.length ? "block" : "none"; $("#privbar").textContent = "🔒 ИДЁТ ПРИВАТ — " + any.map(k => PN4[k]).join(", ") + " · его сообщения — в комнате сайта (красная рамка)";
+  for (const k in PN4) { const b = $("#chat-" + k); if (b) b.style.outline = PRIVLIVE[k] ? "3px solid #e8364f" : ""; }
+  if (on) { admEv("🔒 приват идёт на " + (PN4[p] || p)); hint("🔒 Приват на " + (PN4[p] || p) + " — смотри его сообщения в комнате " + (PN4[p] || p)); }
+}
 // ── бот (работает на ПК владельца): галочки «авто» по площадкам + что он написал людям
 const HUB_URL = "https://alicia-link.videorils.workers.dev/hub", PNAME = { cb: "Chaturbate", sc: "Stripchat", bc: "Bongacams", mv: "ManyVids" };
 let AUTO_T = 0;
@@ -335,6 +367,8 @@ async function hubSync() {
   const h = j.hub, alive = h && j.now - h.at < 60000;
   for (const p in PNAME) { const c = $("#a-" + p); c.disabled = !alive; if (h && Date.now() - AUTO_T > 15000) c.checked = !!(h.auto || {})[p]; }
   $("#bot").innerHTML = !alive ? '<div class="chat" style="color:#889">бот выключен (не на связи компьютер с ботом)</div>'
+    : (h.dm || []).length ? h.dm.map(c => `<div class="chat" style="border-left:3px solid #8a5cff;margin-bottom:6px"><b>${esc(PNAME[c.p] || c.p)} · ${esc(c.who)}</b>` +
+        c.msgs.map(x => `<br><span style="color:${x.me ? "#9fbaff" : "#ffd76a"}">${x.me ? "бот" : "он"}:</span> ${esc(x.text)}`).join("") + "</div>").join("")
     : (h.bot || []).slice().reverse().map(b => `<div class="chat"><b>${esc(PNAME[b.p] || b.p)} · ${esc(b.who)}</b> <small style="color:#889">${esc((b.t || "").slice(11, 16))}</small><br>${esc(b.text)}</div>`).join("")
       || '<div class="chat" style="color:#889">пока ничего не писал</div>';
 }

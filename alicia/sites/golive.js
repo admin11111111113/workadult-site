@@ -46,6 +46,33 @@
       }
   }
   setInterval(step, 1000);
+  // ── ПРИВАТ: запрос привата на странице сайта → окно в её панели (Принять/Отклонить); кнопку на сайте жмём по её команде.
+  // Запрос = видимая кнопка «Принять/Accept» внутри небольшого блока, где написано «приват/private». Сами ничего не принимаем.
+  const ACC = /^(принять|accept|approve|согласиться|начать приват|start private( show)?|chấp nhận)$/i, DEC = /^(отклонить|decline|reject|deny|отказаться|từ chối)$/i;
+  const PRIV = /приват|private|privat|riêng tư|exclusive|эксклюзив/i;
+  let REQ = null;                                                    // {acc, dec, key}
+  const PCMD = "https://alicia-link.videorils.workers.dev/pcmd?p=" + P;
+  setInterval(async () => {
+    let found = null;
+    for (const b of document.querySelectorAll("button,a,[role=button],[class*=btn i],[class*=button i]")) {
+      if (!vis(b) || !ACC.test(txt(b))) continue;
+      let c = b; for (let i = 0; i < 7 && c.parentElement; i++) { c = c.parentElement; const t = (c.innerText || ""); if (t.length > 700) break;
+        if (PRIV.test(t)) { found = { acc: b, box: c }; break; } }
+      if (found) break;
+    }
+    if (found) {
+      const t = (found.box.innerText || "").replace(/\s+/g, " ").trim().slice(0, 220);
+      found.dec = [...found.box.querySelectorAll("button,a,[role=button],[class*=btn i],[class*=button i]")].find(x => vis(x) && DEC.test(txt(x)));
+      if (!REQ || REQ.key !== t) send({ type: "privreq", p: P, text: t });
+      REQ = { ...found, key: t };
+      try { const c = await (await fetch(PCMD, { cache: "no-store" })).json();   // её ответ из панели
+        if (c && c.act) { const b = c.act === "accept" ? REQ.acc : REQ.dec; if (b) { b.click(); log((c.act === "accept" ? "приняла" : "отклонила") + " приват"); } else log("кнопки «Отклонить» нет — откажи на сайте"); } } catch (e) {}
+    } else if (REQ) { REQ = null; send({ type: "privgone", p: P }); }
+  }, 2000);
+  // идёт ли приват сейчас (по надписям на странице)
+  const PRIVON = /(private show (is )?(in progress|started|active)|you are in (a )?private|in private show|приват(ное шоу)? (идёт|начал|начато|активн)|в привате|сейчас приват|đang (show )?riêng tư)/i;
+  let PON = null;
+  setInterval(() => { const on = PRIVON.test((document.body && document.body.innerText || "").slice(0, 200000)); if (on !== PON) { PON = on; send({ type: "private", p: P, on }); } }, 4000);
   // Чат комнаты Bonga (консоль) / ManyVids (страница эфира) → панель, комната своего сайта.
   // Ищем контейнер чата (class с chat/message, много однотипных детей); новые строки «ник: текст» шлём в панель.
   // + разведка: раз в загрузку шлём, какой контейнер нашли (видно в журнале владельца) — чтобы донастроить по факту.
