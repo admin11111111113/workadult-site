@@ -13,7 +13,7 @@
 .nf{display:flex;gap:8px;align-items:flex-start;padding:8px 10px;margin-bottom:6px;border-radius:10px;background:#2a2410;font-size:15px}
 .nf .pf{background:#000a;border-radius:6px;padding:2px 7px;font-size:12px;font-weight:700;white-space:nowrap}.nf .wh{font-weight:700;color:#ffd76a;white-space:nowrap}
 .nf .tx{flex:1}.nf .tm{color:#889;font-size:12px;white-space:nowrap}.nf.bot{background:#1d2440}.nf.bot .wh{color:#9fbaff}.nf.pay{background:#16351f}.nf.pay .wh{color:#7ee08a}
-.nf.newx{animation:fl 1.5s 3}@keyframes fl{50%{filter:brightness(1.8)}}
+.nf .tkn{font-size:22px;font-weight:800;color:#ffd76a;white-space:nowrap}.nf.tipx{background:#3a2f0c}.nf.newx{animation:fl 1.5s 3}@keyframes fl{50%{filter:brightness(1.8)}}
 #st{color:#aab}#hint{background:#2a1f3a;border:2px solid #8a5cff;border-radius:12px;padding:10px;font-size:20px;font-weight:700;min-height:50px}
 .col{display:flex;flex-direction:column;min-height:0;gap:8px}.box{background:#1b1d26;border-radius:12px;padding:8px;overflow:auto;flex:1;min-height:0}
 .tip{padding:6px 8px;border-radius:8px;background:#233024;margin-bottom:5px}.tip b{color:#7ee08a}.chat{padding:3px 6px;color:#ccd;font-size:14px}
@@ -48,10 +48,10 @@ input{font:inherit;padding:8px;border-radius:8px;border:1px solid #444;backgroun
   <div id="lovctl" style="display:none;align-items:center;gap:10px;background:#123224;border:2px solid #2ecc71;border-radius:12px;padding:8px 12px;font-size:17px">
    <span style="flex:1"></span><button style="background:#e8364f" onclick="lovStop()">⏻ Закончить управление</button></div>
   <div id="hint">Подсказки появятся тут, когда начнётся эфир 💋</div>
-  <b>🔔 Уведомления <small style="color:#889;font-weight:400">— донаты, кто что просит, кто оплатил, кому что написал бот</small></b>
+  <b>🔔 Донаты и уведомления <small style="color:#889;font-weight:400">— кто сколько дал, кто что просит, кто оплатил, кому что написал бот</small></b>
   <div class="box" id="feed" style="flex:1;min-height:180px"></div>
  </div>
- <div class="col"><b>💰 Донаты</b><div class="box" id="wall"></div><b>💌 Личка — он пишет (жёлтым), мы/бот отвечаем (синим)</b><div class="box" id="bot" style="flex:.6"></div><b>💬 Комнаты</b>
+ <div class="col"><div id="wall" style="display:none"></div><b>💌 Личка — он пишет (жёлтым), мы/бот отвечаем (синим)</b><div class="box" id="bot" style="flex:.6"></div><b>💬 Комнаты</b>
   <div id="rooms"><div class="room"><b>Chaturbate</b><div class="box" id="chat-cb"></div></div><div class="room"><b>Stripchat</b><div class="box" id="chat-sc"></div></div>
    <div class="room"><b>Bongacams</b><div class="box" id="chat-bc"></div></div><div class="room"><b>ManyVids</b><div class="box" id="chat-mv"></div></div></div></div>
 </div>
@@ -361,6 +361,7 @@ function onExt(m) {
   }
   if (m.type === "tip") {
     TOT[m.p] = (TOT[m.p] || 0) + m.tk; showTot(); const a = act(m.what);
+    LOCALTIPS.push({ id: "l" + Date.now() + Math.random(), at: Date.now(), t: nowT(), p: m.p, who: m.who, tk: m.tk, text: (m.what || "") + (a ? " 👉 " + a : ""), kind: "tip" }); feedShow(null);
     $("#wall").insertAdjacentHTML("afterbegin", `<div class="tip"><b>${esc(m.who)}</b> ${m.tk} tk · ${({ cb: "Chaturbate", sc: "Stripchat", bc: "Bongacams", mv: "ManyVids" })[m.p] || m.p}${m.what ? " — " + esc(m.what) : ""}${a ? "<br>👉 " + esc(a) : ""}</div>`);
     hint(`💰 <b>${esc(m.who)}</b> дал ${m.tk} tk${a ? "<br>👉 " + esc(a) : ""}<br>Скажи: «Thank you ${esc(m.who)} 😘»`);
   }
@@ -433,14 +434,18 @@ let AUTO_T = 0;
 async function autoSet(p, on) { AUTO_T = Date.now(); admEv((on ? "🤖 включила" : "🤖 выключила") + " авто на " + PNAME[p]);
   try { await fetch(HUB_URL, { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ w: "alicia-panel", p, on }) }); } catch (e) {} }
 // лента уведомлений (как у владельца в консоли): свежие сверху, новые мигают + короткий звук
-let FEEDSEEN = null;
+let FEEDSEEN = null, LASTFEED = [], LOCALTIPS = [];
+const nowT = () => new Date().toLocaleString("sv").slice(0, 16);
 function feedShow(l) {
   const el = $("#feed");
-  if (!l) { el.innerHTML = '<div class="chat" style="color:#889">нет связи с компьютером бота</div>'; return; }
+  if (l) LASTFEED = l; else if (!LOCALTIPS.length) { el.innerHTML = '<div class="chat" style="color:#889">нет связи с компьютером бота</div>'; return; }
+  // донаты с её страниц приходят сразу (LOCALTIPS); когда тот же донат придёт от бота — локальный убираем
+  LOCALTIPS = LOCALTIPS.filter(x => Date.now() - x.at < 600000 && !LASTFEED.some(y => y.kind === "tip" && y.p === x.p && y.who === x.who && +y.tk === +x.tk));
+  l = [...LASTFEED, ...LOCALTIPS].sort((a, b) => (a.t || "").localeCompare(b.t || "")).slice(-50);
   const seen = new Set(FEEDSEEN || []), fresh = FEEDSEEN && l.some(x => !seen.has(x.id));
   el.innerHTML = l.slice().reverse().map(x => {
-    const cls = /^(🤖|📨|✍️)/.test(x.text) ? "bot" : x.kind === "pay" ? "pay" : "";
-    return `<div class="nf ${cls} ${FEEDSEEN && !seen.has(x.id) ? "newx" : ""}"><span class="pf">${esc(PNAME[x.p] || x.p)}</span><span class="wh">${esc(x.who)}</span>` +
+    const cls = /^(🤖|📨|✍️)/.test(x.text) ? "bot" : x.kind === "pay" ? "pay" : x.kind === "tip" ? "tipx" : "";
+    return `<div class="nf ${cls} ${FEEDSEEN && !seen.has(x.id) ? "newx" : ""}">${x.kind === "tip" ? `<span class="tkn">${+x.tk || 0} tk</span>` : ""}<span class="pf">${esc(PNAME[x.p] || x.p)}</span><span class="wh">${esc(x.who)}</span>` +
       `<span class="tx">${esc(x.text)}</span><span class="tm">${esc((x.t || "").slice(11, 16))}</span></div>`; }).join("")
     || '<div class="chat" style="color:#889">пока пусто — тут будут донаты, просьбы и что бот написал</div>';
   if (fresh) { try { const a = new AudioContext(), o = a.createOscillator(), g = a.createGain(); o.frequency.value = 880; o.connect(g); g.connect(a.destination);
