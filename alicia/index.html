@@ -10,6 +10,10 @@
 .btns{display:flex;gap:8px;margin:8px 0;flex-wrap:wrap;align-items:center}button{font:inherit;font-weight:600;border:0;border-radius:10px;padding:12px 18px;cursor:pointer;background:#2f3445;color:#fff}
 .lov{background:#1b1d26;border-radius:12px;padding:6px 10px;margin:0}.lov button{padding:8px 12px}#rooms{flex:1;display:grid;grid-template-columns:1fr 1fr;grid-template-rows:1fr 1fr;gap:6px;min-height:0}.room{display:flex;flex-direction:column;min-height:0}.room b{font-size:13px;color:#aab}
 .au{display:block;font-size:12px;font-weight:400;color:#cfd;cursor:pointer}.au input{width:auto;margin:0 4px 0 0}.go{background:#e8364f}.y{background:#c98a14}.g{background:#3a6}button:disabled{opacity:.4}
+.nf{display:flex;gap:8px;align-items:flex-start;padding:8px 10px;margin-bottom:6px;border-radius:10px;background:#2a2410;font-size:15px}
+.nf .pf{background:#000a;border-radius:6px;padding:2px 7px;font-size:12px;font-weight:700;white-space:nowrap}.nf .wh{font-weight:700;color:#ffd76a;white-space:nowrap}
+.nf .tx{flex:1}.nf .tm{color:#889;font-size:12px;white-space:nowrap}.nf.bot{background:#1d2440}.nf.bot .wh{color:#9fbaff}.nf.pay{background:#16351f}.nf.pay .wh{color:#7ee08a}
+.nf.newx{animation:fl 1.5s 3}@keyframes fl{50%{filter:brightness(1.8)}}
 #st{color:#aab}#hint{background:#2a1f3a;border:2px solid #8a5cff;border-radius:12px;padding:12px;font-size:22px;font-weight:700;min-height:70px}
 .col{display:flex;flex-direction:column;min-height:0;gap:8px}.box{background:#1b1d26;border-radius:12px;padding:8px;overflow:auto;flex:1;min-height:0}
 .tip{padding:6px 8px;border-radius:8px;background:#233024;margin-bottom:5px}.tip b{color:#7ee08a}.chat{padding:3px 6px;color:#ccd;font-size:14px}
@@ -44,6 +48,8 @@ input{font:inherit;padding:8px;border-radius:8px;border:1px solid #444;backgroun
   <div id="lovctl" style="display:none;align-items:center;gap:10px;background:#123224;border:2px solid #2ecc71;border-radius:12px;padding:8px 12px;font-size:17px">
    <span style="flex:1"></span><button style="background:#e8364f" onclick="lovStop()">⏻ Закончить управление</button></div>
   <div id="hint">Подсказки появятся тут, когда начнётся эфир 💋</div>
+  <b>🔔 Уведомления <small style="color:#889;font-weight:400">— донаты, кто что просит, кто оплатил, кому что написал бот</small></b>
+  <div class="box" id="feed" style="flex:1"></div>
  </div>
  <div class="col"><b>💰 Донаты</b><div class="box" id="wall"></div><b>💌 Личка — он пишет (жёлтым), мы/бот отвечаем (синим)</b><div class="box" id="bot" style="flex:.6"></div><b>💬 Комнаты</b>
   <div id="rooms"><div class="room"><b>Chaturbate</b><div class="box" id="chat-cb"></div></div><div class="room"><b>Stripchat</b><div class="box" id="chat-sc"></div></div>
@@ -426,6 +432,21 @@ const HUB_URL = "https://alicia-link.videorils.workers.dev/hub", PNAME = { cb: "
 let AUTO_T = 0;
 async function autoSet(p, on) { AUTO_T = Date.now(); admEv((on ? "🤖 включила" : "🤖 выключила") + " авто на " + PNAME[p]);
   try { await fetch(HUB_URL, { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ w: "alicia-panel", p, on }) }); } catch (e) {} }
+// лента уведомлений (как у владельца в консоли): свежие сверху, новые мигают + короткий звук
+let FEEDSEEN = null;
+function feedShow(l) {
+  const el = $("#feed");
+  if (!l) { el.innerHTML = '<div class="chat" style="color:#889">нет связи с компьютером бота</div>'; return; }
+  const seen = new Set(FEEDSEEN || []), fresh = FEEDSEEN && l.some(x => !seen.has(x.id));
+  el.innerHTML = l.slice().reverse().map(x => {
+    const cls = /^(🤖|📨|✍️)/.test(x.text) ? "bot" : x.kind === "pay" ? "pay" : "";
+    return `<div class="nf ${cls} ${FEEDSEEN && !seen.has(x.id) ? "newx" : ""}"><span class="pf">${esc(PNAME[x.p] || x.p)}</span><span class="wh">${esc(x.who)}</span>` +
+      `<span class="tx">${esc(x.text)}</span><span class="tm">${esc((x.t || "").slice(11, 16))}</span></div>`; }).join("")
+    || '<div class="chat" style="color:#889">пока пусто — тут будут донаты, просьбы и что бот написал</div>';
+  if (fresh) { try { const a = new AudioContext(), o = a.createOscillator(), g = a.createGain(); o.frequency.value = 880; o.connect(g); g.connect(a.destination);
+    g.gain.setValueAtTime(.15, a.currentTime); g.gain.exponentialRampToValueAtTime(.001, a.currentTime + .25); o.start(); o.stop(a.currentTime + .25); } catch (e) {} }
+  FEEDSEEN = l.map(x => x.id);
+}
 let DMHOLD = 0, DMS = [];
 async function dmSend(i) {
   const c = DMS[i], inp = $("#dmi" + i), text = (inp && inp.value || "").trim(); if (!c || !text) return;
@@ -437,6 +458,7 @@ async function dmSend(i) {
 async function hubSync() {
   let j; try { j = await (await fetch(HUB_URL, { cache: "no-store" })).json(); } catch (e) { return; }
   const h = j.hub, alive = h && j.now - h.at < 60000;
+  feedShow(alive ? h.feed || [] : null);
   if (Date.now() - DMHOLD < 30000) return;                           // она печатает ответ — не перерисовываем
   DMS = (h && h.dm) || [];
   for (const p in PNAME) { const c = $("#a-" + p); c.disabled = !alive; if (h && Date.now() - AUTO_T > 15000) c.checked = !!(h.auto || {})[p]; }
