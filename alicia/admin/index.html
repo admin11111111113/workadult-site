@@ -1,0 +1,67 @@
+<!doctype html><html lang="ru"><head><meta charset="utf-8"><title>Алисия — админка</title>
+<meta name="robots" content="noindex,nofollow"><meta name="viewport" content="width=device-width,initial-scale=1">
+<style>
+*{box-sizing:border-box}body{margin:0;font:15px/1.4 Segoe UI,Arial;background:#121319;color:#eee}
+#top{display:flex;gap:8px;padding:8px;background:#1b1d26;align-items:center;flex-wrap:wrap;position:sticky;top:0;z-index:2}
+.pl{background:#262a36;border-radius:10px;padding:6px 12px;font-weight:600}.pl small{display:block;font-weight:400;color:#9aa;font-size:12px}
+.dot{display:inline-block;width:10px;height:10px;border-radius:50%;background:#666;margin-right:6px}.ok{background:#2ecc71}.no{background:#e74c3c}
+#grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(320px,1fr));gap:10px;padding:10px}
+.box{background:#1b1d26;border-radius:12px;padding:10px}.box h3{margin:0 0 8px;font-size:15px}
+.l{padding:4px 6px;border-bottom:1px solid #262a36;font-size:14px;white-space:pre-wrap}.l i{color:#889;font-style:normal;font-size:12px;margin-right:6px}
+#hint{background:#2a1f3a;border:2px solid #8a5cff;border-radius:12px;padding:10px;font-weight:700;white-space:pre-wrap}
+#shot{width:100%;border-radius:8px;background:#000;display:block}
+a.btn,button{font:inherit;font-weight:600;border:0;border-radius:10px;padding:8px 14px;cursor:pointer;background:#5b3ccc;color:#fff;text-decoration:none}
+#login{position:fixed;inset:0;background:#000d;display:none;align-items:center;justify-content:center;z-index:5}#login div{background:#1f2230;padding:20px;border-radius:14px}
+input{font:inherit;padding:8px;border-radius:8px;border:1px solid #444;background:#0f1116;color:#fff}
+.scroll{max-height:420px;overflow:auto}
+</style></head><body>
+<div id="top">
+ <div class="pl"><span class="dot" id="d-on"></span>Её панель<small id="s-on">…</small></div>
+ <div class="pl"><span class="dot" id="d-obs"></span>OBS<small id="s-obs">…</small></div>
+ <div class="pl"><span class="dot" id="d-ext"></span>Помощник<small id="s-ext">…</small></div>
+ <div class="pl"><span class="dot" id="d-lov"></span>🎀 Lovense<small id="s-lov">…</small></div>
+ <div class="pl"><span class="dot" id="d-cb"></span>Chaturbate<small id="s-cb">…</small></div>
+ <div class="pl"><span class="dot" id="d-sc"></span>Stripchat<small id="s-sc">…</small></div>
+ <div class="pl"><span class="dot" id="d-bc"></span>Bongacams<small id="s-bc">…</small></div>
+ <div class="pl"><span class="dot" id="d-mv"></span>ManyVids<small id="s-mv">…</small></div>
+ <div class="pl">Сегодня<small id="s-tot">…</small></div>
+ <a class="btn" style="margin-left:auto" href="https://alicia-link.videorils.workers.dev/full" target="_blank">🤖 Бот и переписки (хаб)</a>
+</div>
+<div id="grid">
+ <div class="box"><h3>📺 Эфир <button id="bimg" style="float:right;padding:3px 10px;font-size:12px;background:#2f3445" onclick="tgImg()"></button></h3>
+  <img id="shot" alt=""><div id="stream" style="margin-top:6px;color:#aab"></div><h3 style="margin-top:10px">💬 Что ей сейчас подсказывает панель</h3><div id="hint">…</div></div>
+ <div class="box"><h3>🧾 Что происходило (её нажатия, подсказки, запуск сайтов)</h3><div class="scroll" id="ev"></div></div>
+ <div class="box"><h3>▶ Журнал запуска сайтов</h3><div id="golog"></div><h3 style="margin-top:10px">💰 Донаты</h3><div class="scroll" id="wall"></div></div>
+ <div class="box"><h3>💬 Чат комнаты</h3><div class="scroll" id="chat"></div></div>
+</div>
+<div id="login"><div><b>Пароль админки</b><br><input id="pw" type="password" placeholder="пароль как у хаба"> <button onclick="localStorage.admk=$('#pw').value;load()">Войти</button><div id="lerr" style="color:#f77;margin-top:6px"></div></div></div>
+<script>
+const $ = s => document.querySelector(s), esc = s => String(s ?? "").replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"})[c]);
+const ago = ms => ms < 60000 ? Math.round(ms / 1000) + " сек назад" : ms < 3600000 ? Math.round(ms / 60000) + " мин назад" : Math.round(ms / 3600000) + " ч назад";
+const tm = t => new Date(t).toLocaleTimeString("ru", { hour: "2-digit", minute: "2-digit", second: "2-digit" });
+function dot(k, on, txt) { $("#d-" + k).className = "dot " + (on === null ? "" : on ? "ok" : "no"); $("#s-" + k).textContent = txt; }
+function tgImg() { localStorage.noImg = localStorage.noImg ? "" : "1"; ui(); }
+function ui() { const n = !!localStorage.noImg; $("#shot").style.display = n ? "none" : ""; $("#bimg").textContent = n ? "🖼 показать кадр" : "🙈 убрать кадр"; }
+ui();
+async function load() {
+  if (!localStorage.admk) { $("#login").style.display = "flex"; return; }
+  let r; try { r = await fetch("https://alicia-link.videorils.workers.dev/her", { headers: { "x-k": localStorage.admk }, cache: "no-store" }); } catch (e) { $("#s-on").textContent = "нет связи"; return; }
+  if (r.status === 403) { localStorage.admk = ""; $("#lerr").textContent = "неверный пароль"; $("#login").style.display = "flex"; return; }
+  $("#login").style.display = "none";
+  const { st, ev, now } = await r.json();
+  if (!st || !st.w) { dot("on", false, "ещё ни разу не открывала"); return; }
+  const age = now - st.at, on = age < 45000;
+  dot("on", on, on ? "открыта · " + ago(age) : "закрыта · была " + ago(age));
+  dot("obs", on ? st.obs : null, st.obsTxt || ""); dot("ext", on ? /на связи/.test(st.ext) : null, st.ext || "");
+  dot("lov", on ? !/нет|запусти|не подкл/i.test(st.lov) : null, st.lov || "");
+  for (const k of ["cb", "sc", "bc", "mv"]) { const s = (st.sites || {})[k] || {}; dot(k, on && /ok/.test(s.on) ? true : on && /no/.test(s.on) ? false : null, s.t || ""); }
+  $("#s-tot").textContent = ((st.tot || {}).cb || 0) + ((st.tot || {}).sc || 0) + " tk";
+  if (!localStorage.noImg) $("#shot").src = st.shot || "";
+  $("#stream").textContent = st.stream || ""; $("#hint").textContent = st.hint || "";
+  $("#golog").innerHTML = (st.golog || []).map(x => `<div class="l">${esc(x)}</div>`).join("") || '<div class="l" style="color:#778">запуска не было</div>';
+  $("#wall").innerHTML = (st.wall || []).map(x => `<div class="l">${esc(x)}</div>`).join("") || '<div class="l" style="color:#778">пока нет</div>';
+  $("#chat").innerHTML = (st.chat || []).map(x => `<div class="l">${esc(x)}</div>`).join("") || '<div class="l" style="color:#778">пока пусто</div>';
+  $("#ev").innerHTML = ev.slice().reverse().map(e => `<div class="l"><i>${tm(e.at)}</i>${esc(e.t)}</div>`).join("") || '<div class="l" style="color:#778">пока пусто</div>';
+}
+load(); setInterval(load, 10000);
+</script></body></html>
