@@ -134,6 +134,9 @@
       const goBtn = [...document.querySelectorAll("button,[role=button],[class*=go-live-button]")].some(b => vis(b) && STREAM.test(txt(b)));
       const cam = [...document.querySelectorAll("video")].some(v => v.srcObject && v.srcObject.active);
       send({ type: "live", p: "mv", on: !goBtn && cam, st: goBtn ? "offline" : cam ? "live" : "?" });
+      // сколько заработала за этот эфир — сайт сам пишет «LIVE EARNINGS 12 Tks»
+      const e = (document.body.innerText.match(/LIVE EARNINGS\s*([\d,.\s]+?)\s*Tks/i) || [])[1];
+      if (e !== undefined) send({ type: "earn", p: "mv", tk: +e.replace(/\D/g, "") || 0 });
     };
     setTimeout(mvLive, 4000); setInterval(mvLive, 10000);
   }

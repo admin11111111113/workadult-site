@@ -26,8 +26,8 @@ input{font:inherit;padding:8px;border-radius:8px;border:1px solid #444;backgroun
  <div class="pl" style="cursor:pointer" onclick="lovOpen()" title="Открыть панель Lovense"><span class="dot" id="d-lov"></span>🎀 Lovense<small id="s-lov">…</small></div>
  <div class="pl"><span class="dot" id="d-cb"></span>Chaturbate<small id="t-cb">0 tk</small><label class="au"><input type="checkbox" id="a-cb" onchange="autoSet('cb',this.checked)"> авто</label></div>
  <div class="pl"><span class="dot" id="d-sc"></span>Stripchat<small id="t-sc">0 tk</small><label class="au"><input type="checkbox" id="a-sc" onchange="autoSet('sc',this.checked)"> авто</label></div>
- <div class="pl"><span class="dot" id="d-bc"></span>Bongacams<small id="s-bc">через OBS</small><label class="au"><input type="checkbox" id="a-bc" onchange="autoSet('bc',this.checked)"> авто</label></div>
- <div class="pl"><span class="dot" id="d-mv"></span>ManyVids<small id="s-mv">эфир с сайта</small><label class="au"><input type="checkbox" id="a-mv" onchange="autoSet('mv',this.checked)"> авто</label></div>
+ <div class="pl"><span class="dot" id="d-bc"></span>Bongacams<small id="s-bc">через OBS</small><small id="t-bc"></small><label class="au"><input type="checkbox" id="a-bc" onchange="autoSet('bc',this.checked)"> авто</label></div>
+ <div class="pl"><span class="dot" id="d-mv"></span>ManyVids<small id="s-mv">эфир с сайта</small><small id="t-mv"></small><label class="au"><input type="checkbox" id="a-mv" onchange="autoSet('mv',this.checked)"> авто</label></div>
  <div class="pl" style="margin-left:auto">Сегодня<small id="t-all">0 tk</small></div>
 </div>
 <div id="privbar" style="display:none;background:#e8364f;color:#fff;font-weight:800;font-size:20px;padding:8px 14px;text-align:center"></div>
@@ -69,8 +69,12 @@ function act(w) { w = norm(w); for (const k in MENU) if (w && w.startsWith(norm(
 const esc = s => String(s ?? "").replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"})[c]);
 const day = new Date().toLocaleDateString("sv"), TOT = JSON.parse(localStorage["tot" + day] || '{"cb":0,"sc":0}');
 const LIVE = {};                                                    // p → {on, st} — видит ли сайт эфир (из sc.js / cb.js)
-function showTot() { const L = p => !LIVE[p] ? "" : LIVE[p].on ? "🔴 в эфире · " : "не в эфире · ";
-  $("#t-cb").textContent = L("cb") + TOT.cb + " tk"; $("#t-sc").textContent = L("sc") + TOT.sc + " tk"; $("#t-all").textContent = (TOT.cb + TOT.sc) + " tk"; localStorage["tot" + day] = JSON.stringify(TOT); }
+// Bonga — токены за сегодня от хаба (он читает отчёт Бонги), ManyVids — «LIVE EARNINGS» с её страницы эфира
+const ETK = { bc: 0, mv: 0 };
+function showTot() { const L = p => !LIVE[p] ? "" : LIVE[p].on ? "🟢 в эфире · " : "🔴 не в эфире · ";
+  $("#t-cb").textContent = L("cb") + TOT.cb + " tk"; $("#t-sc").textContent = L("sc") + TOT.sc + " tk";
+  $("#t-bc").textContent = "💰 " + ETK.bc + " tk сегодня"; $("#t-mv").textContent = "💰 " + ETK.mv + " tk за эфир";
+  $("#t-all").textContent = (TOT.cb + TOT.sc + ETK.bc + ETK.mv) + " tk"; localStorage["tot" + day] = JSON.stringify(TOT); }
 showTot();
 const ADM_EV = [];                                                  // события для админки (workadult.pro/alicia/admin)
 const admEv = t => { t = String(t).trim(); if (t && (!ADM_EV.length || ADM_EV[ADM_EV.length - 1].t !== t)) ADM_EV.push({ t, at: Date.now() }); ADM_EV.splice(0, ADM_EV.length - 60); };
@@ -152,7 +156,7 @@ setInterval(async () => { if (!ok) return; const st = await req("GetStreamStatus
   if (!(LIVE.bc && LIVE.bc.src !== "obs" && Date.now() - LIVE.bc.t < 30000)) {
     const bo = ol.find(o => /bonga/i.test(o.outputName || ""));
     const on = bo ? !!bo.outputActive : !!st.outputActive && nOut >= 2 && nOut === ol.length;
-    LIVE.bc = { on, st: "obs", src: "obs", t: Date.now() }; dot("bc", on, on ? "🔴 в эфире" : "не в эфире");
+    LIVE.bc = { on, st: "obs", src: "obs", t: Date.now() }; dot("bc", on, on ? "🟢 в эфире" : "🔴 не в эфире");
   }
   for (const k of ["cb", "sc", "mv"]) if (LIVE[k] && LIVE[k].on && Date.now() - LIVE[k].t > 40000) { LIVE[k].on = false; dot(k, false); showTot(); if (k === "mv") $("#s-mv").textContent = "не видно (вкладка закрыта?)"; }
   $("#st").textContent = (st.outputActive ? "● В ЭФИРЕ " + (st.outputTimecode || "").slice(0, 8) + " " + kb + " · потоков " + nOut + " из " + Math.max(ol.length, 1) : "эфир выключен") + (s === PAUSE ? " · ПАУЗА" : "") + (r.outputActive ? " · ⏺ запись" : "");
@@ -351,7 +355,8 @@ function onExt(m) {
   // запоминаем только ManyVids (у Bonga 2-й шаг в консоли — её открывать напрямую нельзя)
   if (m.type === "golearn" && m.p === "mv" && /\/live\/cam\//.test(m.url || "")) localStorage.go_mv = m.url;
   if (m.type === "live") { LIVE[m.p] = { on: !!m.on, st: m.st, t: Date.now() }; dot(m.p, !!m.on); showTot();
-    if (m.p === "mv" || m.p === "bc") $("#s-" + m.p).textContent = m.on ? "🔴 в эфире" : "не в эфире"; }
+    if (m.p === "mv" || m.p === "bc") $("#s-" + m.p).textContent = m.on ? "🟢 в эфире" : "🔴 не в эфире"; }
+  if (m.type === "earn" && m.p === "mv") { ETK.mv = m.tk; showTot(); }
   if (m.type === "lovlog") hint("🎀 " + esc(m.text.replace(/^Lovense: /, "Lovense: ")));
   if (m.type === "lovsites") {
     LOV.sites = m.n; LOV.have = m.have || []; LOV.toys = m.toys || [];
@@ -388,7 +393,7 @@ async function admSend() {
   const card = k => ({ on: ($("#d-" + k) || {}).className || "", t: (($("#t-" + k) || $("#s-" + k)) || {}).textContent || "" });
   const ev = ADM_EV.splice(0);
   const st = { w: "alicia-panel", obs: ok, obsTxt: $("#s-obs").textContent, stream: $("#st").textContent, ext: $("#s-ext").textContent, lov: $("#s-lov").textContent,
-    sites: { cb: card("cb"), sc: card("sc"), bc: card("bc"), mv: card("mv") }, tot: TOT, live: LIVE, hint: $("#hint").innerText, golog: GOLOG.slice(),
+    sites: { cb: card("cb"), sc: card("sc"), bc: card("bc"), mv: card("mv") }, tot: { ...TOT, ...ETK }, live: LIVE, hint: $("#hint").innerText, golog: GOLOG.slice(),
     wall: [...document.querySelectorAll("#wall .tip")].slice(0, 15).map(e => e.innerText), chat: [...document.querySelectorAll("#rooms .chat")].slice(0, 25).map(e => e.innerText),
     shot: admShot(), events: ev, lovctl: LOVCTL, ua: navigator.userAgent.slice(0, 80) };
   try { const r = await fetch(ADM_URL, { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify(st) }); if (!r.ok) throw 0; }
@@ -464,10 +469,11 @@ async function hubSync() {
   let j; try { j = await (await fetch(HUB_URL, { cache: "no-store" })).json(); } catch (e) { return; }
   const h = j.hub, alive = h && j.now - h.at < 60000;
   feedShow(alive ? h.feed || [] : null);
+  if (alive && h.today) { ETK.bc = h.today.bc || 0; showTot(); }
   // её вкладка сайта молчит (закрыта / скрипт не подцепился) → статус эфира от хаба (он сам спрашивает сайты)
   for (const k of ["mv", "sc", "cb"]) if (alive && !(LIVE[k] && LIVE[k].src !== "hub" && Date.now() - LIVE[k].t < 30000)) {
     const on = !!(h.live_on || {})[k]; LIVE[k] = { on, st: "hub", src: "hub", t: Date.now() };
-    dot(k, on); showTot(); if (k === "mv") $("#s-mv").textContent = on ? "🔴 в эфире" : "не в эфире";
+    dot(k, on); showTot(); if (k === "mv") $("#s-mv").textContent = on ? "🟢 в эфире" : "🔴 не в эфире";
   }
   if (Date.now() - DMHOLD < 30000) return;                           // она печатает ответ — не перерисовываем
   DMS = (h && h.dm) || [];
