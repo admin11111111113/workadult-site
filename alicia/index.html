@@ -8,7 +8,8 @@
 #main{flex:1;display:grid;grid-template-columns:minmax(0,1.3fr) minmax(0,1fr);gap:10px;padding:10px;min-height:0}
 #cam{background:#000;border-radius:12px;width:100%;aspect-ratio:16/9;object-fit:contain}
 .btns{display:flex;gap:8px;margin:8px 0;flex-wrap:wrap;align-items:center}button{font:inherit;font-weight:600;border:0;border-radius:10px;padding:12px 18px;cursor:pointer;background:#2f3445;color:#fff}
-.lov{background:#1b1d26;border-radius:12px;padding:6px 10px;margin:0}.lov button{padding:8px 12px}.au{display:block;font-size:12px;font-weight:400;color:#cfd;cursor:pointer}.au input{width:auto;margin:0 4px 0 0}.go{background:#e8364f}.y{background:#c98a14}.g{background:#3a6}button:disabled{opacity:.4}
+.lov{background:#1b1d26;border-radius:12px;padding:6px 10px;margin:0}.lov button{padding:8px 12px}#rooms{flex:1;display:grid;grid-template-columns:1fr 1fr;grid-template-rows:1fr 1fr;gap:6px;min-height:0}.room{display:flex;flex-direction:column;min-height:0}.room b{font-size:13px;color:#aab}
+.au{display:block;font-size:12px;font-weight:400;color:#cfd;cursor:pointer}.au input{width:auto;margin:0 4px 0 0}.go{background:#e8364f}.y{background:#c98a14}.g{background:#3a6}button:disabled{opacity:.4}
 #st{color:#aab}#hint{background:#2a1f3a;border:2px solid #8a5cff;border-radius:12px;padding:12px;font-size:22px;font-weight:700;min-height:70px}
 .col{display:flex;flex-direction:column;min-height:0;gap:8px}.box{background:#1b1d26;border-radius:12px;padding:8px;overflow:auto;flex:1;min-height:0}
 .tip{padding:6px 8px;border-radius:8px;background:#233024;margin-bottom:5px}.tip b{color:#7ee08a}.chat{padding:3px 6px;color:#ccd;font-size:14px}
@@ -36,7 +37,9 @@ input{font:inherit;padding:8px;border-radius:8px;border:1px solid #444;backgroun
    <button onclick="lovVib(5)">Слабо</button><button onclick="lovVib(12)">Средне</button><button onclick="lovVib(20)">Сильно</button><button onclick="lovVib(0)">⏹ Стоп</button></div>
   <div id="hint">Подсказки появятся тут, когда начнётся эфир 💋</div>
  </div>
- <div class="col"><b>💰 Донаты</b><div class="box" id="wall"></div><b>🤖 Бот пишет в личку</b><div class="box" id="bot" style="flex:.6"></div><b>💬 Комната</b><div class="box" id="chat" style="flex:.7"></div></div>
+ <div class="col"><b>💰 Донаты</b><div class="box" id="wall"></div><b>🤖 Бот пишет в личку</b><div class="box" id="bot" style="flex:.6"></div><b>💬 Комнаты</b>
+  <div id="rooms"><div class="room"><b>Chaturbate</b><div class="box" id="chat-cb"></div></div><div class="room"><b>Stripchat</b><div class="box" id="chat-sc"></div></div>
+   <div class="room"><b>Bongacams</b><div class="box" id="chat-bc"></div></div><div class="room"><b>ManyVids</b><div class="box" id="chat-mv"></div></div></div></div>
 </div>
 <div id="setup"><div><b>Подключение OBS</b><p style="color:#aab;font-size:14px">В OBS: Сервис → Настройки сервера WebSocket → включить сервер, нажать «Показать данные подключения», скопировать пароль сюда.</p>
  <input id="pw" type="password" placeholder="пароль WebSocket"><button onclick="savePw()">Подключить</button></div></div>
@@ -294,11 +297,13 @@ function onExt(m) {
   }
   if (m.type === "tip") {
     TOT[m.p] = (TOT[m.p] || 0) + m.tk; showTot(); const a = act(m.what);
-    $("#wall").insertAdjacentHTML("afterbegin", `<div class="tip"><b>${esc(m.who)}</b> ${m.tk} tk · ${m.p === "cb" ? "Chaturbate" : "Stripchat"}${m.what ? " — " + esc(m.what) : ""}${a ? "<br>👉 " + esc(a) : ""}</div>`);
+    $("#wall").insertAdjacentHTML("afterbegin", `<div class="tip"><b>${esc(m.who)}</b> ${m.tk} tk · ${({ cb: "Chaturbate", sc: "Stripchat", bc: "Bongacams", mv: "ManyVids" })[m.p] || m.p}${m.what ? " — " + esc(m.what) : ""}${a ? "<br>👉 " + esc(a) : ""}</div>`);
     hint(`💰 <b>${esc(m.who)}</b> дал ${m.tk} tk${a ? "<br>👉 " + esc(a) : ""}<br>Скажи: «Thank you ${esc(m.who)} 😘»`);
   }
+  if (m.type === "probe") admEv("🔎 " + (NAME[m.p] || m.p) + " " + m.text);   // разведка — только в журнал владельца
   if (m.type === "chat" && m.text) {
-    $("#chat").insertAdjacentHTML("afterbegin", `<div class="chat"><b>${esc(m.who)}</b>: ${esc(m.text)}</div>`);
+    const box = $("#chat-" + m.p) || $("#chat-cb"); box.insertAdjacentHTML("afterbegin", `<div class="chat"><b>${esc(m.who)}</b>: ${esc(m.text)}</div>`);
+    while (box.children.length > 80) box.lastChild.remove();
     if (/\b(hi|hello|hey)\b|привет/i.test(m.text)) hint(`👋 Скажи: «Hello ${esc(m.who)}!» и улыбнись`);
   }
 }
@@ -315,7 +320,7 @@ async function admSend() {
   const ev = ADM_EV.splice(0);
   const st = { w: "alicia-panel", obs: ok, obsTxt: $("#s-obs").textContent, stream: $("#st").textContent, ext: $("#s-ext").textContent, lov: $("#s-lov").textContent,
     sites: { cb: card("cb"), sc: card("sc"), bc: card("bc"), mv: card("mv") }, tot: TOT, live: LIVE, hint: $("#hint").innerText, golog: GOLOG.slice(),
-    wall: [...document.querySelectorAll("#wall .tip")].slice(0, 15).map(e => e.innerText), chat: [...document.querySelectorAll("#chat .chat")].slice(0, 25).map(e => e.innerText),
+    wall: [...document.querySelectorAll("#wall .tip")].slice(0, 15).map(e => e.innerText), chat: [...document.querySelectorAll("#rooms .chat")].slice(0, 25).map(e => e.innerText),
     shot: admShot(), events: ev, ua: navigator.userAgent.slice(0, 80) };
   try { const r = await fetch(ADM_URL, { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify(st) }); if (!r.ok) throw 0; }
   catch (e) { ADM_EV.unshift(...ev); }                               // не ушло — события отправим в следующий раз

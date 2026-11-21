@@ -46,6 +46,25 @@
       }
   }
   setInterval(step, 1000);
+  // Чат комнаты Bonga (консоль) / ManyVids (страница эфира) → панель, комната своего сайта.
+  // Ищем контейнер чата (class с chat/message, много однотипных детей); новые строки «ник: текст» шлём в панель.
+  // + разведка: раз в загрузку шлём, какой контейнер нашли (видно в журнале владельца) — чтобы донастроить по факту.
+  if ((P === "bc" && /^\/console/.test(location.pathname)) || (P === "mv" && /\/live/i.test(location.pathname))) {
+    const pick = () => [...document.querySelectorAll("[class*=chat i],[class*=message i],[class*=msg i]")]
+      .filter(e => e.children.length >= 3 && e.getClientRects().length && e.scrollHeight >= e.clientHeight && /auto|scroll/.test(getComputedStyle(e).overflowY))
+      .sort((a, b) => b.children.length - a.children.length)[0];
+    const parse = n => { const t = (n.innerText || "").trim(); if (!t || t.length > 400) return null;
+      let m = t.match(/^([^\s:：]{2,32})\s*[:：]\s*([\s\S]+)$/); if (m) return { who: m[1], text: m[2].replace(/\s+/g, " ") };
+      const l = t.split("\n").map(s => s.trim()).filter(Boolean); return l.length >= 2 && l[0].length <= 32 ? { who: l[0], text: l.slice(1).join(" ") } : null; };
+    let box = null, sent = 0;
+    const hook = () => {
+      const b = pick(); if (!b || b === box) return; box = b;
+      send({ type: "probe", p: P, text: "чат: " + b.tagName.toLowerCase() + "." + String(b.className).slice(0, 80) + " детей " + b.children.length + " · пример: " + [...b.children].slice(-2).map(c => (c.innerText || "").replace(/\s+/g, " ").slice(0, 80)).join(" | ") });
+      new MutationObserver(ms => { for (const m of ms) for (const n of m.addedNodes) if (n.nodeType === 1) { const x = parse(n); if (x && sent++ < 5000) send({ type: "chat", p: P, ...x }); } })
+        .observe(b, { childList: true });
+    };
+    setTimeout(hook, 8000); setInterval(hook, 30000);
+  }
   // ManyVids: не вошла в аккаунт (страница входа / поле пароля / кнопка «Log in» в шапке) — говорим панели
   if (P === "mv") setTimeout(() => {
     const out = /login|signin|sign-in/i.test(location.pathname) || [...document.querySelectorAll("input[type=password]")].some(vis)
