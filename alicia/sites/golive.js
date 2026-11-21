@@ -73,6 +73,35 @@
   const PRIVON = /(private show (is )?(in progress|started|active)|you are in (a )?private|in private show|приват(ное шоу)? (идёт|начал|начато|активн)|в привате|сейчас приват|đang (show )?riêng tư)/i;
   let PON = null;
   setInterval(() => { const on = PRIVON.test((document.body && document.body.innerText || "").slice(0, 200000)); if (on !== PON) { PON = on; send({ type: "private", p: P, on }); } }, 4000);
+  // ── Lovense «Ссылка управления»: окно их расширения на странице сайта (код, игрушки, таймер) → её панель и консоль владельца.
+  // Ищем в DOM и в открытых shadow-root; «Закончить управление» жмём по её команде из панели (pcmd act=lovstop).
+  const LCT = /ссылка управления|control link/i, LSES = /сеанс управления|control session|закончить управление|end control|stop control|ожидани|waiting/i;
+  const deep = (root, out) => { for (const e of root.querySelectorAll("*")) { out.push(e); if (e.shadowRoot) deep(e.shadowRoot, out); } return out; };
+  const roots = (r, out) => { out.push(r); for (const e of r.querySelectorAll("*")) if (e.shadowRoot) roots(e.shadowRoot, out); return out; };
+  let LC = null, lcLast = "", lcProbe = 0;
+  setInterval(async () => {
+    let box = null;                                                  // дёшево: сначала textContent (без перерасчёта страницы)
+    for (const r of roots(document, [])) {
+      const all = r === document ? document.body : r; if (!all || !LCT.test(all.textContent || "")) continue;
+      for (const e of r.querySelectorAll("*")) { const t = e.textContent || ""; if (t.length < 800 && LCT.test(t) && LSES.test(t) && vis(e)) box = e; }
+    }
+    // box — самый вложенный подходящий (последний в порядке обхода)
+    if (box) {
+      const t = box.innerText.replace(/[ \t]+/g, " ").trim(), lines = t.split("\n").map(s => s.trim()).filter(Boolean);
+      const info = { on: /начался|started|active|закончить управление|end control/i.test(t), code: (t.match(/\b[A-Z0-9]{5,8}\b/) || [])[0] || "",
+        timer: (t.match(/\b\d{1,2}:\d{2}(:\d{2})?\b/) || [])[0] || "", limit: (t.match(/неограниченно|unlimited|\d+\s*(мин|min|сек|sec)\w*/i) || [])[0] || "",
+        toys: lines.filter(l => /lush|nora|max|domi|hush|edge|osci|ferri|dolce|gush|ambi|diamo|calor|machine|машин|gravity|solace|tenera|flexer|vulse|mission/i.test(l)).slice(0, 4) };
+      const k = JSON.stringify(info); LC = box;
+      if (k !== lcLast) { lcLast = k; send({ type: "lovctl", p: P, ...info }); }
+      try { const c = await (await fetch(PCMD, { cache: "no-store" })).json();
+        if (c && c.act === "lovstop") { const b = deep(box, []).find(x => /закончить управление|end control|stop control/i.test(x.innerText || "") && x.children.length <= 2);
+          if (b) { b.click(); log("закончила управление Lovense"); } } } catch (e) {}
+    } else if (LC) { LC = null; lcLast = ""; send({ type: "lovctl", p: P, on: false, gone: true }); }
+    else if (!lcProbe++ && P === "cb") {                             // разведка один раз: где у Lovense окно, если не нашли
+      const fr = [...document.querySelectorAll("iframe")].map(f => f.src || "").filter(s => /lovense/i.test(s)).map(s => s.split("?")[0].slice(-70));
+      if (fr.length) send({ type: "probe", p: P, text: "Lovense во фреймах: " + fr.join(" ") });
+    }
+  }, 3000);
   // Чат комнаты Bonga (консоль) / ManyVids (страница эфира) → панель, комната своего сайта.
   // Ищем контейнер чата (class с chat/message, много однотипных детей); новые строки «ник: текст» шлём в панель.
   // + разведка: раз в загрузку шлём, какой контейнер нашли (видно в журнале владельца) — чтобы донастроить по факту.

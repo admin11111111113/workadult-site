@@ -42,6 +42,8 @@ input{font:inherit;padding:8px;border-radius:8px;border:1px solid #444;backgroun
    <button onclick="stopLive()">⏹ Закончить</button><button class="g" id="b-rec" onclick="rec()">⏺ Снять видео</button><span id="st"></span></div>
   <div class="btns lov"><b>🎀 Игрушка</b><button class="g" onclick="lovLink()">🔗 Ссылка управления</button><button onclick="lovTest()">📳 Тест</button>
    <button onclick="lovVib(5)">Слабо</button><button onclick="lovVib(12)">Средне</button><button onclick="lovVib(20)">Сильно</button><button onclick="lovVib(0)">⏹ Стоп</button></div>
+  <div id="lovctl" style="display:none;align-items:center;gap:10px;background:#123224;border:2px solid #2ecc71;border-radius:12px;padding:8px 12px;font-size:17px">
+   <span style="flex:1"></span><button style="background:#e8364f" onclick="lovStop()">⏻ Закончить управление</button></div>
   <div id="hint">Подсказки появятся тут, когда начнётся эфир 💋</div>
  </div>
  <div class="col"><b>💰 Донаты</b><div class="box" id="wall"></div><b>💌 Личка — он пишет (жёлтым), мы/бот отвечаем (синим)</b><div class="box" id="bot" style="flex:.6"></div><b>💬 Комнаты</b>
@@ -307,6 +309,7 @@ function onExt(m) {
     $("#wall").insertAdjacentHTML("afterbegin", `<div class="tip"><b>${esc(m.who)}</b> ${m.tk} tk · ${({ cb: "Chaturbate", sc: "Stripchat", bc: "Bongacams", mv: "ManyVids" })[m.p] || m.p}${m.what ? " — " + esc(m.what) : ""}${a ? "<br>👉 " + esc(a) : ""}</div>`);
     hint(`💰 <b>${esc(m.who)}</b> дал ${m.tk} tk${a ? "<br>👉 " + esc(a) : ""}<br>Скажи: «Thank you ${esc(m.who)} 😘»`);
   }
+  if (m.type === "lovctl") lovCtl(m);
   if (m.type === "privreq") privShow(m.p, m.text);
   if (m.type === "privgone" && PRIVREQ === m.p) privHide();
   if (m.type === "private") privOn(m.p, m.on);
@@ -331,10 +334,22 @@ async function admSend() {
   const st = { w: "alicia-panel", obs: ok, obsTxt: $("#s-obs").textContent, stream: $("#st").textContent, ext: $("#s-ext").textContent, lov: $("#s-lov").textContent,
     sites: { cb: card("cb"), sc: card("sc"), bc: card("bc"), mv: card("mv") }, tot: TOT, live: LIVE, hint: $("#hint").innerText, golog: GOLOG.slice(),
     wall: [...document.querySelectorAll("#wall .tip")].slice(0, 15).map(e => e.innerText), chat: [...document.querySelectorAll("#rooms .chat")].slice(0, 25).map(e => e.innerText),
-    shot: admShot(), events: ev, ua: navigator.userAgent.slice(0, 80) };
+    shot: admShot(), events: ev, lovctl: LOVCTL, ua: navigator.userAgent.slice(0, 80) };
   try { const r = await fetch(ADM_URL, { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify(st) }); if (!r.ok) throw 0; }
   catch (e) { ADM_EV.unshift(...ev); }                               // не ушло — события отправим в следующий раз
 }
+// ── Lovense «Ссылка управления» идёт (окно Lovense на странице сайта) → полоска тут + в консоль владельца
+let LOVCTL = null;
+function lovCtl(m) {
+  const el = $("#lovctl");
+  if (m.gone || (!m.on && !m.code)) { if (LOVCTL) admEv("🎮 управление Lovense закончилось"); LOVCTL = null; el.style.display = "none"; return; }
+  if (!LOVCTL && m.on) admEv("🎮 мембер управляет игрушкой (код " + (m.code || "?") + ")");
+  LOVCTL = m; el.style.display = "flex";
+  el.querySelector("span").innerHTML = (m.on ? "🎮 <b>Мембер управляет игрушкой</b>" : "🎮 Ссылка управления создана, ждём мембера") + (m.code ? " · код <b>" + esc(m.code) + "</b>" : "") +
+    (m.timer ? " · ⏱ <b>" + esc(m.timer) + "</b>" : "") + (m.limit ? " · " + esc(m.limit) : "") + ((m.toys || []).length ? "<br><small>" + esc(m.toys.join(" · ")) + "</small>" : "");
+}
+async function lovStop() { if (!LOVCTL || !confirm("Закончить управление игрушкой?")) return;
+  try { await fetch("https://alicia-link.videorils.workers.dev/pcmd?p=" + LOVCTL.p, { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ w: "alicia-panel", act: "lovstop" }) }); hint("⏳ Заканчиваю управление…"); } catch (e) {} }
 // ── ПРИВАТ: запрос с сайта → большое окно тут; «Принять/Отклонить» уходит на сайт (golive.js нажмёт кнопку сам)
 let PRIVREQ = null, PRIVLIVE = {};
 const PN4 = { cb: "Chaturbate", sc: "Stripchat", bc: "Bongacams", mv: "ManyVids" };
