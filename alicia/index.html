@@ -71,6 +71,7 @@ const day = new Date().toLocaleDateString("sv"), TOT = JSON.parse(localStorage["
 const LIVE = {};                                                    // p → {on, st} — видит ли сайт эфир (из sc.js / cb.js)
 // Bonga — токены за сегодня от хаба (он читает отчёт Бонги), ManyVids — «LIVE EARNINGS» с её страницы эфира
 const ETK = { bc: 0, mv: 0 };
+const ROOM = {};                                                   // "p|ник" → кто писал в чате комнаты за последний час
 function showTot() { const L = p => !LIVE[p] ? "" : LIVE[p].on ? "🟢 в эфире · " : "🔴 не в эфире · ";
   $("#t-cb").textContent = L("cb") + TOT.cb + " tk"; $("#t-sc").textContent = L("sc") + TOT.sc + " tk";
   $("#t-bc").textContent = "💰 " + ETK.bc + " tk сегодня"; $("#t-mv").textContent = "💰 " + ETK.mv + " tk за эфир";
@@ -375,6 +376,10 @@ function onExt(m) {
   if (m.type === "privgone" && PRIVREQ === m.p) privHide();
   if (m.type === "private") privOn(m.p, m.on);
   if (m.type === "probe") admEv("🔎 " + (NAME[m.p] || m.p) + " " + m.text);   // разведка — только в журнал владельца
+  if (m.type === "chat" && m.text && m.who) {                         // кто пишет в чате комнаты — хабу (бот знакомится с ними в личке)
+    const k = m.p + "|" + m.who; ROOM[k] = { p: m.p, who: m.who, text: String(m.text).slice(0, 200), t: Date.now(), n: ((ROOM[k] || {}).n || 0) + 1 };
+    const ks = Object.keys(ROOM); if (ks.length > 120) ks.sort((x, y) => ROOM[x].t - ROOM[y].t).slice(0, ks.length - 120).forEach(x => delete ROOM[x]);
+  }
   if (m.type === "chat" && m.text) {
     const box = $("#chat-" + m.p) || $("#chat-cb"); box.insertAdjacentHTML("afterbegin", `<div class="chat"><b>${esc(m.who)}</b>: ${esc(m.text)}</div>`);
     while (box.children.length > 80) box.lastChild.remove();
@@ -393,7 +398,7 @@ async function admSend() {
   const card = k => ({ on: ($("#d-" + k) || {}).className || "", t: (($("#t-" + k) || $("#s-" + k)) || {}).textContent || "" });
   const ev = ADM_EV.splice(0);
   const st = { w: "alicia-panel", obs: ok, obsTxt: $("#s-obs").textContent, stream: $("#st").textContent, ext: $("#s-ext").textContent, lov: $("#s-lov").textContent,
-    sites: { cb: card("cb"), sc: card("sc"), bc: card("bc"), mv: card("mv") }, tot: { ...TOT, ...ETK }, live: LIVE, hint: $("#hint").innerText, golog: GOLOG.slice(),
+    sites: { cb: card("cb"), sc: card("sc"), bc: card("bc"), mv: card("mv") }, room: Object.values(ROOM).filter(x => Date.now() - x.t < 3600000), tot: { ...TOT, ...ETK }, live: LIVE, hint: $("#hint").innerText, golog: GOLOG.slice(),
     wall: [...document.querySelectorAll("#wall .tip")].slice(0, 15).map(e => e.innerText), chat: [...document.querySelectorAll("#rooms .chat")].slice(0, 25).map(e => e.innerText),
     shot: admShot(), events: ev, lovctl: LOVCTL, ua: navigator.userAgent.slice(0, 80) };
   try { const r = await fetch(ADM_URL, { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify(st) }); if (!r.ok) throw 0; }
