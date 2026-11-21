@@ -8,7 +8,7 @@
 #main{flex:1;display:grid;grid-template-columns:minmax(0,1.3fr) minmax(0,1fr);gap:10px;padding:10px;min-height:0}
 #cam{background:#000;border-radius:12px;width:100%;aspect-ratio:16/9;object-fit:contain}
 .btns{display:flex;gap:8px;margin:8px 0;flex-wrap:wrap;align-items:center}button{font:inherit;font-weight:600;border:0;border-radius:10px;padding:12px 18px;cursor:pointer;background:#2f3445;color:#fff}
-.go{background:#e8364f}.y{background:#c98a14}.g{background:#3a6}button:disabled{opacity:.4}
+.lov{background:#1b1d26;border-radius:12px;padding:6px 10px;margin:0}.lov button{padding:8px 12px}.go{background:#e8364f}.y{background:#c98a14}.g{background:#3a6}button:disabled{opacity:.4}
 #st{color:#aab}#hint{background:#2a1f3a;border:2px solid #8a5cff;border-radius:12px;padding:12px;font-size:22px;font-weight:700;min-height:70px}
 .col{display:flex;flex-direction:column;min-height:0;gap:8px}.box{background:#1b1d26;border-radius:12px;padding:8px;overflow:auto;flex:1;min-height:0}
 .tip{padding:6px 8px;border-radius:8px;background:#233024;margin-bottom:5px}.tip b{color:#7ee08a}.chat{padding:3px 6px;color:#ccd;font-size:14px}
@@ -22,7 +22,7 @@ input{font:inherit;padding:8px;border-radius:8px;border:1px solid #444;backgroun
  <div class="pl"><span class="dot" id="d-cb"></span>Chaturbate<small id="t-cb">0 tk</small></div>
  <div class="pl"><span class="dot" id="d-sc"></span>Stripchat<small id="t-sc">0 tk</small></div>
  <div class="pl"><span class="dot" id="d-bc"></span>Bongacams<small id="s-bc">через OBS</small></div>
- <div class="pl"><span class="dot"></span>ManyVids<small>эфир с сайта</small></div>
+ <div class="pl"><span class="dot" id="d-mv"></span>ManyVids<small id="s-mv">эфир с сайта</small></div>
  <div class="pl" style="margin-left:auto">Сегодня<small id="t-all">0 tk</small></div>
 </div>
 <div id="main">
@@ -30,6 +30,8 @@ input{font:inherit;padding:8px;border-radius:8px;border:1px solid #444;backgroun
   <img id="cam" alt="">
   <div class="btns"><button class="go" id="b-go" onclick="goLive()">▶ Начать эфир</button><button class="y" id="b-pause" onclick="pause()">⏸ Пауза</button>
    <button onclick="stopLive()">⏹ Закончить</button><button class="g" id="b-rec" onclick="rec()">⏺ Снять видео</button><span id="st"></span></div>
+  <div class="btns lov"><b>🎀 Игрушка</b><button class="g" onclick="lovLink()">🔗 Ссылка управления</button><button onclick="lovTest()">📳 Тест</button>
+   <button onclick="lovVib(5)">Слабо</button><button onclick="lovVib(12)">Средне</button><button onclick="lovVib(20)">Сильно</button><button onclick="lovVib(0)">⏹ Стоп</button></div>
   <div id="hint">Подсказки появятся тут, когда начнётся эфир 💋</div>
  </div>
  <div class="col"><b>💰 Донаты</b><div class="box" id="wall"></div><b>💬 Комната</b><div class="box" id="chat" style="flex:.7"></div></div>
@@ -87,9 +89,13 @@ setInterval(async () => { if (!ok) return; const st = await req("GetStreamStatus
   const ol = ((await req("GetOutputList")).outputs || []).filter(o => /rtmp|ffmpeg_mpegts|whip/i.test(o.outputKind || ""));
   const nOut = ol.filter(o => o.outputActive).length;
   // ManyVids берёт камеру прямо с сайта — в OBS его нет. Bonga идёт из OBS: ищем её выход по имени (цель multi-rtmp)
-  const bo = ol.find(o => /bonga/i.test(o.outputName || ""));
-  if (bo) dot("bc", bo.outputActive, bo.outputActive ? "идёт из OBS" : "OBS не шлёт");
-  else $("#s-bc").textContent = (st.outputActive && nOut > 1 ? "через OBS (" + nOut + " потока)" : "через OBS");
+  // статус Bonga — с её консоли (golive.js шлёт live bc); если консоль молчит — что видно по OBS
+  if (!(LIVE.bc && Date.now() - LIVE.bc.t < 30000)) {
+    const bo = ol.find(o => /bonga/i.test(o.outputName || ""));
+    if (bo) dot("bc", bo.outputActive, bo.outputActive ? "OBS шлёт" : "OBS не шлёт");
+    else $("#s-bc").textContent = (st.outputActive && nOut > 1 ? "OBS шлёт (" + nOut + " потока)" : "не в эфире");
+  }
+  for (const k of ["cb", "sc", "mv"]) if (LIVE[k] && LIVE[k].on && Date.now() - LIVE[k].t > 40000) { LIVE[k].on = false; dot(k, false); showTot(); if (k === "mv") $("#s-mv").textContent = "не видно (вкладка закрыта?)"; }
   $("#st").textContent = (st.outputActive ? "● В ЭФИРЕ " + (st.outputTimecode || "").slice(0, 8) + " " + kb + " · потоков " + nOut + " из " + Math.max(ol.length, 1) : "эфир выключен") + (s === PAUSE ? " · ПАУЗА" : "") + (r.outputActive ? " · ⏺ запись" : "");
   $("#b-go").disabled = !!st.outputActive; $("#b-pause").textContent = s === PAUSE ? "▶ Вернуться" : "⏸ Пауза";
   $("#b-rec").textContent = r.outputActive ? "⏹ Сохранить видео" : "⏺ Снять видео"; }, 2000);
@@ -121,21 +127,26 @@ async function goLive() {
 // Работает с ЛЮБЫМ помощником (и 1.0): срок «жми кнопки до …» вшиваем прямо в код скрипта (GO_UNTIL),
 // а перезагрузку страниц эфира делает старая операция scripts(reload) — на шаге 1 все скрипты регистрируем
 // только на адреса страниц эфира и просим перезагрузить, на шаге 2 — обычный набор без перезагрузки.
-const GO_PAGES = { cb: ["https://chaturbate.com/b/*", "https://*.chaturbate.com/b/*"], sc: ["https://*.stripchat.com/*broadcast*", "https://*.mywebcamroom.com/*broadcast*"],
+// SC: её комната (/имя) — там «Начать шоу»; если комната уже открыта, перезагружаем её же, а не ищем другую страницу
+const SC_ROOM = localStorage.sc_room || "_Skitlstrynka_";
+const GO_PAGES = { cb: ["https://chaturbate.com/b/*", "https://*.chaturbate.com/b/*"],
+  sc: ["https://*.stripchat.com/*broadcast*", "https://*.mywebcamroom.com/*broadcast*", "https://*.stripchat.com/" + SC_ROOM + "*", "https://*.mywebcamroom.com/" + SC_ROOM + "*"],
   bc: ["https://*.bongamodels.com/*"], mv: ["https://www.manyvids.com/live/cam/*"] };
+const isLive = k => LIVE[k] && LIVE[k].on && Date.now() - LIVE[k].t < 30000;
 let GO_UNTIL = 0; const GOLOG = [];
 // which: "pre" — до OBS (Bonga, ManyVids), "post" — после старта OBS (Chaturbate, Stripchat: перезагрузить и «ОК»/«Начать шоу»)
 async function sitesGo(which) {
-  const keys = which === "pre" ? ["bc", "mv"] : ["cb", "sc"];
+  // сайт, который уже в эфире, не трогаем (не перезагружаем и не жмём)
+  const keys = (which === "pre" ? ["bc", "mv"] : ["cb", "sc"]).filter(k => !isLive(k));
   if (which === "pre") GO_UNTIL = Date.now() + 240000;
-  await pushScripts({ step1: keys.flatMap(k => GO_PAGES[k]) });    // перезагрузка нужных вкладок с включённым автозапуском
+  if (keys.length) await pushScripts({ step1: keys.flatMap(k => GO_PAGES[k]) });    // перезагрузка нужных вкладок с включённым автозапуском
   await pushScripts();                                               // обычный набор (уже с GO_UNTIL), без перезагрузки
   if (which === "pre") {
-    call("openTab", { url: "https://rf.bongamodels.com/", prefix: "https://rf.bongamodels.com/", pinned: true });
+    if (keys.includes("bc")) call("openTab", { url: "https://rf.bongamodels.com/", prefix: "https://rf.bongamodels.com/", pinned: true });
     const mv = /\/live\/cam\//.test(localStorage.go_mv || "") ? localStorage.go_mv : "https://www.manyvids.com/live/cam/bad_secret";   // старый go_mv мог быть dashboard
-    call("openTab", { url: mv, prefix: "https://www.manyvids.com/live/cam/", pinned: true });
-  } else {
-    const sc = "https://ru.mywebcamroom.com/start-broadcasting";     // её Stripchat — зеркало mywebcamroom
+    if (keys.includes("mv")) call("openTab", { url: mv, prefix: "https://www.manyvids.com/live", pinned: true });      // любая уже открытая страница live — новую не плодим
+  } else if (keys.includes("sc")) {
+    const sc = "https://ru.mywebcamroom.com/start-broadcasting";     // её Stripchat — зеркало mywebcamroom (если её вкладка уже открыта — новую не открываем)
     call("openTab", { url: sc, prefix: "https://ru.mywebcamroom.com/", pinned: true });
   }
 }
@@ -167,7 +178,7 @@ const SITES = [
   // автозапуск эфира на сайтах (любой помощник; GO_UNTIL вшивается в код)
   { id: "golive", go: 1, file: "sites/golive.js", matches: ["https://chaturbate.com/b/*", "https://*.chaturbate.com/b/*", "https://*.stripchat.com/*", "https://*.mywebcamroom.com/*", "https://*.bongamodels.com/*", "https://www.manyvids.com/*"] },
   { id: "golivem", minHV: 1.2, go: 1, file: "sites/golive_main.js", world: "MAIN", runAt: "document_start", matches: ["https://chaturbate.com/b/*", "https://*.chaturbate.com/b/*", "https://*.stripchat.com/*", "https://*.mywebcamroom.com/*"] },
-  { id: "badge", file: "sites/badge.js", matches: ["https://chaturbate.com/b/*", "https://*.chaturbate.com/b/*", "https://*.stripchat.com/*", "https://*.mywebcamroom.com/*", "https://*.bongamodels.com/*", "https://www.manyvids.com/*"] },
+  // значок 💋 на сайтах убран (21.11): всё управление Lovense — тут, в панели
 ];
 const LOV_PAGE = "https://rugextension.lovense.com/cam-model/pages/settings/";   // cam_model (с _) = 404
 function call(op, data = {}) { return new Promise(r => { if (!port) return r({ error: "нет связи" }); const rid = ++RID; WAIT[rid] = r;
@@ -221,17 +232,21 @@ async function lovense() {
 setInterval(lovense, 15000);
 function lovOpen() { call("openTab", { url: LOV_PAGE, prefix: "https://rugextension.lovense.com/", focus: true }); }
 // Тест игрушки: короткая вибрация (+ толчки машины) через Lovense Connect на ПК, 3 сек.
-async function lovTest() {
+async function lovCmd(action, timeSec, okMsg) {
   const bases = LOV.base ? [LOV.base, ...LBASES.filter(b => b !== LOV.base)] : LBASES;
   for (const b of bases) {
     const r = await call("fetch", { url: b + "/command", method: "POST", headers: { "content-type": "application/json", "X-platform": "Alicia" },
-      body: JSON.stringify({ command: "Function", action: "Vibrate:12,Thrusting:12", timeSec: 3, apiVer: 1 }), timeout: 3000 });
+      body: JSON.stringify({ command: "Function", action, timeSec, apiVer: 1 }), timeout: 3000 });
     if (r.error || !r.text) continue;
     let j = {}; try { j = JSON.parse(r.text); } catch (e) {}
-    LOV.base = b; return hint(String(j.code) === "200" || j.type === "OK" ? "📳 Игрушка: тест отправлен ✅" : "📳 Lovense ответил: " + esc(r.text.slice(0, 120)));
+    LOV.base = b; return hint(String(j.code) === "200" || j.type === "OK" ? okMsg : "📳 Lovense ответил: " + esc(r.text.slice(0, 120)));
   }
   hint("📳 Не достучалась до Lovense Connect на ПК — он запущен?");
 }
+const lovTest = () => lovCmd("Vibrate:12,Thrusting:12", 3, "📳 Игрушка: тест отправлен ✅");
+// ручная вибрация с панели: сила 0–20, держится 30 сек (или до «Стоп»)
+const lovVib = n => n ? lovCmd("Vibrate:" + n + ",Thrusting:" + n, 30, "📳 Вибрация " + (n < 8 ? "слабо" : n < 16 ? "средне" : "сильно") + " — 30 сек (⏹ Стоп — выключить)")
+  : lovCmd("Stop", 0, "⏹ Игрушка остановлена");
 // Ссылка управления: Lovense делает её только внутри своего окна, а Chrome не пускает скрипты внутрь окна
 // чужого расширения (проверено 20.11) и создание идёт через их фон, не через сайт. Поэтому просто открываем окно Lovense.
 async function lovLink() {
@@ -263,7 +278,8 @@ function onExt(m) {
   }
   // запоминаем только ManyVids (у Bonga 2-й шаг в консоли — её открывать напрямую нельзя)
   if (m.type === "golearn" && m.p === "mv" && /\/live\/cam\//.test(m.url || "")) localStorage.go_mv = m.url;
-  if (m.type === "live") { LIVE[m.p] = { on: !!m.on, st: m.st, t: Date.now() }; dot(m.p, !!m.on); showTot(); }
+  if (m.type === "live") { LIVE[m.p] = { on: !!m.on, st: m.st, t: Date.now() }; dot(m.p, !!m.on); showTot();
+    if (m.p === "mv" || m.p === "bc") $("#s-" + m.p).textContent = m.on ? "🔴 в эфире" : "не в эфире"; }
   if (m.type === "lovlog") hint("🎀 " + esc(m.text.replace(/^Lovense: /, "Lovense: ")));
   if (m.type === "lovsites") {
     LOV.sites = m.n; LOV.have = m.have || []; LOV.toys = m.toys || [];

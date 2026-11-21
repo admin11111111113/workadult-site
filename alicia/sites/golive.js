@@ -29,12 +29,16 @@
   // второй шаг ждёт, пока OBS начнёт слать: Bonga /console — 2-е «Начать трансляцию» через 35 сек, SC комната — «Начать шоу» через 20 сек
   const delay = P === "bc" && /^\/console/.test(path) ? 35000 : P === "sc" && !/start-broadcasting/.test(path) ? 20000 : 0;
 
+  // кнопки: настоящие button/a + «кнопки» из div/span с классом btn/button (у SC «Начать шоу» может быть такой)
+  const SEL = "button,a,[role=button],input[type=button],input[type=submit],[class*=btn i],[class*=button i]";
+  // берём самый внутренний подходящий элемент с точным текстом кнопки (не обёртку на полстраницы)
+  const startBtns = () => !STREAM ? [] : [...document.querySelectorAll(SEL)].filter(b => vis(b) && STREAM.test(txt(b)) && ![...b.querySelectorAll(SEL)].some(c => vis(c) && STREAM.test(txt(c))));
   function step() {
     if (Date.now() > until()) return;
     for (const d of dialogs()) for (const b of d.querySelectorAll("button,a,[role=button],input[type=button],input[type=submit]"))
       if (vis(b) && OK.test(txt(b)) && !clicked.has(b)) { const t = txt(b); clicked.add(b); b.click(); log("нажала «" + t + "»"); }
-    if (STREAM) for (const b of document.querySelectorAll("button,a,[role=button],input[type=button],input[type=submit]" + (P === "mv" ? ",[class*=go-live-button]" : "")))
-      if (vis(b) && STREAM.test(txt(b)) && !clicked.has(b)) {
+    for (const b of startBtns())
+      if (!clicked.has(b)) {
         if (Date.now() - loadT < delay) continue;
         const k = "aliciaClick:" + location.pathname, last = +(sessionStorage[k] || 0);
         if (Date.now() - last < 25000) continue;                      // одну и ту же кнопку не дёргаем чаще раза в 25 сек
@@ -42,11 +46,37 @@
       }
   }
   setInterval(step, 1000);
+  // ManyVids: в эфире ли она — на странице live нет кнопки «GO LIVE» (после запуска её сменяет управление эфиром) и камера включена
+  if (P === "mv" && /\/live/i.test(location.pathname)) {
+    const mvLive = () => {
+      const goBtn = [...document.querySelectorAll("button,[role=button],[class*=go-live-button]")].some(b => vis(b) && STREAM.test(txt(b)));
+      const cam = [...document.querySelectorAll("video")].some(v => v.srcObject && v.srcObject.active);
+      send({ type: "live", p: "mv", on: !goBtn && cam, st: goBtn ? "offline" : cam ? "live" : "?" });
+    };
+    setTimeout(mvLive, 4000); setInterval(mvLive, 10000);
+  }
+  // Bonga: в эфире ли — по консоли: есть кнопка «Остановить/Завершить трансляцию» = идёт; «Начать трансляцию» = нет
+  if (P === "bc") {
+    const STOP = /(останов|заверш|прекрат|выключ|stop|end|finish)\w* ?(трансляц|стрим|эфир|stream|broadcast|show)/i;
+    const bcLive = () => {
+      const all = [...document.querySelectorAll("button,a,[role=button],[class*=btn i],[class*=button i]")].filter(vis).map(txt);
+      if (all.some(t => STOP.test(t) && t.length < 40)) send({ type: "live", p: "bc", on: true, st: "live" });
+      else if (/^\/console/.test(location.pathname) && all.some(t => STREAM.test(t))) send({ type: "live", p: "bc", on: false, st: "offline" });
+    };
+    setTimeout(bcLive, 4000); setInterval(bcLive, 10000);
+  }
   // отчёт для панели: где оказались и видна ли кнопка запуска (через 6 сек после загрузки, только во время автозапуска)
-  if (until() > Date.now()) setTimeout(() => {
-    const has = STREAM ? [...document.querySelectorAll("button,a,[role=button]")].some(b => vis(b) && STREAM.test(txt(b))) : null;
-    log("страница " + location.pathname + (STREAM ? (has ? " — кнопка запуска есть" : " — кнопки запуска НЕТ") : ""));
-  }, 6000);
+  // если кнопки нет — пишем, что похожего на странице видно (чтобы понять, что жать, а не гадать)
+  const report = () => {
+    if (!STREAM) return log("страница " + location.pathname);
+    const b = startBtns()[0];
+    if (!b && Date.now() - +(sessionStorage["aliciaClick:" + location.pathname] || 0) < 60000) return;   // уже нажала — молчим
+    if (b) return log("страница " + location.pathname + " — вижу кнопку «" + txt(b) + "»" + (Date.now() - loadT < delay ? ", нажму через " + Math.round((delay - (Date.now() - loadT)) / 1000) + " сек" : ""));
+    const near = [...new Set([...document.querySelectorAll(SEL)].filter(e => e.getClientRects().length && /шоу|show|стрим|stream|трансляц|live|phát|diễn/i.test(txt(e)) && txt(e).length < 40)
+      .map(e => txt(e) + (vis(e) ? "" : " (неактивна)")))].slice(0, 5);
+    log("страница " + location.pathname + " — кнопки запуска пока нет" + (near.length ? "; вижу: " + near.join(" · ") : ""));
+  };
+  if (until() > Date.now()) { setTimeout(report, 6000); if (delay) setTimeout(report, delay + 3000); }
 
   // команда панели: включить режим «запуск эфира» на 90 сек (переживает перезагрузку вкладки — sessionStorage)
   // команду забирает только «своя» вкладка (а не, скажем, вкладка сообщений того же сайта)
