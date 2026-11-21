@@ -44,7 +44,7 @@ input{font:inherit;padding:8px;border-radius:8px;border:1px solid #444;backgroun
    <button onclick="lovVib(5)">Слабо</button><button onclick="lovVib(12)">Средне</button><button onclick="lovVib(20)">Сильно</button><button onclick="lovVib(0)">⏹ Стоп</button></div>
   <div id="hint">Подсказки появятся тут, когда начнётся эфир 💋</div>
  </div>
- <div class="col"><b>💰 Донаты</b><div class="box" id="wall"></div><b>💌 Личка — он пишет (жёлтым), бот отвечает (синим)</b><div class="box" id="bot" style="flex:.6"></div><b>💬 Комнаты</b>
+ <div class="col"><b>💰 Донаты</b><div class="box" id="wall"></div><b>💌 Личка — он пишет (жёлтым), мы/бот отвечаем (синим)</b><div class="box" id="bot" style="flex:.6"></div><b>💬 Комнаты</b>
   <div id="rooms"><div class="room"><b>Chaturbate</b><div class="box" id="chat-cb"></div></div><div class="room"><b>Stripchat</b><div class="box" id="chat-sc"></div></div>
    <div class="room"><b>Bongacams</b><div class="box" id="chat-bc"></div></div><div class="room"><b>ManyVids</b><div class="box" id="chat-mv"></div></div></div></div>
 </div>
@@ -368,7 +368,7 @@ async function hubSync() {
   for (const p in PNAME) { const c = $("#a-" + p); c.disabled = !alive; if (h && Date.now() - AUTO_T > 15000) c.checked = !!(h.auto || {})[p]; }
   $("#bot").innerHTML = !alive ? '<div class="chat" style="color:#889">бот выключен (не на связи компьютер с ботом)</div>'
     : (h.dm || []).length ? h.dm.map(c => `<div class="chat" style="border-left:3px solid #8a5cff;margin-bottom:6px"><b>${esc(PNAME[c.p] || c.p)} · ${esc(c.who)}</b>` +
-        c.msgs.map(x => `<br><span style="color:${x.me ? "#9fbaff" : "#ffd76a"}">${x.me ? "бот" : "он"}:</span> ${esc(x.text)}`).join("") + "</div>").join("")
+        c.msgs.map(x => `<br><span style="color:${x.me ? "#9fbaff" : "#ffd76a"}">${x.me ? "мы" : "он"}:</span> ${esc(x.text)}`).join("") + "</div>").join("")
     : (h.bot || []).slice().reverse().map(b => `<div class="chat"><b>${esc(PNAME[b.p] || b.p)} · ${esc(b.who)}</b> <small style="color:#889">${esc((b.t || "").slice(11, 16))}</small><br>${esc(b.text)}</div>`).join("")
       || '<div class="chat" style="color:#889">пока ничего не писал</div>';
 }
