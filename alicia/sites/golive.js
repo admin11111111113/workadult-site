@@ -60,7 +60,9 @@
     const STOP = /(останов|заверш|прекрат|выключ|stop|end|finish)\w* ?(трансляц|стрим|эфир|stream|broadcast|show)/i;
     const bcLive = () => {
       const all = [...document.querySelectorAll("button,a,[role=button],[class*=btn i],[class*=button i]")].filter(vis).map(txt);
-      if (all.some(t => STOP.test(t) && t.length < 40)) send({ type: "live", p: "bc", on: true, st: "live" });
+      // в консоли идёт видео из OBS и кнопки «Начать трансляцию» уже нет — значит эфир идёт (даже если кнопка стопа называется иначе)
+      const vid = /^\/console/.test(location.pathname) && [...document.querySelectorAll("video")].some(v => !v.paused && v.readyState >= 2 && vis(v));
+      if (all.some(t => STOP.test(t) && t.length < 40) || (vid && !all.some(t => STREAM.test(t)))) send({ type: "live", p: "bc", on: true, st: "live" });
       else if (/^\/console/.test(location.pathname) && all.some(t => STREAM.test(t))) send({ type: "live", p: "bc", on: false, st: "offline" });
     };
     setTimeout(bcLive, 4000); setInterval(bcLive, 10000);
