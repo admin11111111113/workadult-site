@@ -8,7 +8,7 @@
 #main{flex:1;display:grid;grid-template-columns:minmax(0,1.3fr) minmax(0,1fr);gap:10px;padding:10px;min-height:0}
 #cam{background:#000;border-radius:12px;width:100%;aspect-ratio:16/9;object-fit:contain}
 .btns{display:flex;gap:8px;margin:8px 0;flex-wrap:wrap;align-items:center}button{font:inherit;font-weight:600;border:0;border-radius:10px;padding:12px 18px;cursor:pointer;background:#2f3445;color:#fff}
-.lov{background:#1b1d26;border-radius:12px;padding:6px 10px;margin:0}.lov button{padding:8px 12px}.go{background:#e8364f}.y{background:#c98a14}.g{background:#3a6}button:disabled{opacity:.4}
+.lov{background:#1b1d26;border-radius:12px;padding:6px 10px;margin:0}.lov button{padding:8px 12px}.au{display:block;font-size:12px;font-weight:400;color:#cfd;cursor:pointer}.au input{width:auto;margin:0 4px 0 0}.go{background:#e8364f}.y{background:#c98a14}.g{background:#3a6}button:disabled{opacity:.4}
 #st{color:#aab}#hint{background:#2a1f3a;border:2px solid #8a5cff;border-radius:12px;padding:12px;font-size:22px;font-weight:700;min-height:70px}
 .col{display:flex;flex-direction:column;min-height:0;gap:8px}.box{background:#1b1d26;border-radius:12px;padding:8px;overflow:auto;flex:1;min-height:0}
 .tip{padding:6px 8px;border-radius:8px;background:#233024;margin-bottom:5px}.tip b{color:#7ee08a}.chat{padding:3px 6px;color:#ccd;font-size:14px}
@@ -19,22 +19,24 @@ input{font:inherit;padding:8px;border-radius:8px;border:1px solid #444;backgroun
  <div class="pl"><span class="dot" id="d-obs"></span>OBS<small id="s-obs">…</small></div>
  <div class="pl"><span class="dot" id="d-ext"></span>Помощник<small id="s-ext">…</small></div>
  <div class="pl" style="cursor:pointer" onclick="lovOpen()" title="Открыть панель Lovense"><span class="dot" id="d-lov"></span>🎀 Lovense<small id="s-lov">…</small></div>
- <div class="pl"><span class="dot" id="d-cb"></span>Chaturbate<small id="t-cb">0 tk</small></div>
- <div class="pl"><span class="dot" id="d-sc"></span>Stripchat<small id="t-sc">0 tk</small></div>
- <div class="pl"><span class="dot" id="d-bc"></span>Bongacams<small id="s-bc">через OBS</small></div>
- <div class="pl"><span class="dot" id="d-mv"></span>ManyVids<small id="s-mv">эфир с сайта</small></div>
+ <div class="pl"><span class="dot" id="d-cb"></span>Chaturbate<small id="t-cb">0 tk</small><label class="au"><input type="checkbox" id="a-cb" onchange="autoSet('cb',this.checked)"> авто</label></div>
+ <div class="pl"><span class="dot" id="d-sc"></span>Stripchat<small id="t-sc">0 tk</small><label class="au"><input type="checkbox" id="a-sc" onchange="autoSet('sc',this.checked)"> авто</label></div>
+ <div class="pl"><span class="dot" id="d-bc"></span>Bongacams<small id="s-bc">через OBS</small><label class="au"><input type="checkbox" id="a-bc" onchange="autoSet('bc',this.checked)"> авто</label></div>
+ <div class="pl"><span class="dot" id="d-mv"></span>ManyVids<small id="s-mv">эфир с сайта</small><label class="au"><input type="checkbox" id="a-mv" onchange="autoSet('mv',this.checked)"> авто</label></div>
  <div class="pl" style="margin-left:auto">Сегодня<small id="t-all">0 tk</small></div>
 </div>
 <div id="main">
  <div class="col">
-  <img id="cam" alt=""><video id="camv" muted playsinline style="display:none;background:#000;border-radius:12px;width:100%;aspect-ratio:16/9;object-fit:contain"></video>
+  <!-- место под окно OBS «Проектор — предпросмотр» (видео в самой панели убрано — тормозило) -->
+  <div id="cam" style="border:2px dashed #3a3f55;background:#0b0c10;display:flex;align-items:center;justify-content:center;color:#556;text-align:center;font-size:15px">
+   сюда поставь окно OBS «Проектор — предпросмотр»<br>(в OBS: правый клик по картинке → «Проектор в окне (предпросмотр)»)</div>
   <div class="btns"><button class="go" id="b-go" onclick="goLive()">▶ Начать эфир</button><button class="y" id="b-pause" onclick="pause()">⏸ Пауза</button>
    <button onclick="stopLive()">⏹ Закончить</button><button class="g" id="b-rec" onclick="rec()">⏺ Снять видео</button><span id="st"></span></div>
   <div class="btns lov"><b>🎀 Игрушка</b><button class="g" onclick="lovLink()">🔗 Ссылка управления</button><button onclick="lovTest()">📳 Тест</button>
    <button onclick="lovVib(5)">Слабо</button><button onclick="lovVib(12)">Средне</button><button onclick="lovVib(20)">Сильно</button><button onclick="lovVib(0)">⏹ Стоп</button></div>
   <div id="hint">Подсказки появятся тут, когда начнётся эфир 💋</div>
  </div>
- <div class="col"><b>💰 Донаты</b><div class="box" id="wall"></div><b>💬 Комната</b><div class="box" id="chat" style="flex:.7"></div></div>
+ <div class="col"><b>💰 Донаты</b><div class="box" id="wall"></div><b>🤖 Бот пишет в личку</b><div class="box" id="bot" style="flex:.6"></div><b>💬 Комната</b><div class="box" id="chat" style="flex:.7"></div></div>
 </div>
 <div id="setup"><div><b>Подключение OBS</b><p style="color:#aab;font-size:14px">В OBS: Сервис → Настройки сервера WebSocket → включить сервер, нажать «Показать данные подключения», скопировать пароль сюда.</p>
  <input id="pw" type="password" placeholder="пароль WebSocket"><button onclick="savePw()">Подключить</button></div></div>
@@ -82,28 +84,8 @@ function req(t, data) { return new Promise(r => { if (!ok) return r({}); const i
   ws.send(JSON.stringify({ op: 6, d: { requestType: t, requestId: id, requestData: data } })); }); }
 function savePw() { localStorage.obspw = $("#pw").value; try { ws.close(); } catch (e) {} }
 async function scene() { const s = await req("GetCurrentProgramScene"); return s.currentProgramSceneName || s.sceneName; }
-// Живое видео: «Виртуальная камера» OBS → <video> (плавно, без нагрузки). Не вышло — по-старому, кадры раз в 0.7 сек.
+// Видео в панели убрано (21.11, владелец: тупит) — на это место она ставит окно «Проектор — предпросмотр» из OBS.
 let CAMLIVE = false;
-async function camLive() {
-  if (CAMLIVE || !ok || !navigator.mediaDevices) return;
-  try {
-    const vc = await req("GetVirtualCamStatus"); if (vc && vc.outputActive === false) { await req("StartVirtualCam"); await new Promise(z => setTimeout(z, 1500)); }
-    let dev = (await navigator.mediaDevices.enumerateDevices()).find(d => d.kind === "videoinput" && /obs/i.test(d.label));
-    if (!dev && !localStorage.camAsked) {                            // названия камер видны только после разрешения — спрашиваем один раз
-      localStorage.camAsked = 1; hint("📷 Chrome спросит про камеру — нажми «Разрешить». Это чтобы видео тут шло плавно прямо из OBS");
-      try { (await navigator.mediaDevices.getUserMedia({ video: true })).getTracks().forEach(t => t.stop()); } catch (e) {}
-      dev = (await navigator.mediaDevices.enumerateDevices()).find(d => d.kind === "videoinput" && /obs/i.test(d.label));
-    }
-    if (!dev) return;
-    const st = await navigator.mediaDevices.getUserMedia({ video: { deviceId: { exact: dev.deviceId }, width: 1280, height: 720, frameRate: 30 } });
-    const v = $("#camv"); v.srcObject = st; await v.play(); CAMLIVE = true; v.style.display = "block"; $("#cam").style.display = "none";
-    st.getVideoTracks()[0].onended = () => { CAMLIVE = false; v.style.display = "none"; $("#cam").style.display = ""; };
-  } catch (e) { console.log("camLive", e); }
-}
-setInterval(camLive, 5000);
-setInterval(async () => { if (!ok || CAMLIVE) return; const s = await scene(); if (!s) return;
-  const im = await req("GetSourceScreenshot", { sourceName: s, imageFormat: "jpg", imageWidth: 960, imageCompressionQuality: 70 });
-  if (im.imageData) $("#cam").src = im.imageData; }, 700);
 setInterval(async () => { if (!ok) return; const st = await req("GetStreamStatus"), r = await req("GetRecordStatus"), s = await scene();
   let kb = ""; if (st.outputActive) { const now = Date.now(); if (lastT) kb = Math.round((st.outputBytes - lastBytes) * 8 / (now - lastT)) + " кбит/с"; lastBytes = st.outputBytes; lastT = now; }
   // сколько потоков реально уходит: основной сервис + цели obs-multi-rtmp (все rtmp-выходы OBS)
@@ -111,10 +93,11 @@ setInterval(async () => { if (!ok) return; const st = await req("GetStreamStatus
   const nOut = ol.filter(o => o.outputActive).length;
   // ManyVids берёт камеру прямо с сайта — в OBS его нет. Bonga идёт из OBS: ищем её выход по имени (цель multi-rtmp)
   // статус Bonga — с её консоли (golive.js шлёт live bc); если консоль молчит — что видно по OBS
-  if (!(LIVE.bc && Date.now() - LIVE.bc.t < 30000)) {
+  // консоль Bonga молчит → судим по OBS: все потоки (включая вывод bonga) идут = Bonga в эфире
+  if (!(LIVE.bc && LIVE.bc.src !== "obs" && Date.now() - LIVE.bc.t < 30000)) {
     const bo = ol.find(o => /bonga/i.test(o.outputName || ""));
-    if (bo) dot("bc", bo.outputActive, bo.outputActive ? "OBS шлёт" : "OBS не шлёт");
-    else $("#s-bc").textContent = (st.outputActive && nOut > 1 ? "OBS шлёт (" + nOut + " потока)" : "не в эфире");
+    const on = bo ? !!bo.outputActive : !!st.outputActive && nOut >= 2 && nOut === ol.length;
+    LIVE.bc = { on, st: "obs", src: "obs", t: Date.now() }; dot("bc", on, on ? "🔴 в эфире" : "не в эфире");
   }
   for (const k of ["cb", "sc", "mv"]) if (LIVE[k] && LIVE[k].on && Date.now() - LIVE[k].t > 40000) { LIVE[k].on = false; dot(k, false); showTot(); if (k === "mv") $("#s-mv").textContent = "не видно (вкладка закрыта?)"; }
   $("#st").textContent = (st.outputActive ? "● В ЭФИРЕ " + (st.outputTimecode || "").slice(0, 8) + " " + kb + " · потоков " + nOut + " из " + Math.max(ol.length, 1) : "эфир выключен") + (s === PAUSE ? " · ПАУЗА" : "") + (r.outputActive ? " · ⏺ запись" : "");
@@ -324,7 +307,7 @@ if (window.chrome && chrome.runtime && chrome.runtime.connect) ext(); else dot("
 // ── сводка для админки владельца: раз в 15 сек что видно на панели (статусы, подсказки, донаты, чат, маленький кадр)
 document.addEventListener("click", e => { const b = e.target.closest("button"); if (b) admEv("👆 нажала «" + b.textContent.trim() + "»"); }, true);
 const ADM_URL = "https://alicia-link.videorils.workers.dev/her";
-function admShot() { const im = CAMLIVE ? $("#camv") : $("#cam"), w = im.videoWidth || im.naturalWidth, h = im.videoHeight || im.naturalHeight; if (!w) return "";
+function admShot() { return ""; const im = $("#cam"), w = im.videoWidth || im.naturalWidth, h = im.videoHeight || im.naturalHeight; if (!w) return "";
   try { const c = document.createElement("canvas"); c.width = 320; c.height = Math.round(320 * h / w);
     c.getContext("2d").drawImage(im, 0, 0, c.width, c.height); return c.toDataURL("image/jpeg", 0.5); } catch (e) { return ""; } }
 async function admSend() {
@@ -337,5 +320,19 @@ async function admSend() {
   try { const r = await fetch(ADM_URL, { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify(st) }); if (!r.ok) throw 0; }
   catch (e) { ADM_EV.unshift(...ev); }                               // не ушло — события отправим в следующий раз
 }
+// ── бот (работает на ПК владельца): галочки «авто» по площадкам + что он написал людям
+const HUB_URL = "https://alicia-link.videorils.workers.dev/hub", PNAME = { cb: "Chaturbate", sc: "Stripchat", bc: "Bongacams", mv: "ManyVids" };
+let AUTO_T = 0;
+async function autoSet(p, on) { AUTO_T = Date.now(); admEv((on ? "🤖 включила" : "🤖 выключила") + " авто на " + PNAME[p]);
+  try { await fetch(HUB_URL, { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ w: "alicia-panel", p, on }) }); } catch (e) {} }
+async function hubSync() {
+  let j; try { j = await (await fetch(HUB_URL, { cache: "no-store" })).json(); } catch (e) { return; }
+  const h = j.hub, alive = h && j.now - h.at < 60000;
+  for (const p in PNAME) { const c = $("#a-" + p); c.disabled = !alive; if (h && Date.now() - AUTO_T > 15000) c.checked = !!(h.auto || {})[p]; }
+  $("#bot").innerHTML = !alive ? '<div class="chat" style="color:#889">бот выключен (не на связи компьютер с ботом)</div>'
+    : (h.bot || []).slice().reverse().map(b => `<div class="chat"><b>${esc(PNAME[b.p] || b.p)} · ${esc(b.who)}</b> <small style="color:#889">${esc((b.t || "").slice(11, 16))}</small><br>${esc(b.text)}</div>`).join("")
+      || '<div class="chat" style="color:#889">пока ничего не писал</div>';
+}
+hubSync(); setInterval(hubSync, 10000);
 admEv("📂 панель открыта"); setTimeout(admSend, 3000); setInterval(admSend, 15000);
 </script></body></html>
