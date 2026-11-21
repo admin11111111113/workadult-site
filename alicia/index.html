@@ -27,7 +27,7 @@ input{font:inherit;padding:8px;border-radius:8px;border:1px solid #444;backgroun
 </div>
 <div id="main">
  <div class="col">
-  <img id="cam" alt="">
+  <img id="cam" alt=""><video id="camv" muted playsinline style="display:none;background:#000;border-radius:12px;width:100%;aspect-ratio:16/9;object-fit:contain"></video>
   <div class="btns"><button class="go" id="b-go" onclick="goLive()">▶ Начать эфир</button><button class="y" id="b-pause" onclick="pause()">⏸ Пауза</button>
    <button onclick="stopLive()">⏹ Закончить</button><button class="g" id="b-rec" onclick="rec()">⏺ Снять видео</button><span id="st"></span></div>
   <div class="btns lov"><b>🎀 Игрушка</b><button class="g" onclick="lovLink()">🔗 Ссылка управления</button><button onclick="lovTest()">📳 Тест</button>
@@ -82,7 +82,26 @@ function req(t, data) { return new Promise(r => { if (!ok) return r({}); const i
   ws.send(JSON.stringify({ op: 6, d: { requestType: t, requestId: id, requestData: data } })); }); }
 function savePw() { localStorage.obspw = $("#pw").value; try { ws.close(); } catch (e) {} }
 async function scene() { const s = await req("GetCurrentProgramScene"); return s.currentProgramSceneName || s.sceneName; }
-setInterval(async () => { if (!ok) return; const s = await scene(); if (!s) return;
+// Живое видео: «Виртуальная камера» OBS → <video> (плавно, без нагрузки). Не вышло — по-старому, кадры раз в 0.7 сек.
+let CAMLIVE = false;
+async function camLive() {
+  if (CAMLIVE || !ok || !navigator.mediaDevices) return;
+  try {
+    const vc = await req("GetVirtualCamStatus"); if (vc && vc.outputActive === false) { await req("StartVirtualCam"); await new Promise(z => setTimeout(z, 1500)); }
+    let dev = (await navigator.mediaDevices.enumerateDevices()).find(d => d.kind === "videoinput" && /obs/i.test(d.label));
+    if (!dev && !localStorage.camAsked) {                            // названия камер видны только после разрешения — спрашиваем один раз
+      localStorage.camAsked = 1; hint("📷 Chrome спросит про камеру — нажми «Разрешить». Это чтобы видео тут шло плавно прямо из OBS");
+      try { (await navigator.mediaDevices.getUserMedia({ video: true })).getTracks().forEach(t => t.stop()); } catch (e) {}
+      dev = (await navigator.mediaDevices.enumerateDevices()).find(d => d.kind === "videoinput" && /obs/i.test(d.label));
+    }
+    if (!dev) return;
+    const st = await navigator.mediaDevices.getUserMedia({ video: { deviceId: { exact: dev.deviceId }, width: 1280, height: 720, frameRate: 30 } });
+    const v = $("#camv"); v.srcObject = st; await v.play(); CAMLIVE = true; v.style.display = "block"; $("#cam").style.display = "none";
+    st.getVideoTracks()[0].onended = () => { CAMLIVE = false; v.style.display = "none"; $("#cam").style.display = ""; };
+  } catch (e) { console.log("camLive", e); }
+}
+setInterval(camLive, 5000);
+setInterval(async () => { if (!ok || CAMLIVE) return; const s = await scene(); if (!s) return;
   const im = await req("GetSourceScreenshot", { sourceName: s, imageFormat: "jpg", imageWidth: 960, imageCompressionQuality: 70 });
   if (im.imageData) $("#cam").src = im.imageData; }, 700);
 setInterval(async () => { if (!ok) return; const st = await req("GetStreamStatus"), r = await req("GetRecordStatus"), s = await scene();
@@ -272,7 +291,8 @@ function onExt(m) {
     else if (m.act === "link") lovLink();
     else if (m.act === "panel") call("openTab", { url: location.href, prefix: location.origin + location.pathname, focus: true });
   }
-  if (m.type === "login") dot(m.p, m.ok);
+  if (m.type === "login") { dot(m.p, m.ok);
+    if (m.p === "mv" && !m.ok) { $("#s-mv").textContent = "не вошла в аккаунт"; hint("🔑 ManyVids: ты не вошла в аккаунт — войди на вкладке ManyVids (логин Bad_Secret), потом снова «Начать эфир»"); } }
   const NAME = { cb: "Chaturbate", sc: "Stripchat", bc: "Bonga", mv: "ManyVids" };
   if (m.type === "golog") {                                         // журнал запуска: последние 8 строк, не затираем
     GOLOG.push(new Date().toTimeString().slice(0, 8) + " " + NAME[m.p] + ": " + m.text); GOLOG.splice(0, GOLOG.length - 8);
@@ -304,8 +324,8 @@ if (window.chrome && chrome.runtime && chrome.runtime.connect) ext(); else dot("
 // ── сводка для админки владельца: раз в 15 сек что видно на панели (статусы, подсказки, донаты, чат, маленький кадр)
 document.addEventListener("click", e => { const b = e.target.closest("button"); if (b) admEv("👆 нажала «" + b.textContent.trim() + "»"); }, true);
 const ADM_URL = "https://alicia-link.videorils.workers.dev/her";
-function admShot() { const im = $("#cam"); if (!im.src || !im.naturalWidth) return "";
-  try { const c = document.createElement("canvas"); c.width = 320; c.height = Math.round(320 * im.naturalHeight / im.naturalWidth);
+function admShot() { const im = CAMLIVE ? $("#camv") : $("#cam"), w = im.videoWidth || im.naturalWidth, h = im.videoHeight || im.naturalHeight; if (!w) return "";
+  try { const c = document.createElement("canvas"); c.width = 320; c.height = Math.round(320 * h / w);
     c.getContext("2d").drawImage(im, 0, 0, c.width, c.height); return c.toDataURL("image/jpeg", 0.5); } catch (e) { return ""; } }
 async function admSend() {
   const card = k => ({ on: ($("#d-" + k) || {}).className || "", t: (($("#t-" + k) || $("#s-" + k)) || {}).textContent || "" });

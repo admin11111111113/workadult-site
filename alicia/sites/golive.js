@@ -46,6 +46,13 @@
       }
   }
   setInterval(step, 1000);
+  // ManyVids: не вошла в аккаунт (страница входа / поле пароля / кнопка «Log in» в шапке) — говорим панели
+  if (P === "mv") setTimeout(() => {
+    const out = /login|signin|sign-in/i.test(location.pathname) || [...document.querySelectorAll("input[type=password]")].some(vis)
+      || [...document.querySelectorAll("a,button")].some(b => vis(b) && /^(log ?in|sign ?in|войти)$/i.test(txt(b)));
+    send({ type: "login", p: "mv", ok: !out });
+    if (out && until() > Date.now()) log("не вошла в аккаунт — эфир не запустить, войди и нажми «Начать эфир» ещё раз");
+  }, 5000);
   // ManyVids: в эфире ли она — на странице live нет кнопки «GO LIVE» (после запуска её сменяет управление эфиром) и камера включена
   if (P === "mv" && /\/live/i.test(location.pathname)) {
     const mvLive = () => {
