@@ -36,8 +36,7 @@ input{font:inherit;padding:8px;border-radius:8px;border:1px solid #444;backgroun
 <div id="main">
  <div class="col">
   <!-- место под окно OBS «Проектор — предпросмотр» (видео в самой панели убрано — тормозило) -->
-  <div id="cam" style="border:2px dashed #3a3f55;background:#0b0c10;display:flex;align-items:center;justify-content:center;color:#556;text-align:center;font-size:15px">
-   сюда поставь окно OBS «Проектор — предпросмотр»<br>(в OBS: правый клик по картинке → «Проектор в окне (предпросмотр)»)</div>
+  <video id="camv" muted playsinline style="display:none;background:#000;border-radius:12px;width:100%;aspect-ratio:16/9;object-fit:contain"></video><img id="cam" alt="">
   <div class="btns"><button class="go" id="b-go" onclick="goLive()">▶ Начать эфир</button><button class="y" id="b-pause" onclick="pause()">⏸ Пауза</button>
    <button onclick="stopLive()">⏹ Закончить</button><button class="g" id="b-rec" onclick="rec()">⏺ Снять видео</button><span id="st"></span></div>
   <div class="btns lov"><b>🎀 Игрушка</b><button class="g" onclick="lovLink()">🔗 Ссылка управления</button><button onclick="lovTest()">📳 Тест</button>
@@ -97,7 +96,45 @@ function req(t, data) { return new Promise(r => { if (!ok) return r({}); const i
 function savePw() { localStorage.obspw = $("#pw").value; try { ws.close(); } catch (e) {} }
 async function scene() { const s = await req("GetCurrentProgramScene"); return s.currentProgramSceneName || s.sceneName; }
 // Видео в панели убрано (21.11, владелец: тупит) — на это место она ставит окно «Проектор — предпросмотр» из OBS.
-let CAMLIVE = false;
+// Живое видео: «Виртуальная камера» OBS → <video> (то же, что в OBS, без задержки). Нет её — кадры раз в 0.7 сек.
+// Это же видео уходит владельцу в консоль напрямую (WebRTC), см. rtcLoop ниже.
+let CAMLIVE = false, CAMST = null;
+async function camLive() {
+  if (CAMLIVE || !ok || !navigator.mediaDevices) return;
+  try {
+    const vc = await req("GetVirtualCamStatus"); if (vc && vc.outputActive === false) { await req("StartVirtualCam"); await new Promise(z => setTimeout(z, 1500)); }
+    let dev = (await navigator.mediaDevices.enumerateDevices()).find(d => d.kind === "videoinput" && /obs/i.test(d.label));
+    if (!dev && !localStorage.camAsked2) {                           // названия камер видны только после разрешения — спрашиваем один раз
+      localStorage.camAsked2 = 1; hint("📷 Chrome спросит про камеру — нажми «Разрешить». Это чтобы видео тут шло прямо из OBS");
+      try { (await navigator.mediaDevices.getUserMedia({ video: true })).getTracks().forEach(t => t.stop()); } catch (e) {}
+      dev = (await navigator.mediaDevices.enumerateDevices()).find(d => d.kind === "videoinput" && /obs/i.test(d.label));
+    }
+    if (!dev) return;
+    const st = await navigator.mediaDevices.getUserMedia({ video: { deviceId: { exact: dev.deviceId }, width: 1280, height: 720, frameRate: 30 } });
+    const v = $("#camv"); v.srcObject = st; await v.play(); CAMLIVE = true; CAMST = st; v.style.display = "block"; $("#cam").style.display = "none";
+    st.getVideoTracks()[0].onended = () => { CAMLIVE = false; CAMST = null; v.style.display = "none"; $("#cam").style.display = ""; };
+  } catch (e) { console.log("camLive", e); }
+}
+setInterval(camLive, 5000);
+setInterval(async () => { if (!ok || CAMLIVE) return; const s = await scene(); if (!s) return;
+  const im = await req("GetSourceScreenshot", { sourceName: s, imageFormat: "jpg", imageWidth: 960, imageCompressionQuality: 70 });
+  if (im.imageData) $("#cam").src = im.imageData; }, 700);
+// ── видео владельцу: он присылает предложение (через alicia-link), мы отвечаем и шлём видео виртуальной камеры напрямую
+const RTC = "https://alicia-link.videorils.workers.dev/rtc";
+let RTCPC = null, RTCID = "";
+async function rtcLoop() {
+  if (!CAMST) return;
+  let o; try { o = await (await fetch(RTC + "/offer", { cache: "no-store" })).json(); } catch (e) { return; }
+  if (!o || !o.id || o.id === RTCID) return;
+  RTCID = o.id; try { RTCPC && RTCPC.close(); } catch (e) {}
+  const pc = RTCPC = new RTCPeerConnection({ iceServers: [{ urls: ["stun:stun.l.google.com:19302", "stun:stun.cloudflare.com:3478"] }] });
+  CAMST.getTracks().forEach(t => pc.addTrack(t, CAMST));
+  await pc.setRemoteDescription({ type: "offer", sdp: o.sdp });
+  await pc.setLocalDescription(await pc.createAnswer());
+  await new Promise(z => { if (pc.iceGatheringState === "complete") return z(); pc.onicegatheringstatechange = () => pc.iceGatheringState === "complete" && z(); setTimeout(z, 4000); });
+  try { await fetch(RTC + "/answer", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ w: "alicia-panel", id: o.id, sdp: pc.localDescription.sdp }) }); } catch (e) {}
+}
+setInterval(rtcLoop, 3000);
 setInterval(async () => { if (!ok) return; const st = await req("GetStreamStatus"), r = await req("GetRecordStatus"), s = await scene();
   let kb = ""; if (st.outputActive) { const now = Date.now(); if (lastT) kb = Math.round((st.outputBytes - lastBytes) * 8 / (now - lastT)) + " кбит/с"; lastBytes = st.outputBytes; lastT = now; }
   // сколько потоков реально уходит: основной сервис + цели obs-multi-rtmp (все rtmp-выходы OBS)
@@ -221,8 +258,20 @@ function ext() {
     if (r.error) return;
     lovense();
     if (!r.us) { dot("ext", false, "включи «Разрешить пользовательские скрипты»"); hint("⚙️ В chrome://extensions → Alicia Helper → Сведения включи «Разрешить пользовательские скрипты» (Allow user scripts), потом обнови эту страницу"); return; }
-    HV = parseFloat(r.v) || 1; dot("ext", true, "на связи v" + r.v); pushScripts();
+    HV = parseFloat(r.v) || 1; dot("ext", true, "на связи v" + r.v);
+    if (await pinSelf()) return;
+    pushScripts();
   });
+}
+// Панель живёт в ЗАКРЕПЛЁННОЙ вкладке (после её закреплённых), адрес …/alicia/?pin=1. Открыли обычную — переносимся туда, эту гасим.
+async function pinSelf() {
+  if (/[?&]pin=1/.test(location.search)) return false;
+  const r = await call("openTab", { url: "https://workadult.pro/alicia/?pin=1", prefix: "https://workadult.pro/alicia/?pin=1", pinned: true, focus: true });
+  if (!r || r.error) return false;
+  const last = setTimeout(() => {}, 0); for (let i = 0; i <= last; i++) { clearInterval(i); clearTimeout(i); }   // эта копия больше ничего не делает
+  try { ws.onclose = null; ws.close(); } catch (e) {} try { port.disconnect(); } catch (e) {}
+  document.body.innerHTML = '<div style="margin:auto;font-size:24px;text-align:center;padding:40px">📌 Панель открыта в закреплённой вкладке слева.<br><small style="color:#889">Эту вкладку можно закрыть.</small></div>';
+  setTimeout(() => window.close(), 1500); return true;
 }
 // Lovense: расширение Lovense Cam Extension (включаем, если выключено) + игрушки через Lovense Remote/Connect на ПК
 const LBASES = ["https://127-0-0-1.lovense.club:30010", "https://127.0.0.1:30010", "http://127.0.0.1:20010", "https://127-0-0-1.lovense.club:34568", "http://127.0.0.1:34567"];
@@ -325,7 +374,7 @@ if (window.chrome && chrome.runtime && chrome.runtime.connect) ext(); else dot("
 // ── сводка для админки владельца: раз в 15 сек что видно на панели (статусы, подсказки, донаты, чат, маленький кадр)
 document.addEventListener("click", e => { const b = e.target.closest("button"); if (b) admEv("👆 нажала «" + b.textContent.trim() + "»"); }, true);
 const ADM_URL = "https://alicia-link.videorils.workers.dev/her";
-function admShot() { return ""; const im = $("#cam"), w = im.videoWidth || im.naturalWidth, h = im.videoHeight || im.naturalHeight; if (!w) return "";
+function admShot() { const im = CAMLIVE ? $("#camv") : $("#cam"), w = im.videoWidth || im.naturalWidth, h = im.videoHeight || im.naturalHeight; if (!w) return "";
   try { const c = document.createElement("canvas"); c.width = 320; c.height = Math.round(320 * h / w);
     c.getContext("2d").drawImage(im, 0, 0, c.width, c.height); return c.toDataURL("image/jpeg", 0.5); } catch (e) { return ""; } }
 async function admSend() {
@@ -377,13 +426,26 @@ const HUB_URL = "https://alicia-link.videorils.workers.dev/hub", PNAME = { cb: "
 let AUTO_T = 0;
 async function autoSet(p, on) { AUTO_T = Date.now(); admEv((on ? "🤖 включила" : "🤖 выключила") + " авто на " + PNAME[p]);
   try { await fetch(HUB_URL, { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ w: "alicia-panel", p, on }) }); } catch (e) {} }
+let DMHOLD = 0, DMS = [];
+async function dmSend(i) {
+  const c = DMS[i], inp = $("#dmi" + i), text = (inp && inp.value || "").trim(); if (!c || !text) return;
+  inp.disabled = true;
+  try { await fetch(HUB_URL, { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ w: "alicia-panel", send: { p: c.p, cid: c.cid, who: c.who, text } }) });
+    inp.value = ""; inp.placeholder = "✅ отправлено — уйдёт через ~10 сек"; admEv("✍️ ответила " + c.who + ": " + text); } catch (e) { inp.placeholder = "⚠ нет связи"; }
+  inp.disabled = false; DMHOLD = 0;
+}
 async function hubSync() {
   let j; try { j = await (await fetch(HUB_URL, { cache: "no-store" })).json(); } catch (e) { return; }
   const h = j.hub, alive = h && j.now - h.at < 60000;
+  if (Date.now() - DMHOLD < 30000) return;                           // она печатает ответ — не перерисовываем
+  DMS = (h && h.dm) || [];
   for (const p in PNAME) { const c = $("#a-" + p); c.disabled = !alive; if (h && Date.now() - AUTO_T > 15000) c.checked = !!(h.auto || {})[p]; }
   $("#bot").innerHTML = !alive ? '<div class="chat" style="color:#889">бот выключен (не на связи компьютер с ботом)</div>'
-    : (h.dm || []).length ? h.dm.map(c => `<div class="chat" style="border-left:3px solid #8a5cff;margin-bottom:6px"><b>${esc(PNAME[c.p] || c.p)} · ${esc(c.who)}</b>` +
-        c.msgs.map(x => `<br><span style="color:${x.me ? "#9fbaff" : "#ffd76a"}">${x.me ? "мы" : "он"}:</span> ${esc(x.text)}`).join("") + "</div>").join("")
+    : (h.dm || []).length ? h.dm.map((c, i) => `<div class="chat" style="border-left:3px solid #8a5cff;margin-bottom:6px"><b>${esc(PNAME[c.p] || c.p)} · ${esc(c.who)}</b>` +
+        c.msgs.map(x => `<br><span style="color:${x.me ? "#9fbaff" : "#ffd76a"}">${x.me ? "мы" : "он"}:</span> ${esc(x.ru || x.text)}` +
+          (x.ru && x.ru !== x.text ? ` <small style="color:#778">(${esc(x.text)})</small>` : "")).join("") +
+        `<div style="display:flex;gap:4px;margin-top:4px"><input id="dmi${i}" placeholder="ответить по-русски — уйдёт ему на его языке" style="margin:0;padding:5px;font-size:13px"
+          onfocus="DMHOLD=Date.now()" oninput="DMHOLD=Date.now()" onkeydown="if(event.key==='Enter')dmSend(${i})"><button style="padding:4px 10px;font-size:13px" onclick="dmSend(${i})">➤</button></div></div>`).join("")
     : (h.bot || []).slice().reverse().map(b => `<div class="chat"><b>${esc(PNAME[b.p] || b.p)} · ${esc(b.who)}</b> <small style="color:#889">${esc((b.t || "").slice(11, 16))}</small><br>${esc(b.text)}</div>`).join("")
       || '<div class="chat" style="color:#889">пока ничего не писал</div>';
 }
