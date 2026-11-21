@@ -18,7 +18,7 @@ body{height:100vh;display:flex;flex-direction:column}#tabs{display:flex;gap:6px;
 #tabs button{border-radius:10px 10px 0 0;background:#232733;padding:8px 18px}#tabs button.sel{background:#7c5cff}
 #hubv{flex:1;min-height:0;display:flex}#hubf{flex:1;border:0;background:#121319}#herv{flex:1;overflow:auto;display:none}
 </style></head><body>
-<div id="tabs"><button id="tb-hub" class="sel" onclick="tab('hub')">🖥 Консоль (бот, чаты, донаты)</button><button id="tb-her" onclick="tab('her')">👀 Её панель сейчас</button>
+<div id="tabs"><button id="tb-hub" class="sel" onclick="tab('hub')">🖥 Консоль Алисии</button><button id="tb-her" style="display:none" onclick="tab('her')"></button>
  <span id="hubmsg" style="color:#889;font-size:13px;align-self:center;margin-left:8px"></span></div>
 <div id="hubv"><iframe id="hubf" name="hubf"></iframe></div>
 <div id="herv">
@@ -69,7 +69,7 @@ async function load(clear) {
   $("#chat").innerHTML = (st.chat || []).map(x => `<div class="l">${esc(x)}</div>`).join("") || '<div class="l" style="color:#778">пока пусто</div>';
   $("#ev").innerHTML = ev.slice().reverse().map(e => `<div class="l"><i>${tm(e.at)}</i>${esc(e.t)}</div>`).join("") || '<div class="l" style="color:#778">пока пусто</div>';
 }
-load(); setInterval(load, 10000);
+load();
 // вкладки: консоль хаба (та же, что на ПК по адресу 127.0.0.1:8097) и её панель
 function tab(t) { $("#hubv").style.display = t === "hub" ? "flex" : "none"; $("#herv").style.display = t === "her" ? "block" : "none";
   $("#tb-hub").classList.toggle("sel", t === "hub"); $("#tb-her").classList.toggle("sel", t === "her"); localStorage.admTab = t; }
@@ -84,5 +84,5 @@ async function hubOpen() {
   document.body.appendChild(f); f.submit(); f.remove();
   $("#hubmsg").innerHTML = `<a href="${esc(j.url)}/full" target="_blank" style="color:#9fbaff">открыть отдельно</a>`;
 }
-tab(localStorage.admTab || "hub"); hubOpen();
+tab("hub"); hubOpen();   // вкладку «её панель» владелец попросил убрать (21.11) — только консоль
 </script></body></html>
