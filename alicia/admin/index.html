@@ -30,7 +30,7 @@ input{font:inherit;padding:8px;border-radius:8px;border:1px solid #444;backgroun
 <div id="grid">
  <div class="box"><h3>📺 Эфир <button id="bimg" style="float:right;padding:3px 10px;font-size:12px;background:#2f3445" onclick="tgImg()"></button></h3>
   <img id="shot" alt=""><div id="stream" style="margin-top:6px;color:#aab"></div><h3 style="margin-top:10px">💬 Что ей сейчас подсказывает панель</h3><div id="hint">…</div></div>
- <div class="box"><h3>🧾 Что происходило (её нажатия, подсказки, запуск сайтов)</h3><div class="scroll" id="ev"></div></div>
+ <div class="box"><h3>🧾 Что происходило (её нажатия, подсказки, запуск сайтов) <button style="float:right;padding:3px 10px;font-size:12px;background:#2f3445" onclick="if(confirm('Очистить журнал?'))load(1)">очистить</button></h3><div class="scroll" id="ev"></div></div>
  <div class="box"><h3>▶ Журнал запуска сайтов</h3><div id="golog"></div><h3 style="margin-top:10px">💰 Донаты</h3><div class="scroll" id="wall"></div></div>
  <div class="box"><h3>💬 Чат комнаты</h3><div class="scroll" id="chat"></div></div>
 </div>
@@ -43,9 +43,9 @@ function dot(k, on, txt) { $("#d-" + k).className = "dot " + (on === null ? "" :
 function tgImg() { localStorage.noImg = localStorage.noImg ? "" : "1"; ui(); }
 function ui() { const n = !!localStorage.noImg; $("#shot").style.display = n ? "none" : ""; $("#bimg").textContent = n ? "🖼 показать кадр" : "🙈 убрать кадр"; }
 ui();
-async function load() {
+async function load(clear) {
   if (!localStorage.admk) { $("#login").style.display = "flex"; return; }
-  let r; try { r = await fetch("https://alicia-link.videorils.workers.dev/her", { headers: { "x-k": localStorage.admk }, cache: "no-store" }); } catch (e) { $("#s-on").textContent = "нет связи"; return; }
+  let r; try { r = await fetch("https://alicia-link.videorils.workers.dev/her" + (clear === 1 ? "?clear=1" : ""), { headers: { "x-k": localStorage.admk }, cache: "no-store" }); } catch (e) { $("#s-on").textContent = "нет связи"; return; }
   if (r.status === 403) { localStorage.admk = ""; $("#lerr").textContent = "неверный пароль"; $("#login").style.display = "flex"; return; }
   $("#login").style.display = "none";
   const { st, ev, now } = await r.json();
@@ -53,7 +53,7 @@ async function load() {
   const age = now - st.at, on = age < 45000;
   dot("on", on, on ? "открыта · " + ago(age) : "закрыта · была " + ago(age));
   dot("obs", on ? st.obs : null, st.obsTxt || ""); dot("ext", on ? /на связи/.test(st.ext) : null, st.ext || "");
-  dot("lov", on ? !/нет|запусти|не подкл/i.test(st.lov) : null, st.lov || "");
+  dot("lov", on && st.lov && st.lov !== "…" ? !/нет|запусти|не подкл|не добавл|из 4/i.test(st.lov) : null, st.lov || "");
   for (const k of ["cb", "sc", "bc", "mv"]) { const s = (st.sites || {})[k] || {}; dot(k, on && /ok/.test(s.on) ? true : on && /no/.test(s.on) ? false : null, s.t || ""); }
   $("#s-tot").textContent = ((st.tot || {}).cb || 0) + ((st.tot || {}).sc || 0) + " tk";
   if (!localStorage.noImg) $("#shot").src = st.shot || "";
