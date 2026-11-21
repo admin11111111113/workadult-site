@@ -18,9 +18,10 @@ body{height:100vh;display:flex;flex-direction:column}#tabs{display:flex;gap:6px;
 #tabs button{border-radius:10px 10px 0 0;background:#232733;padding:8px 18px}#tabs button.sel{background:#7c5cff}
 #hubv{flex:1;min-height:0;display:flex}#hubf{flex:1;border:0;background:#121319}#herv{flex:1;overflow:auto;display:none}
 </style></head><body>
-<div id="tabs"><button id="tb-hub" class="sel" onclick="tab('hub')">🖥 Консоль Алисии</button><button id="tb-her" style="display:none" onclick="tab('her')"></button>
+<div id="tabs"><button id="tb-hub" class="sel" onclick="tab('hub')">🖥 Консоль Алисии</button><button id="tb-ct" onclick="tab('ct')">🎬 Консоль ManyVids</button><button id="tb-her" style="display:none" onclick="tab('her')"></button>
  <span id="hubmsg" style="color:#889;font-size:13px;align-self:center;margin-left:8px"></span></div>
 <div id="hubv"><iframe id="hubf" name="hubf"></iframe></div>
+<div id="ctv" style="flex:1;min-height:0;display:none"><iframe id="ctf" style="flex:1;border:0;background:#121319;width:100%;height:100%"></iframe></div>
 <div id="herv">
 <div id="top">
  <div class="pl"><span class="dot" id="d-on"></span>Её панель<small id="s-on">…</small></div>
@@ -72,7 +73,10 @@ async function load(clear) {
 load();
 // вкладки: консоль хаба (та же, что на ПК по адресу 127.0.0.1:8097) и её панель
 function tab(t) { $("#hubv").style.display = t === "hub" ? "flex" : "none"; $("#herv").style.display = t === "her" ? "block" : "none";
-  $("#tb-hub").classList.toggle("sel", t === "hub"); $("#tb-her").classList.toggle("sel", t === "her"); localStorage.admTab = t; }
+  $("#ctv").style.display = t === "ct" ? "flex" : "none";
+  $("#tb-hub").classList.toggle("sel", t === "hub"); $("#tb-her").classList.toggle("sel", t === "her"); $("#tb-ct").classList.toggle("sel", t === "ct"); localStorage.admTab = t;
+  if (t === "ct" && HUBURL && !$("#ctf").src) $("#ctf").src = HUBURL + "/content"; }
+let HUBURL = "";   // счётчик кастомов — кнопка «🎬 Кастом (N)» внутри Консоли Алисии
 // консоль хаба: узнаём его текущий адрес и входим тем же паролем прямо в окне
 async function hubOpen() {
   if (!localStorage.admk) return setTimeout(hubOpen, 2000);
@@ -81,7 +85,8 @@ async function hubOpen() {
   if (!j.url) { $("#hubmsg").textContent = "⚠ хаб на ПК не на связи (выключен компьютер или хаб)"; return; }
   const f = document.createElement("form"); f.method = "post"; f.action = j.url + "/login"; f.target = "hubf";
   const i = document.createElement("input"); i.type = "hidden"; i.name = "p"; i.value = localStorage.admk; f.appendChild(i);
-  document.body.appendChild(f); f.submit(); f.remove();
+  document.body.appendChild(f); f.submit(); f.remove(); HUBURL = j.url;
+  $("#hubf").addEventListener("load", () => { if ($("#ctv").style.display !== "none" && !$("#ctf").src) $("#ctf").src = HUBURL + "/content"; }, { once: true });
   $("#hubmsg").innerHTML = `<a href="${esc(j.url)}/full" target="_blank" style="color:#9fbaff">открыть отдельно</a>`;
 }
 tab("hub"); hubOpen();   // вкладку «её панель» владелец попросил убрать (21.11) — только консоль
