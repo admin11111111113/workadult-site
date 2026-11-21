@@ -464,6 +464,11 @@ async function hubSync() {
   let j; try { j = await (await fetch(HUB_URL, { cache: "no-store" })).json(); } catch (e) { return; }
   const h = j.hub, alive = h && j.now - h.at < 60000;
   feedShow(alive ? h.feed || [] : null);
+  // ManyVids: её вкладка эфира молчит → статус от хаба (он смотрит страницу её комнаты)
+  if (alive && !(LIVE.mv && LIVE.mv.src !== "hub" && Date.now() - LIVE.mv.t < 30000)) {
+    const on = !!(h.live_on || {}).mv; LIVE.mv = { on, st: "hub", src: "hub", t: Date.now() };
+    dot("mv", on); showTot(); $("#s-mv").textContent = on ? "🔴 в эфире" : "не в эфире";
+  }
   if (Date.now() - DMHOLD < 30000) return;                           // она печатает ответ — не перерисовываем
   DMS = (h && h.dm) || [];
   for (const p in PNAME) { const c = $("#a-" + p); c.disabled = !alive; if (h && Date.now() - AUTO_T > 15000) c.checked = !!(h.auto || {})[p]; }
