@@ -25,10 +25,6 @@ input{font:inherit;padding:8px;border-radius:8px;border:1px solid #444;backgroun
 .cu.paid{border-left-color:#ff8a00;background:#3a2a10}.cu.paid .q{font-size:21px;font-weight:700}.cu.uploaded{border-left-color:#4aa3ff}.cu.sent,.cu.closed{border-left-color:#2ecc71;opacity:.7}
 .cu.new,.cu.ok{opacity:.85}.cu .up{display:block;margin-top:10px;background:#ff8a00;color:#1a0f00;font-size:20px;padding:14px;text-align:center;border-radius:12px;cursor:pointer;font-weight:800}
 .cu .bar{height:14px;background:#0f1116;border-radius:8px;overflow:hidden;margin-top:10px}.cu .bar i{display:block;height:100%;background:#ff8a00;transition:width .3s}
-#pfeed{flex:1;display:grid;grid-template-columns:1fr 1fr;grid-template-rows:1fr 1fr;gap:6px;min-height:0}
-.pfc{display:flex;flex-direction:column;min-height:0;background:#1b1d26;border-radius:12px;border-top:3px solid #3a3f52}.pfc.on{border-top-color:#2ecc71}
-.pfc>b{padding:6px 8px;font-size:14px;display:flex;gap:6px;align-items:center}.pfc>b small{margin-left:auto;color:#ffd76a;font-size:13px}
-.pfc .box{padding:6px}.pfc .nf .pf{display:none}.pfc .nf{font-size:14px;padding:6px 8px}
 #typing .ty{background:#123a2a;border:3px solid #2ecc71;border-radius:14px;padding:10px 14px;margin-bottom:8px;animation:fl 1.5s 2}
 #typing .ty .t1{font-size:20px;font-weight:800}#typing .ty .t2{font-size:18px;margin:6px 0;color:#eaffef}#typing .ty .row{display:flex;gap:8px;align-items:center}
 #typing .ty button.ok{background:#2ecc71;color:#06210f;font-size:20px;padding:10px 28px;font-weight:900}#typing .ty small{color:#9cb;margin-left:auto}
@@ -70,9 +66,8 @@ input{font:inherit;padding:8px;border-radius:8px;border:1px solid #444;backgroun
    <span style="flex:1"></span><button style="background:#e8364f" onclick="lovStop()">⏻ Закончить управление</button></div>
 </div>
  <div class="col"><b>💬 Подсказки</b><div id="typing"></div><div id="hint">Подсказки появятся тут, когда начнётся эфир 💋</div>
-  <b>💰 Донаты и просьбы по эфирам <small style="color:#889;font-weight:400">— кто сколько дал, что просит, кто оплатил</small></b>
-  <div id="feed" style="display:none"></div>
-  <div id="pfeed"><div class="pfc" id="pfc-cb"><b><span class="dot" id="pfd-cb"></span>Chaturbate<small id="pft-cb"></small></b><div class="box" id="pf-cb"></div></div><div class="pfc" id="pfc-sc"><b><span class="dot" id="pfd-sc"></span>Stripchat<small id="pft-sc"></small></b><div class="box" id="pf-sc"></div></div><div class="pfc" id="pfc-bc"><b><span class="dot" id="pfd-bc"></span>Bongacams<small id="pft-bc"></small></b><div class="box" id="pf-bc"></div></div><div class="pfc" id="pfc-mv"><b><span class="dot" id="pfd-mv"></span>ManyVids<small id="pft-mv"></small></b><div class="box" id="pf-mv"></div></div></div>
+  <b>💰 Донаты и сообщения <small style="color:#889;font-weight:400">— кто сколько дал и за что, что просит, что ты (бот) ему написала · свежее сверху</small></b>
+  <div class="box" id="feed" style="flex:1;min-height:0"></div>
  </div>
  <div class="col"><div id="wall" style="display:none"></div><div id="bot" style="display:none"></div><b>💬 Комнаты</b>
   <div id="rooms"><div class="room"><b>Chaturbate</b><div class="box" id="chat-cb"></div></div><div class="room"><b>Stripchat</b><div class="box" id="chat-sc"></div></div>
@@ -98,8 +93,6 @@ const ROOM = {};                                                   // "p|ник"
 function showTot() { const L = p => !LIVE[p] ? "" : LIVE[p].on ? "🟢 в эфире · " : "🔴 не в эфире · ";
   $("#t-cb").textContent = L("cb") + TOT.cb + " tk"; $("#t-sc").textContent = L("sc") + TOT.sc + " tk";
   $("#t-bc").textContent = "💰 " + ETK.bc + " tk сегодня"; $("#t-mv").textContent = "💰 " + ETK.mv + " tk за эфир";
-  for (const k of ["cb", "sc", "bc", "mv"]) { const on = !!(LIVE[k] && LIVE[k].on); $("#pfc-" + k).classList.toggle("on", on); $("#pfd-" + k).className = "dot " + (on ? "ok" : "no");
-    $("#pft-" + k).textContent = "💰 " + (k === "cb" || k === "sc" ? TOT[k] : ETK[k]) + " tk"; }
   $("#t-all").textContent = (TOT.cb + TOT.sc + ETK.bc + ETK.mv) + " tk"; localStorage["tot" + day] = JSON.stringify(TOT); }
 showTot();
 const ADM_EV = [];                                                  // события для админки (workadult.pro/alicia/admin)
@@ -469,21 +462,23 @@ let AUTO_T = 0;
 async function autoSet(p, on) { AUTO_T = Date.now(); admEv((on ? "🤖 включила" : "🤖 выключила") + " авто на " + PNAME[p]);
   try { await fetch(HUB_URL, { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ w: "alicia-panel", p, on }) }); } catch (e) {} }
 // лента уведомлений (как у владельца в консоли): свежие сверху, новые мигают + короткий звук
+const TIPW = { offlineTip: "чаевые вне эфира", videoUnlock: "купил видео", photoUnlock: "купил фото", privateTip: "чаевые в привате", private: "приват", spy: "подглядывал в привате", groupShow: "групповое шоу", ticketShow: "билет на шоу", subscription: "подписка", fanClub: "фан-клуб", tip: "" };
+function tipWhat(w) { w = (w || "").trim(); if (!w) return "просто так"; if (w in TIPW) return TIPW[w] || "просто так"; const a = act(w); return a ? w + " → " + a : w; }
 let FEEDSEEN = null, LASTFEED = [], LOCALTIPS = [];
 const nowT = () => new Date().toLocaleString("sv").slice(0, 16);
 function feedShow(l) {
   const el = $("#feed");
-  if (l) LASTFEED = l; else if (!LOCALTIPS.length) { for (const k of ["cb", "sc", "bc", "mv"]) $("#pf-" + k).innerHTML = '<div class="chat" style="color:#889">нет связи с компьютером бота</div>'; return; }
+  if (l) LASTFEED = l; else if (!LOCALTIPS.length) { el.innerHTML = '<div class="chat" style="color:#889">нет связи с компьютером бота</div>'; return; }
   // донаты с её страниц приходят сразу (LOCALTIPS); когда тот же донат придёт от бота — локальный убираем
   LOCALTIPS = LOCALTIPS.filter(x => Date.now() - x.at < 600000 && !LASTFEED.some(y => y.kind === "tip" && y.p === x.p && y.who === x.who && +y.tk === +x.tk));
   l = [...LASTFEED, ...LOCALTIPS].sort((a, b) => (a.t || "").localeCompare(b.t || "")).slice(-150);
   l = l.filter(x => !/^(🤖|📨|✍️|💌|🔁|🎬|📥|⚠)/.test(x.text || "") && !/одобри/.test(x.text || ""));            // переписку бота не показываем — он отвечает сам (владелец 22.11)
   const seen = new Set(FEEDSEEN || []), fresh = FEEDSEEN && l.some(x => !seen.has(x.id));
   const one = x => {
-    const cls = /^(🤖|📨|✍️)/.test(x.text) ? "bot" : x.kind === "pay" ? "pay" : x.kind === "tip" ? "tipx" : "";
+    const cls = /^(🤖|📨|✍️|✉️)/.test(x.text) ? "bot" : x.kind === "pay" ? "pay" : x.kind === "tip" ? "tipx" : "";
     return `<div class="nf ${cls} ${FEEDSEEN && !seen.has(x.id) ? "newx" : ""}">${x.kind === "tip" ? `<span class="tkn">${+x.tk || 0} tk</span>` : ""}<span class="pf">${esc(PNAME[x.p] || x.p)}</span><span class="wh">${esc(x.who)}</span>` +
-      `<span class="tx">${esc(x.text)}</span><span class="tm">${esc((x.t || "").slice(11, 16))}</span></div>`; };
-  for (const k of ["cb", "sc", "bc", "mv"]) { const ll = l.filter(x => x.p === k).reverse(); $("#pf-" + k).innerHTML = ll.length ? ll.map(one).join("") : '<div class="chat" style="color:#667">пока тихо</div>'; }
+      `<span class="tx">${esc(x.kind === "tip" ? tipWhat(x.text) : x.text)}</span><span class="tm">${esc((x.t || "").slice(11, 16))}</span></div>`; };
+  el.innerHTML = l.slice().reverse().map(one).join("") || '<div class="chat" style="color:#667">пока тихо — тут будут донаты, просьбы и что бот написал</div>';
   if (fresh) { try { const a = new AudioContext(), o = a.createOscillator(), g = a.createGain(); o.frequency.value = 880; o.connect(g); g.connect(a.destination);
     g.gain.setValueAtTime(.15, a.currentTime); g.gain.exponentialRampToValueAtTime(.001, a.currentTime + .25); o.start(); o.stop(a.currentTime + .25); } catch (e) {} }
   FEEDSEEN = l.map(x => x.id);
