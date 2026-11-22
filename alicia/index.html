@@ -28,6 +28,11 @@ input{font:inherit;padding:8px;border-radius:8px;border:1px solid #444;backgroun
 #typing .ty{background:#123a2a;border:3px solid #2ecc71;border-radius:14px;padding:10px 14px;margin-bottom:8px;animation:fl 1.5s 2}
 #typing .ty .t1{font-size:20px;font-weight:800}#typing .ty .t2{font-size:18px;margin:6px 0;color:#eaffef}#typing .ty .row{display:flex;gap:8px;align-items:center}
 #typing .ty button.ok{background:#2ecc71;color:#06210f;font-size:20px;padding:10px 28px;font-weight:900}#typing .ty small{color:#9cb;margin-left:auto}
+.ftabs{display:flex;gap:6px}.ftabs button{padding:8px 12px;font-size:14px}.ftabs button.sel{background:#7c5cff}.ftabs button.live{background:#e8364f;animation:fl 1.5s infinite}
+#paidq .pq{background:#3a2a05;border:3px solid #ffb020;border-radius:14px;padding:10px 14px;margin-bottom:8px;display:flex;gap:12px;align-items:center}
+#paidq .pq .tk{font-size:28px;font-weight:900;color:#ffd76a;white-space:nowrap}#paidq .pq .tx{flex:1;font-size:18px}#paidq .pq .tx b{color:#ffd76a}#paidq .pq .do{font-size:21px;font-weight:800;color:#fff;margin-top:3px}
+#paidq .pq button{background:#ffb020;color:#2a1a00;font-size:20px;font-weight:900;padding:12px 24px}
+.pm{padding:5px 8px;border-radius:8px;margin-bottom:4px;font-size:16px}.pm b{color:#ffd76a}.pm.me{background:#1d2440}.pm .tm{color:#889;font-size:12px;float:right}
 .csec{color:#889;font-size:13px;margin:14px 0 6px;font-weight:700;text-transform:uppercase}
 html.light{filter:invert(1) hue-rotate(180deg);background:#fff}html.light img,html.light video{filter:invert(1) hue-rotate(180deg)}#thb{font:inherit;font-size:13px;font-weight:600;border:1px solid #555;border-radius:10px;padding:6px 12px;cursor:pointer;background:#2f3445;color:#fff;white-space:nowrap}</style></head><body>
 <div id="top">
@@ -71,9 +76,10 @@ html.light{filter:invert(1) hue-rotate(180deg);background:#fff}html.light img,ht
   <div id="lovctl" style="display:none;align-items:center;gap:10px;background:#123224;border:2px solid #2ecc71;border-radius:12px;padding:8px 12px;font-size:17px">
    <span style="flex:1"></span><button style="background:#e8364f" onclick="lovStop()">⏻ Закончить управление</button></div>
 </div>
- <div class="col"><b>💬 Подсказки</b><div id="typing"></div><div id="hint">Подсказки появятся тут, когда начнётся эфир 💋</div>
+ <div class="col"><b>💬 Подсказки</b><div id="paidq"></div><div id="typing"></div><div id="hint">Подсказки появятся тут, когда начнётся эфир 💋</div>
   <b>💰 Донаты и сообщения <small style="color:#889;font-weight:400">— кто сколько дал и за что, что просит, что ты (бот) ему написала · свежее сверху</small></b>
-  <div class="box" id="feed" style="flex:1;min-height:0"></div>
+  <div class="ftabs"><button id="ft-all" class="sel" onclick="ftab('all')">🔔 Все уведомления</button><button id="ft-pay" onclick="ftab('pay')">💰 Кто что оплатил</button><button id="ft-priv" onclick="ftab('priv')">🔒 Приватный чат</button></div>
+  <div class="box" id="feed" style="flex:1;min-height:0"></div><div class="box" id="privc" style="flex:1;min-height:0;display:none"></div>
  </div>
  <div class="col"><div id="wall" style="display:none"></div><div id="bot" style="display:none"></div><b>💬 Комнаты</b>
   <div id="rooms"><div class="room"><b>Chaturbate</b><div class="box" id="chat-cb"></div></div><div class="room"><b>Stripchat</b><div class="box" id="chat-sc"></div></div>
@@ -394,6 +400,7 @@ function onExt(m) {
     LOCALTIPS.push({ id: "l" + Date.now() + Math.random(), at: Date.now(), t: nowT(), p: m.p, who: m.who, tk: m.tk, text: (m.what || "") + (a ? " 👉 " + a : ""), kind: "tip" }); feedShow(null);
     $("#wall").insertAdjacentHTML("afterbegin", `<div class="tip"><b>${esc(m.who)}</b> ${m.tk} tk · ${({ cb: "Chaturbate", sc: "Stripchat", bc: "Bongacams", mv: "ManyVids" })[m.p] || m.p}${m.what ? " — " + esc(m.what) : ""}${a ? "<br>👉 " + esc(a) : ""}</div>`);
     hint(`💰 <b>${esc(m.who)}</b> дал ${m.tk} tk${a ? "<br>👉 " + esc(a) : ""}<br>Скажи: «Thank you ${esc(m.who)} 😘»`);
+    if (a) { PAIDQ.push({ p: m.p, who: m.who, tk: m.tk, what: m.what, act: a }); PAIDQ.splice(0, PAIDQ.length - 5); paidShow(); ding(); PAIDBEEP = Date.now(); admEv("💰 оплатили по меню: " + m.who + " — " + m.what); }
   }
   if (m.type === "lovctl") lovCtl(m);
   if (m.type === "privreq") privShow(m.p, m.text);
@@ -404,6 +411,7 @@ function onExt(m) {
     const k = m.p + "|" + m.who; ROOM[k] = { p: m.p, who: m.who, text: String(m.text).slice(0, 200), t: Date.now(), n: ((ROOM[k] || {}).n || 0) + 1 };
     const ks = Object.keys(ROOM); if (ks.length > 120) ks.sort((x, y) => ROOM[x].t - ROOM[y].t).slice(0, ks.length - 120).forEach(x => delete ROOM[x]);
   }
+  if (m.type === "chat" && m.text && PRIVLIVE[m.p]) { PRIVMSG.push({ p: m.p, who: m.who || "", text: String(m.text).slice(0, 400), t: new Date().toTimeString().slice(0, 5) }); PRIVMSG.splice(0, PRIVMSG.length - 150); if (FT === "priv") privShowChat(); }
   if (m.type === "chat" && m.text) {
     const box = $("#chat-" + m.p) || $("#chat-cb"); box.insertAdjacentHTML("afterbegin", `<div class="chat"><b>${esc(m.who)}</b>: ${esc(m.text)}</div>`);
     while (box.children.length > 80) box.lastChild.remove();
@@ -422,7 +430,7 @@ async function admSend() {
   const card = k => ({ on: ($("#d-" + k) || {}).className || "", t: (($("#t-" + k) || $("#s-" + k)) || {}).textContent || "" });
   const ev = ADM_EV.splice(0);
   const st = { w: "alicia-panel", obs: ok, obsTxt: $("#s-obs").textContent, stream: $("#st").textContent, ext: $("#s-ext").textContent, lov: $("#s-lov").textContent,
-    sites: { cb: card("cb"), sc: card("sc"), bc: card("bc"), mv: card("mv") }, room: Object.values(ROOM).filter(x => Date.now() - x.t < 3600000), tot: { ...TOT, ...ETK }, live: LIVE, hint: $("#hint").innerText, golog: GOLOG.slice(),
+    sites: { cb: card("cb"), sc: card("sc"), bc: card("bc"), mv: card("mv") }, room: Object.values(ROOM).filter(x => Date.now() - x.t < 3600000), tot: { ...TOT, ...ETK }, live: LIVE, priv: PRIVLIVE, hint: $("#hint").innerText, golog: GOLOG.slice(),
     wall: [...document.querySelectorAll("#wall .tip")].slice(0, 15).map(e => e.innerText), chat: [...document.querySelectorAll("#rooms .chat")].slice(0, 25).map(e => e.innerText),
     shot: admShot(), events: ev, lovctl: LOVCTL, ua: navigator.userAgent.slice(0, 80) };
   try { const r = await fetch(ADM_URL, { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify(st) }); if (!r.ok) throw 0; }
@@ -460,6 +468,9 @@ function privOn(p, on) {
   PRIVLIVE[p] = on; const any = Object.keys(PRIVLIVE).filter(k => PRIVLIVE[k]);
   $("#privbar").style.display = any.length ? "block" : "none"; $("#privbar").textContent = "🔒 ИДЁТ ПРИВАТ — " + any.map(k => PN4[k]).join(", ") + " · его сообщения — в комнате сайта (красная рамка)";
   for (const k in PN4) { const b = $("#chat-" + k); if (b) b.style.outline = PRIVLIVE[k] ? "3px solid #e8364f" : ""; }
+  $("#ft-priv").classList.toggle("live", any.length > 0); $("#ft-priv").textContent = any.length ? "🔒 Приватный чат — идёт!" : "🔒 Приватный чат";
+  if (on && FT !== "priv") ftab("priv"); if (!any.length && FT === "priv") ftab("all"); if (FT === "priv") privShowChat();
+  setTimeout(admSend, 300);                                         // хабу сразу: в привате бот молчит
   if (on) { admEv("🔒 приват идёт на " + (PN4[p] || p)); hint("🔒 Приват на " + (PN4[p] || p) + " — смотри его сообщения в комнате " + (PN4[p] || p)); }
 }
 // ── бот (работает на ПК владельца): галочки «авто» по площадкам + что он написал людям
@@ -484,6 +495,7 @@ function feedShow(l) {
     const cls = /^(🤖|📨|✍️|✉️)/.test(x.text) ? "bot" : x.kind === "pay" ? "pay" : x.kind === "tip" ? "tipx" : "";
     return `<div class="nf ${cls} ${FEEDSEEN && !seen.has(x.id) ? "newx" : ""}">${x.kind === "tip" ? `<span class="tkn">${+x.tk || 0} tk</span>` : ""}<span class="pf">${esc(PNAME[x.p] || x.p)}</span><span class="wh">${esc(x.who)}</span>` +
       `<span class="tx">${esc(x.kind === "tip" ? tipWhat(x.text) : x.text)}</span><span class="tm">${esc((x.t || "").slice(11, 16))}</span></div>`; };
+  if (FT === "pay") l = l.filter(x => x.kind === "tip" || x.kind === "pay");
   el.innerHTML = l.slice().reverse().map(one).join("") || '<div class="chat" style="color:#667">пока тихо — тут будут донаты, просьбы и что бот написал</div>';
   if (fresh) { try { const a = new AudioContext(), o = a.createOscillator(), g = a.createGain(); o.frequency.value = 880; o.connect(g); g.connect(a.destination);
     g.gain.setValueAtTime(.15, a.currentTime); g.gain.exponentialRampToValueAtTime(.001, a.currentTime + .25); o.start(); o.stop(a.currentTime + .25); } catch (e) {} }
@@ -608,6 +620,23 @@ async function hmAns(rep) {
   HMDONE.add(m.id); hmShow(HMQ); admEv(reply ? "💬 ответила Роману: " + reply : "✅ прочитала сообщение Романа");
   try { await fetch(HUB_URL, { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ w: "alicia-panel", msg: { id: m.id, reply } }) }); } catch (e) {}
 }
+// ── вкладки над лентой: все / кто что оплатил / приватный чат
+let FT = "all", PRIVMSG = [];
+function ftab(t) { FT = t; ["all", "pay", "priv"].forEach(k => $("#ft-" + k).classList.toggle("sel", k === t));
+  $("#feed").style.display = t === "priv" ? "none" : ""; $("#privc").style.display = t === "priv" ? "" : "none"; if (t === "priv") privShowChat(); else feedShow(LASTFEED.length ? LASTFEED : null); }
+function privShowChat() {
+  const any = Object.keys(PRIVLIVE).filter(k => PRIVLIVE[k]);
+  $("#privc").innerHTML = (any.length ? `<div style="color:#ff8b8b;font-weight:700;margin-bottom:6px">🔒 Идёт приват — ${any.map(k => PN4[k]).join(", ")}. Бот молчит, пишешь только ты (в окне сайта).</div>`
+    : '<div style="color:#889;margin-bottom:6px">Привата сейчас нет. Когда начнётся — его сообщения будут тут, бот в это время не пишет.</div>') +
+    (PRIVMSG.slice().reverse().map(m => `<div class="pm"><span class="tm">${esc(m.t)}</span><span style="font-size:12px;color:#99a">${esc(PN4[m.p] || m.p)}</span> <b>${esc(m.who)}</b>: ${esc(m.text)}</div>`).join("") || "");
+}
+// ── оплатили по меню: карточка + сигнал, пока она не нажмёт «Сделала»
+let PAIDQ = [], PAIDBEEP = 0;
+function paidShow() {
+  $("#paidq").innerHTML = PAIDQ.map((x, i) => `<div class="pq"><span class="tk">${x.tk} tk</span><div class="tx"><b>${esc(x.who)}</b> (${esc(PN4[x.p] || x.p)}) оплатил «${esc(x.what)}»<div class="do">👉 ${esc(x.act)}</div></div><button onclick="paidOk(${i})">✅ OK</button></div>`).join("");
+}
+function paidOk(i) { const x = PAIDQ.splice(i, 1)[0]; if (x) admEv("✅ нажала OK: " + x.who + " — " + x.what); paidShow(); }
+setInterval(() => { if (PAIDQ.length && Date.now() - PAIDBEEP > 12000) { ding(); PAIDBEEP = Date.now(); } }, 3000);   // пищит, пока не нажмёт OK
 async function hubLoop() { await hubSync(); setTimeout(hubLoop, TYPES.length ? 2000 : 5000); }
 hubLoop();
 admEv("📂 панель открыта"); setTimeout(admSend, 3000); setInterval(admSend, 15000);
