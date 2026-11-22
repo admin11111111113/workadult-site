@@ -41,6 +41,12 @@ html.light{filter:invert(1) hue-rotate(180deg);background:#fff}html.light img,ht
  <div class="pl" id="custpl" style="cursor:pointer" onclick="custOpen()" title="Видео на заказ">🎬 Кастом <span id="custn"></span><small id="custs">нет заказов</small></div>
  <div class="pl" style="margin-left:auto">Сегодня<small id="t-all">0 tk</small></div><button id="thb" onclick="thSet(localStorage.theme==='dark')"></button>
 </div>
+<div id="hmv" style="position:fixed;inset:0;background:#000b;display:none;align-items:center;justify-content:center;z-index:60">
+ <div style="background:#1f2230;border:4px solid #4aa3ff;border-radius:18px;padding:22px 26px;max-width:600px;width:92%;box-shadow:0 0 40px #4aa3ff88">
+  <div style="font-size:26px;font-weight:900">✉️ Сообщение от Романа</div><div id="hmtx" style="font-size:22px;margin:12px 0 16px;white-space:pre-wrap"></div>
+  <textarea id="hmrep" placeholder="ответить (необязательно)…" style="width:100%;min-height:60px;font:inherit;font-size:17px;padding:8px;border-radius:10px;border:1px solid #444;background:#0f1116;color:#fff"></textarea>
+  <div style="display:flex;gap:10px;margin-top:12px"><button class="g" style="font-size:20px;padding:12px 26px" onclick="hmAns(0)">✅ Прочитала</button><button style="font-size:20px;padding:12px 26px;background:#4aa3ff" onclick="hmAns(1)">💬 Ответить</button>
+   <small id="hmn" style="margin-left:auto;align-self:center;color:#99a"></small></div></div></div>
 <div id="custbar" onclick="custOpen()" style="display:none;cursor:pointer;background:#ff8a00;color:#1a0f00;font-weight:800;font-size:19px;padding:8px 14px;text-align:center"></div>
 <div id="custv" onclick="if(event.target===this)custClose()" style="position:fixed;inset:0;background:#000c;display:none;align-items:flex-start;justify-content:center;z-index:40;overflow:auto;padding:20px 10px">
  <div style="background:#1b1d26;border-radius:16px;padding:16px;width:100%;max-width:720px">
@@ -495,7 +501,7 @@ async function hubSync() {
   let j; try { j = await (await fetch(HUB_URL, { cache: "no-store" })).json(); } catch (e) { return; }
   const h = j.hub, alive = h && j.now - h.at < 60000;
   feedShow(alive ? h.feed || [] : null);
-  if (alive) { CUSTS = h.customs || []; custRender(); typeShow((h.typing || []).filter(t => !TYPEDONE.has(t.id))); } else typeShow([]);
+  if (alive) { CUSTS = h.customs || []; custRender(); typeShow((h.typing || []).filter(t => !TYPEDONE.has(t.id))); hmShow(h.msgs || []); } else typeShow([]);
   if (alive && h.today) { ETK.bc = h.today.bc || 0; showTot(); }
   // её вкладка сайта молчит (закрыта / скрипт не подцепился) → статус эфира от хаба (он сам спрашивает сайты)
   for (const k of ["mv", "sc", "cb", "bc"]) if (alive && !(LIVE[k] && LIVE[k].src !== "hub" && Date.now() - LIVE[k].t < 30000)) {
@@ -583,6 +589,24 @@ function typeShow(l) {
 async function typeGo(id, ok) {
   TYPEDONE.add(id); TYPES = TYPES.filter(t => t.id !== id); typeShow(TYPES); admEv(ok ? "✅ нажала OK — бот печатает" : "✖ отказалась от сообщения");
   try { await fetch(HUB_URL, { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ w: "alicia-panel", go: { id, ok: !!ok } }) }); } catch (e) {}
+}
+// ── сообщения от владельца: всплывают с пиком-пиликом, пока не нажмёт «прочитала» или не ответит
+let HMQ = [], HMDONE = new Set(), HMSEEN = new Set(), HMBEEP = 0;
+function hmBeep() { try { const a = new AudioContext(); [880, 1320, 880, 1320].forEach((f, i) => { const o = a.createOscillator(), g = a.createGain(); o.frequency.value = f; o.connect(g); g.connect(a.destination); const t = a.currentTime + i * .16; g.gain.setValueAtTime(.25, t); g.gain.exponentialRampToValueAtTime(.001, t + .14); o.start(t); o.stop(t + .15); }); } catch (e) {} }
+function hmShow(l) {
+  HMQ = (l || []).filter(m => m.st === "sent" && !HMDONE.has(m.id));
+  if (!HMQ.length) { $("#hmv").style.display = "none"; return; }
+  const m = HMQ[0], neu = !HMSEEN.has(m.id);
+  if ($("#hmv").style.display !== "flex" || neu) { $("#hmtx").textContent = m.text; if (neu) $("#hmrep").value = ""; }
+  $("#hmn").textContent = HMQ.length > 1 ? "ещё " + (HMQ.length - 1) : ""; $("#hmv").style.display = "flex";
+  if (neu || Date.now() - HMBEEP > 30000) { hmBeep(); HMBEEP = Date.now(); }            // новое — пик сразу, потом напоминание раз в 30 сек
+  if (neu) { HMSEEN.add(m.id); admEv("✉️ пришло сообщение от Романа"); }
+}
+async function hmAns(rep) {
+  const m = HMQ[0]; if (!m) return; const reply = rep ? $("#hmrep").value.trim() : "";
+  if (rep && !reply) { $("#hmrep").focus(); $("#hmrep").placeholder = "напиши ответ тут ↑"; return; }
+  HMDONE.add(m.id); hmShow(HMQ); admEv(reply ? "💬 ответила Роману: " + reply : "✅ прочитала сообщение Романа");
+  try { await fetch(HUB_URL, { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ w: "alicia-panel", msg: { id: m.id, reply } }) }); } catch (e) {}
 }
 async function hubLoop() { await hubSync(); setTimeout(hubLoop, TYPES.length ? 2000 : 5000); }
 hubLoop();
