@@ -78,7 +78,7 @@ html.light{filter:invert(1) hue-rotate(180deg);background:#fff}html.light img,ht
 </div>
  <div class="col"><b>💬 Подсказки</b><div id="paidq"></div><div id="typing"></div><div id="hint">Подсказки появятся тут, когда начнётся эфир 💋</div>
   <b>💰 Донаты и сообщения <small style="color:#889;font-weight:400">— кто сколько дал и за что, что просит, что ты (бот) ему написала · свежее сверху</small></b>
-  <div class="ftabs"><button id="ft-all" class="sel" onclick="ftab('all')">🔔 Все уведомления</button><button id="ft-pay" onclick="ftab('pay')">💰 Кто что оплатил</button><button id="ft-priv" onclick="ftab('priv')">🔒 Приватный чат</button></div>
+  <div class="ftabs"><button id="ft-all" class="sel" onclick="ftab('all')">🔔 Все уведомления</button><button id="ft-priv" onclick="ftab('priv')">🔒 Приват</button></div>
   <div class="box" id="feed" style="flex:1;min-height:0"></div><div id="privw" style="flex:1;min-height:0;display:none;flex-direction:column;gap:6px"><div class="box" id="privc" style="flex:1;min-height:0"></div>
    <div style="display:flex;gap:6px"><input id="privin" placeholder="пиши ему по-русски — уйдёт в чат привата на английском" style="margin:0;font-size:17px" onkeydown="if(event.key==='Enter')privSay()"><button class="go" onclick="privSay()">➤ Отправить</button></div></div>
  </div>
@@ -432,7 +432,7 @@ async function admSend() {
   const card = k => ({ on: ($("#d-" + k) || {}).className || "", t: (($("#t-" + k) || $("#s-" + k)) || {}).textContent || "" });
   const ev = ADM_EV.splice(0);
   const st = { w: "alicia-panel", obs: ok, obsTxt: $("#s-obs").textContent, stream: $("#st").textContent, ext: $("#s-ext").textContent, lov: $("#s-lov").textContent,
-    sites: { cb: card("cb"), sc: card("sc"), bc: card("bc"), mv: card("mv") }, room: Object.values(ROOM).filter(x => Date.now() - x.t < 3600000), tot: { ...TOT, ...ETK }, live: LIVE, priv: PRIVLIVE, hint: $("#hint").innerText, golog: GOLOG.slice(),
+    sites: { cb: card("cb"), sc: card("sc"), bc: card("bc"), mv: card("mv") }, room: Object.values(ROOM).filter(x => Date.now() - x.t < 3600000), tot: { ...TOT, ...ETK }, live: LIVE, priv: PRIVLIVE, privmsg: PRIVMSG.slice(-60).map(m => ({ me: !!m.me, by: m.by || "", p: m.p, who: m.who || "", text: m.text, out: m.out || "", t: m.t, st: m.st || "" })), hint: $("#hint").innerText, golog: GOLOG.slice(),
     wall: [...document.querySelectorAll("#wall .tip")].slice(0, 15).map(e => e.innerText), chat: [...document.querySelectorAll("#rooms .chat")].slice(0, 25).map(e => e.innerText),
     shot: admShot(), events: ev, lovctl: LOVCTL, ua: navigator.userAgent.slice(0, 80) };
   try { const r = await fetch(ADM_URL, { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify(st) }); if (!r.ok) throw 0; }
@@ -470,7 +470,7 @@ function privOn(p, on) {
   PRIVLIVE[p] = on; const any = Object.keys(PRIVLIVE).filter(k => PRIVLIVE[k]);
   $("#privbar").style.display = any.length ? "block" : "none"; $("#privbar").textContent = "🔒 ИДЁТ ПРИВАТ — " + any.map(k => PN4[k]).join(", ") + " · его сообщения — в комнате сайта (красная рамка)";
   for (const k in PN4) { const b = $("#chat-" + k); if (b) b.style.outline = PRIVLIVE[k] ? "3px solid #e8364f" : ""; }
-  $("#ft-priv").classList.toggle("live", any.length > 0); $("#ft-priv").textContent = any.length ? "🔒 Приватный чат — идёт!" : "🔒 Приватный чат";
+  $("#ft-priv").classList.toggle("live", any.length > 0); $("#ft-priv").textContent = any.length ? "🔒 Приват — идёт!" : "🔒 Приват";
   if (on && FT !== "priv") ftab("priv"); if (!any.length && FT === "priv") ftab("all"); if (FT === "priv") privShowChat();
   setTimeout(admSend, 300);                                         // хабу сразу: в привате бот молчит
   if (on) { admEv("🔒 приват идёт на " + (PN4[p] || p)); hint("🔒 Приват на " + (PN4[p] || p) + " — смотри его сообщения в комнате " + (PN4[p] || p)); }
@@ -515,7 +515,7 @@ async function hubSync() {
   let j; try { j = await (await fetch(HUB_URL, { cache: "no-store" })).json(); } catch (e) { return; }
   const h = j.hub, alive = h && j.now - h.at < 60000;
   feedShow(alive ? h.feed || [] : null);
-  if (alive) { CUSTS = h.customs || []; custRender(); typeShow((h.typing || []).filter(t => !TYPEDONE.has(t.id))); hmShow(h.msgs || []); } else typeShow([]);
+  if (alive) { CUSTS = h.customs || []; custRender(); typeShow((h.typing || []).filter(t => !TYPEDONE.has(t.id))); hmShow(h.msgs || []); for (const x of h.psay || []) if (!PSAYDONE.has(x.id)) { PSAYDONE.add(x.id); privSay(x.text); } } else typeShow([]);
   if (alive && h.today) { ETK.bc = h.today.bc || 0; showTot(); }
   // её вкладка сайта молчит (закрыта / скрипт не подцепился) → статус эфира от хаба (он сам спрашивает сайты)
   for (const k of ["mv", "sc", "cb", "bc"]) if (alive && !(LIVE[k] && LIVE[k].src !== "hub" && Date.now() - LIVE[k].t < 30000)) {
@@ -623,30 +623,31 @@ async function hmAns(rep) {
   try { await fetch(HUB_URL, { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ w: "alicia-panel", msg: { id: m.id, reply } }) }); } catch (e) {}
 }
 // ── вкладки над лентой: все / кто что оплатил / приватный чат
-let FT = "all", PRIVMSG = [];
-function ftab(t) { FT = t; ["all", "pay", "priv"].forEach(k => $("#ft-" + k).classList.toggle("sel", k === t));
+let FT = "all", PRIVMSG = [], PSAYDONE = new Set(JSON.parse(sessionStorage.psay || "[]"));
+setInterval(() => { sessionStorage.psay = JSON.stringify([...PSAYDONE].slice(-50)); }, 5000);
+function ftab(t) { FT = t; ["all", "priv"].forEach(k => $("#ft-" + k).classList.toggle("sel", k === t));
   $("#feed").style.display = t === "priv" ? "none" : ""; $("#privw").style.display = t === "priv" ? "flex" : "none"; if (t === "priv") privShowChat(); else feedShow(LASTFEED.length ? LASTFEED : null); }
 function privShowChat() {
   const any = Object.keys(PRIVLIVE).filter(k => PRIVLIVE[k]);
   $("#privc").innerHTML = (any.length ? `<div style="color:#ff8b8b;font-weight:700;margin-bottom:6px">🔒 Идёт приват — ${any.map(k => PN4[k]).join(", ")}. Бот молчит, пишешь только ты (в окне сайта).</div>`
     : '<div style="color:#889;margin-bottom:6px">Привата сейчас нет. Когда начнётся — его сообщения будут тут, бот в это время не пишет.</div>') +
-    (PRIVMSG.slice().reverse().map(m => m.me ? `<div class="pm me"><span class="tm">${esc(m.t)} ${m.st || ""}</span><b style="color:#9fbaff">ты</b>: ${esc(m.text)}${m.out && m.out !== m.text ? `<br><small style="color:#99a">ушло: ${esc(m.out)}</small>` : ""}</div>`
+    (PRIVMSG.slice().reverse().map(m => m.me ? `<div class="pm me"><span class="tm">${esc(m.t)} ${m.st || ""}</span><b style="color:#9fbaff">${m.by ? "Роман" : "ты"}</b>: ${esc(m.text)}${m.out && m.out !== m.text ? `<br><small style="color:#99a">ушло: ${esc(m.out)}</small>` : ""}</div>`
       : `<div class="pm"><span class="tm">${esc(m.t)}</span><span style="font-size:12px;color:#99a">${esc(PN4[m.p] || m.p)}</span> <b>${esc(m.who)}</b>: ${esc(m.text)}</div>`).join("") || "");
 }
 // её сообщение в приват: перевод (если он пишет не по-русски) → помощник → поле чата на странице эфира сайта
-async function privSay() {
-  const inp = $("#privin"), text = inp.value.trim(); if (!text) return;
+async function privSay(ownerText) {
+  const inp = $("#privin"), text = (ownerText || inp.value).trim(); if (!text) return;
   const p = Object.keys(PRIVLIVE).find(k => PRIVLIVE[k]) || (PRIVMSG.length ? PRIVMSG[PRIVMSG.length - 1].p : "");
   if (!p) { inp.placeholder = "привата сейчас нет — писать некуда"; return; }
   if (!port) { inp.placeholder = "нет помощника Chrome — напиши на сайте"; return; }
-  inp.value = ""; const his = PRIVMSG.filter(m => !m.me && m.p === p).slice(-3).map(m => m.text).join(" ");
+  if (!ownerText) inp.value = ""; const his = PRIVMSG.filter(m => !m.me && m.p === p).slice(-3).map(m => m.text).join(" ");
   let out = text;
   if (/[а-яё]/i.test(text) && !/[а-яё]/i.test(his)) {
     const r = await call("fetch", { url: "https://translate.googleapis.com/translate_a/single?client=gtx&sl=ru&tl=en&dt=t&q=" + encodeURIComponent(text), timeout: 6000 });
     try { out = JSON.parse(r.text)[0].map(x => x[0]).join("") || text; } catch (e) {}
   }
-  const m = { me: true, p, text, out, t: new Date().toTimeString().slice(0, 5), st: "⏳", id: "s" + Date.now() }; PRIVMSG.push(m); privShowChat();
-  await call("push", { ch: "say-" + p, cmd: { id: m.id, text: out } }); admEv("🔒 написала в приват: " + text);
+  const m = { me: true, by: ownerText ? "Роман" : "", p, text, out, t: new Date().toTimeString().slice(0, 5), st: "⏳", id: "s" + Date.now() }; PRIVMSG.push(m); privShowChat();
+  await call("push", { ch: "say-" + p, cmd: { id: m.id, text: out } }); admEv((ownerText ? "🔒 Роман написал в приват: " : "🔒 написала в приват: ") + text); setTimeout(admSend, 1500);
   setTimeout(() => { if (m.st === "⏳") { m.st = "⚠ страница сайта не ответила — напиши там"; privShowChat(); } }, 8000);
 }
 // ── оплатили по меню: карточка + сигнал, пока она не нажмёт «Сделала»
