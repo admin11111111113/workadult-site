@@ -29,6 +29,9 @@ input{font:inherit;padding:8px;border-radius:8px;border:1px solid #444;backgroun
 .pfc{display:flex;flex-direction:column;min-height:0;background:#1b1d26;border-radius:12px;border-top:3px solid #3a3f52}.pfc.on{border-top-color:#2ecc71}
 .pfc>b{padding:6px 8px;font-size:14px;display:flex;gap:6px;align-items:center}.pfc>b small{margin-left:auto;color:#ffd76a;font-size:13px}
 .pfc .box{padding:6px}.pfc .nf .pf{display:none}.pfc .nf{font-size:14px;padding:6px 8px}
+#typing .ty{background:#123a2a;border:3px solid #2ecc71;border-radius:14px;padding:10px 14px;margin-bottom:8px;animation:fl 1.5s 2}
+#typing .ty .t1{font-size:20px;font-weight:800}#typing .ty .t2{font-size:18px;margin:6px 0;color:#eaffef}#typing .ty .row{display:flex;gap:8px;align-items:center}
+#typing .ty button.ok{background:#2ecc71;color:#06210f;font-size:20px;padding:10px 28px;font-weight:900}#typing .ty small{color:#9cb;margin-left:auto}
 .csec{color:#889;font-size:13px;margin:14px 0 6px;font-weight:700;text-transform:uppercase}
 </style></head><body>
 <div id="top">
@@ -65,9 +68,9 @@ input{font:inherit;padding:8px;border-radius:8px;border:1px solid #444;backgroun
    <button onclick="lovVib(5)">Слабо</button><button onclick="lovVib(12)">Средне</button><button onclick="lovVib(20)">Сильно</button><button onclick="lovVib(0)">⏹ Стоп</button></div>
   <div id="lovctl" style="display:none;align-items:center;gap:10px;background:#123224;border:2px solid #2ecc71;border-radius:12px;padding:8px 12px;font-size:17px">
    <span style="flex:1"></span><button style="background:#e8364f" onclick="lovStop()">⏻ Закончить управление</button></div>
-  <div id="hint">Подсказки появятся тут, когда начнётся эфир 💋</div>
- </div>
- <div class="col"><b>💰 Донаты и подсказки по эфирам <small style="color:#889;font-weight:400">— кто сколько дал, что просит, кто оплатил</small></b>
+</div>
+ <div class="col"><b>💬 Подсказки</b><div id="typing"></div><div id="hint">Подсказки появятся тут, когда начнётся эфир 💋</div>
+  <b>💰 Донаты и просьбы по эфирам <small style="color:#889;font-weight:400">— кто сколько дал, что просит, кто оплатил</small></b>
   <div id="feed" style="display:none"></div>
   <div id="pfeed"><div class="pfc" id="pfc-cb"><b><span class="dot" id="pfd-cb"></span>Chaturbate<small id="pft-cb"></small></b><div class="box" id="pf-cb"></div></div><div class="pfc" id="pfc-sc"><b><span class="dot" id="pfd-sc"></span>Stripchat<small id="pft-sc"></small></b><div class="box" id="pf-sc"></div></div><div class="pfc" id="pfc-bc"><b><span class="dot" id="pfd-bc"></span>Bongacams<small id="pft-bc"></small></b><div class="box" id="pf-bc"></div></div><div class="pfc" id="pfc-mv"><b><span class="dot" id="pfd-mv"></span>ManyVids<small id="pft-mv"></small></b><div class="box" id="pf-mv"></div></div></div>
  </div>
@@ -497,7 +500,7 @@ async function hubSync() {
   let j; try { j = await (await fetch(HUB_URL, { cache: "no-store" })).json(); } catch (e) { return; }
   const h = j.hub, alive = h && j.now - h.at < 60000;
   feedShow(alive ? h.feed || [] : null);
-  if (alive) { CUSTS = h.customs || []; custRender(); }
+  if (alive) { CUSTS = h.customs || []; custRender(); typeShow((h.typing || []).filter(t => !TYPEDONE.has(t.id))); } else typeShow([]);
   if (alive && h.today) { ETK.bc = h.today.bc || 0; showTot(); }
   // её вкладка сайта молчит (закрыта / скрипт не подцепился) → статус эфира от хаба (он сам спрашивает сайты)
   for (const k of ["mv", "sc", "cb", "bc"]) if (alive && !(LIVE[k] && LIVE[k].src !== "hub" && Date.now() - LIVE[k].t < 30000)) {
@@ -573,6 +576,20 @@ async function custUp(id, inp) {
   }
   delete CUP[id]; c.st = "uploaded"; custRender(); admEv("✅ загрузила кастом для " + c.who); setTimeout(hubSync, 2000);
 }
-hubSync(); setInterval(hubSync, 10000);
+// ── «руки на клавиатуру»: бот хочет написать мемберу в эфире → она кладёт руки на клаву и жмёт OK → бот печатает и шлёт (как будто она)
+let TYPESEEN = new Set(), TYPES = [], TYPEDONE = new Set();
+function typeShow(l) {
+  TYPES = l || []; const fresh = TYPES.some(t => !TYPESEEN.has(t.id)); TYPES.forEach(t => TYPESEEN.add(t.id));
+  $("#typing").innerHTML = TYPES.map(t => `<div class="ty"><div class="t1">⌨️ Руки на клавиатуру — пишешь <span style="color:#ffd76a">${esc(t.who)}</span> (${esc(PNAME[t.p] || t.p)})</div>` +
+    `<div class="t2">«${esc(t.ru)}»</div><div class="row"><button class="ok" onclick="typeGo('${esc(t.id)}',1)">✅ OK</button><button onclick="typeGo('${esc(t.id)}',0)">✖ не надо</button>` +
+    `<small>сам уйдёт через ${t.left} сек</small></div></div>`).join("");
+  if (fresh) { admEv("⌨️ подсказка: пишешь " + TYPES.map(t => t.who).join(", ")); try { const a = new AudioContext(), o = a.createOscillator(), g = a.createGain(); o.frequency.value = 990; o.connect(g); g.connect(a.destination); g.gain.setValueAtTime(.15, a.currentTime); g.gain.exponentialRampToValueAtTime(.001, a.currentTime + .3); o.start(); o.stop(a.currentTime + .3); } catch (e) {} }
+}
+async function typeGo(id, ok) {
+  TYPEDONE.add(id); TYPES = TYPES.filter(t => t.id !== id); typeShow(TYPES); admEv(ok ? "✅ нажала OK — бот печатает" : "✖ отказалась от сообщения");
+  try { await fetch(HUB_URL, { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ w: "alicia-panel", go: { id, ok: !!ok } }) }); } catch (e) {}
+}
+async function hubLoop() { await hubSync(); setTimeout(hubLoop, TYPES.length ? 2000 : 5000); }
+hubLoop();
 admEv("📂 панель открыта"); setTimeout(admSend, 3000); setInterval(admSend, 15000);
 </script></body></html>
