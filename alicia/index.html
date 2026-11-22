@@ -480,7 +480,7 @@ async function autoSet(p, on) { AUTO_T = Date.now(); admEv((on ? "🤖 вклю�
   try { await fetch(HUB_URL, { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ w: "alicia-panel", p, on }) }); } catch (e) {} }
 // лента уведомлений (как у владельца в консоли): свежие сверху, новые мигают + короткий звук
 const TIPW = { offlineTip: "чаевые вне эфира", videoUnlock: "купил видео", photoUnlock: "купил фото", privateTip: "чаевые в привате", private: "приват", spy: "подглядывал в привате", groupShow: "групповое шоу", ticketShow: "билет на шоу", subscription: "подписка", fanClub: "фан-клуб", tip: "" };
-function tipWhat(w) { w = (w || "").trim(); if (!w) return "просто так"; if (w in TIPW) return TIPW[w] || "просто так"; const a = act(w); return a ? w + " → " + a : w; }
+function tipWhat(w) { w = (w || "").trim(); if (!w) return "просто так"; if (w.includes("👉")) return w; if (w in TIPW) return TIPW[w] || "просто так"; const a = act(w); return a ? w + " → " + a : w; }
 let FEEDSEEN = null, LASTFEED = [], LOCALTIPS = [];
 const nowT = () => new Date().toLocaleString("sv").slice(0, 16);
 function feedShow(l) {
