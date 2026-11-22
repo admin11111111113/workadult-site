@@ -57,6 +57,7 @@
     for (const b of document.querySelectorAll("button,a,[role=button],[class*=btn i],[class*=button i]")) {
       if (!vis(b) || !ACC.test(txt(b))) continue;
       let c = b; for (let i = 0; i < 7 && c.parentElement; i++) { c = c.parentElement; const t = (c.innerText || ""); if (t.length > 700) break;
+        if (/друз|friend|bạn bè|подписк|follow/i.test(t)) break;    // заявка в друзья / уведомления — не приват (SC 22.11)
         if (PRIV.test(t)) { found = { acc: b, box: c }; break; } }
       if (found) break;
     }
@@ -70,9 +71,13 @@
     } else if (REQ) { REQ = null; send({ type: "privgone", p: P }); }
   }, 2000);
   // идёт ли приват сейчас (по надписям на странице)
-  const PRIVON = /(private show (is )?(in progress|started|active)|you are in (a )?private|in private show|приват(ное шоу)? (идёт|начал|начато|активн)|в привате|сейчас приват|đang (show )?riêng tư)/i;
+  const PRIVON = /(private show (is )?(in progress|started|active)|you are in (a )?private|in private show|приват(ное шоу|ный чат)? (идёт|начал|начато|активн)|в привате|сейчас приват|завершить приват|закончить приват|выйти из привата|end private|stop private|full private|полный приват|групповой приват|đang (show )?riêng tư)/i;
   let PON = null;
-  setInterval(() => { const on = PRIVON.test((document.body && document.body.innerText || "").slice(0, 200000)); if (on !== PON) { PON = on; send({ type: "private", p: P, on }); } }, 4000);
+  // CB/SC приват шлют cb.js/sc.js по статусу комнаты из API сайта; ManyVids — roomState своей комнаты; Bonga — по надписям консоли
+  if (P === "bc") setInterval(() => { const on = PRIVON.test((document.body && document.body.innerText || "").slice(0, 200000)); if (on !== PON) { PON = on; send({ type: "private", p: P, on }); } }, 3000);
+  if (P === "mv" && /\/live/i.test(location.pathname)) setInterval(async () => {
+    try { const t = await (await fetch("/live/cam/bad_secret", { cache: "no-store" })).text(), m = t.match(/roomState\\?":\\?"([A-Z_]+)/);
+      const on = !!m && /PRIVATE|EXCLUSIVE|GROUP/.test(m[1]); if (on !== PON) { PON = on; send({ type: "private", p: P, on }); } } catch (e) {} }, 5000);
   // ── Lovense «Ссылка управления»: окно их расширения на странице сайта (код, игрушки, таймер) → её панель и консоль владельца.
   // Ищем в DOM и в открытых shadow-root; «Закончить управление» жмём по её команде из панели (pcmd act=lovstop).
   const LCT = /ссылка управления|control link/i, LSES = /сеанс управления|control session|закончить управление|end control|stop control|ожидани|waiting/i;
@@ -105,21 +110,27 @@
   // Чат комнаты Bonga (консоль) / ManyVids (страница эфира) → панель, комната своего сайта.
   // Ищем контейнер чата (class с chat/message, много однотипных детей); новые строки «ник: текст» шлём в панель.
   // + разведка: раз в загрузку шлём, какой контейнер нашли (видно в журнале владельца) — чтобы донастроить по факту.
+  // Разметка (22.11, видно зрителем): Bonga — div.js-chat_msg[data-author] (.author_area[data-name] = ник; класс mb_gold/mb_unlimited/… = платящий,
+  // msg_model = она); ManyVids — ul[class*=public-chat] > li[class*=received-message] (ник = alt аватарки «ник avatar», класс __creator = она).
   if ((P === "bc" && /^\/console/.test(location.pathname)) || (P === "mv" && /\/live/i.test(location.pathname))) {
-    const pick = () => [...document.querySelectorAll("[class*=chat i],[class*=message i],[class*=msg i]")]
-      .filter(e => e.children.length >= 3 && e.getClientRects().length && e.scrollHeight >= e.clientHeight && /auto|scroll/.test(getComputedStyle(e).overflowY))
-      .sort((a, b) => b.children.length - a.children.length)[0];
-    const parse = n => { const t = (n.innerText || "").trim(); if (!t || t.length > 400) return null;
-      let m = t.match(/^([^\s:：]{2,32})\s*[:：]\s*([\s\S]+)$/); if (m) return { who: m[1], text: m[2].replace(/\s+/g, " ") };
-      const l = t.split("\n").map(s => s.trim()).filter(Boolean); return l.length >= 2 && l[0].length <= 32 ? { who: l[0], text: l.slice(1).join(" ") } : null; };
-    let box = null, sent = 0;
-    const hook = () => {
-      const b = pick(); if (!b || b === box) return; box = b;
-      send({ type: "probe", p: P, text: "чат: " + b.tagName.toLowerCase() + "." + String(b.className).slice(0, 80) + " детей " + b.children.length + " · пример: " + [...b.children].slice(-2).map(c => (c.innerText || "").replace(/\s+/g, " ").slice(0, 80)).join(" | ") });
-      new MutationObserver(ms => { for (const m of ms) for (const n of m.addedNodes) if (n.nodeType === 1) { const x = parse(n); if (x && sent++ < 5000) send({ type: "chat", p: P, ...x }); } })
-        .observe(b, { childList: true });
+    const ROW = P === "bc" ? ".js-chat_msg" : "li[class*=received-message]", done = new WeakSet(), t1 = Date.now();
+    const parse = n => {
+      let who = "", me = false, lvl = 0;
+      if (P === "bc") { const a = n.querySelector(".author_area[data-name]"); who = a ? a.dataset.name : n.dataset.author || ""; me = /msg_model|mb_model/.test(n.className);
+        lvl = /unlim|ultim|vip|premium/i.test(n.className) ? 3 : /gold/i.test(n.className) ? 2 : /mb_(member|basic)/.test(n.className) ? 0 : 0; }
+      else { const im = n.querySelector("img[alt$=' avatar']"); who = im ? im.alt.replace(/ avatar$/, "") : ""; me = /creator/i.test(n.className); }
+      let text = (n.innerText || "").replace(/\s+/g, " ").trim();
+      if (who && text.toLowerCase().startsWith(who.toLowerCase())) text = text.slice(who.length).replace(/^[:：\s]+/, "");
+      return who && text && text.length < 400 ? { who, text, lvl, me } : null;
     };
-    setTimeout(hook, 8000); setInterval(hook, 30000);
+    new MutationObserver(ms => {
+      if (Date.now() - t1 < 5000) return;                              // историю при загрузке не шлём
+      for (const m of ms) for (const n of m.addedNodes) {
+        if (n.nodeType !== 1) continue;
+        for (const r of n.matches(ROW) ? [n] : n.querySelectorAll(ROW)) { if (done.has(r)) continue; done.add(r); const x = parse(r); if (x) send({ type: "chat", p: P, ...x }); }
+      }
+    }).observe(document.body, { childList: true, subtree: true });
+    setTimeout(() => { const n = document.querySelectorAll(ROW).length; send({ type: "probe", p: P, text: "чат: строк " + n + (n ? "" : " — не нашла чат на странице") }); }, 15000);
   }
   // ManyVids: не вошла в аккаунт (страница входа / поле пароля / кнопка «Log in» в шапке) — говорим панели
   if (P === "mv") setTimeout(() => {
@@ -130,10 +141,13 @@
   }, 5000);
   // ManyVids: в эфире ли она — на странице live нет кнопки «GO LIVE» (после запуска её сменяет управление эфиром) и камера включена
   if (P === "mv" && /\/live/i.test(location.pathname)) {
-    const mvLive = () => {
+    const mvLive = async () => {
       const goBtn = [...document.querySelectorAll("button,[role=button],[class*=go-live-button]")].some(b => vis(b) && STREAM.test(txt(b)));
-      const cam = [...document.querySelectorAll("video")].some(v => v.srcObject && v.srcObject.active);
-      send({ type: "live", p: "mv", on: !goBtn && cam, st: goBtn ? "offline" : cam ? "live" : "?" });
+      const cam = [...document.querySelectorAll("video")].some(v => (v.srcObject && v.srcObject.active) || (!v.paused && v.readyState >= 2));
+      // главное — что говорит сам ManyVids о её комнате (roomState); кнопка/камера — запасной признак (22.11: эфир шёл, а панель не видела)
+      let rs = ""; try { const t = await (await fetch("/live/cam/bad_secret", { cache: "no-store" })).text(); rs = (t.match(/roomState\\?":\\?"([A-Z_]+)/) || [])[1] || ""; } catch (e) {}
+      const on = rs ? !/^(OFFLINE|NONE|ENDED)$/.test(rs) : (!goBtn && cam);
+      send({ type: "live", p: "mv", on, st: rs || (goBtn ? "offline" : cam ? "live" : "?") });
       // сколько заработала за этот эфир — сайт сам пишет «LIVE EARNINGS 12 Tks»
       const e = (document.body.innerText.match(/LIVE EARNINGS\s*([\d,.\s]+?)\s*Tks/i) || [])[1];
       if (e !== undefined) send({ type: "earn", p: "mv", tk: +e.replace(/\D/g, "") || 0 });
@@ -198,7 +212,8 @@
     return left && left === text.trim() ? "текст в поле, но не ушёл — нажми Enter на сайте" : "";
   }
   setInterval(async () => {
-    if (!(P === "bc" ? /^\/console/.test(location.pathname) : mine()) || !chatInput()) return;
+    // куда писать: CB /b/, SC — страница эфира или её комната, Bonga — консоль, MV — страница live
+    if (!(P === "bc" ? /^\/console/.test(location.pathname) : P === "sc" ? /broadcast|skitlstrynka/i.test(location.pathname) : mine()) || !chatInput()) return;
     const c = await send({ type: "poll", ch: "say-" + P });
     if (c && c.text) { const err = await say(c.text); send({ type: "saidres", p: P, id: c.id, ok: !err, err }); }
   }, 1000);

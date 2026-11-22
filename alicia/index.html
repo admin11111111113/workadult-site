@@ -33,6 +33,9 @@ input{font:inherit;padding:8px;border-radius:8px;border:1px solid #444;backgroun
 #paidq .pq .tk{font-size:28px;font-weight:900;color:#ffd76a;white-space:nowrap}#paidq .pq .tx{flex:1;font-size:18px}#paidq .pq .tx b{color:#ffd76a}#paidq .pq .do{font-size:21px;font-weight:800;color:#fff;margin-top:3px}
 #paidq .pq button{background:#ffb020;color:#2a1a00;font-size:20px;font-weight:900;padding:12px 24px}
 .pm{padding:5px 8px;border-radius:8px;margin-bottom:4px;font-size:16px}.pm b{color:#ffd76a}.pm.me{background:#1d2440}.pm .tm{color:#889;font-size:12px;float:right}
+.pp{display:flex;gap:8px;align-items:center;padding:7px 8px;border-radius:10px;background:#232733;margin-bottom:6px}.pp .lv{font-size:12px;font-weight:800;border-radius:6px;padding:2px 6px;background:#2f7d4a;white-space:nowrap}
+.pp .nm{font-weight:700;color:#ffd76a}.pp .sd{flex:1;color:#aab;font-size:13px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.pp button{padding:6px 10px;font-size:13px}.pp.done{opacity:.6}
+.wh,.nm{cursor:pointer}.wh:hover,.nm:hover{text-decoration:underline}
 .csec{color:#889;font-size:13px;margin:14px 0 6px;font-weight:700;text-transform:uppercase}
 html.light{filter:invert(1) hue-rotate(180deg);background:#fff}html.light img,html.light video{filter:invert(1) hue-rotate(180deg)}#thb{font:inherit;font-size:13px;font-weight:600;border:1px solid #555;border-radius:10px;padding:6px 12px;cursor:pointer;background:#2f3445;color:#fff;white-space:nowrap}</style></head><body>
 <div id="top">
@@ -79,12 +82,16 @@ html.light{filter:invert(1) hue-rotate(180deg);background:#fff}html.light img,ht
  <div class="col"><b>💬 Подсказки</b><div id="paidq"></div><div id="typing"></div><div id="hint">Подсказки появятся тут, когда начнётся эфир 💋</div>
   <b>💰 Донаты и сообщения <small style="color:#889;font-weight:400">— кто сколько дал и за что, что просит, что ты (бот) ему написала · свежее сверху</small></b>
   <div class="ftabs"><button id="ft-all" class="sel" onclick="ftab('all')">🔔 Все уведомления</button><button id="ft-priv" onclick="ftab('priv')">🔒 Приват</button></div>
-  <div class="box" id="feed" style="flex:1;min-height:0"></div><div id="privw" style="flex:1;min-height:0;display:none;flex-direction:column;gap:6px"><div class="box" id="privc" style="flex:1;min-height:0"></div>
+  <div class="box" id="feed" style="flex:1;min-height:0"></div>
+  <div id="dlgw" style="flex:1;min-height:0;display:none;flex-direction:column;gap:6px"><div style="display:flex;gap:8px;align-items:center"><button onclick="dlgClose()">← Назад</button><b id="dlgh" style="font-size:18px"></b></div>
+   <div class="box" id="dlgc" style="flex:1;min-height:0"></div>
+   <div style="display:flex;gap:6px"><input id="dlgin" placeholder="пиши ему по-русски — уйдёт на его языке" style="margin:0;font-size:17px" onkeydown="if(event.key==='Enter')dlgSay()"><button class="go" onclick="dlgSay()">➤ Отправить</button></div><small id="dlgst" style="color:#99a"></small></div><div id="privw" style="flex:1;min-height:0;display:none;flex-direction:column;gap:6px"><div class="box" id="privc" style="flex:1;min-height:0"></div>
    <div style="display:flex;gap:6px"><input id="privin" placeholder="пиши ему по-русски — уйдёт в чат привата на английском" style="margin:0;font-size:17px" onkeydown="if(event.key==='Enter')privSay()"><button class="go" onclick="privSay()">➤ Отправить</button></div></div>
  </div>
- <div class="col"><div id="wall" style="display:none"></div><div id="bot" style="display:none"></div><b>💬 Комнаты</b>
-  <div id="rooms"><div class="room"><b>Chaturbate</b><div class="box" id="chat-cb"></div></div><div class="room"><b>Stripchat</b><div class="box" id="chat-sc"></div></div>
-   <div class="room"><b>Bongacams</b><div class="box" id="chat-bc"></div></div><div class="room"><b>ManyVids</b><div class="box" id="chat-mv"></div></div></div></div>
+ <div class="col"><div id="wall" style="display:none"></div><div id="bot" style="display:none"></div>
+  <b>👥 В комнате — с токенами <small style="color:#889;font-weight:400">· «написать», если бот не успел</small></b>
+  <div class="box" id="ppl"><div class="chat" style="color:#667">тут появятся те, у кого есть токены, когда напишут в чате эфира</div></div>
+  <div id="rooms" style="display:none"><div class="box" id="chat-cb"></div><div class="box" id="chat-sc"></div><div class="box" id="chat-bc"></div><div class="box" id="chat-mv"></div></div></div>
 </div>
 <div id="setup"><div><b>Подключение OBS</b><p style="color:#aab;font-size:14px">В OBS: Сервис → Настройки сервера WebSocket → включить сервер, нажать «Показать данные подключения», скопировать пароль сюда.</p>
  <input id="pw" type="password" placeholder="пароль WebSocket"><button onclick="savePw()">Подключить</button></div></div>
@@ -185,12 +192,11 @@ setInterval(async () => { if (!ok) return; const st = await req("GetStreamStatus
   // ManyVids берёт камеру прямо с сайта — в OBS его нет. Bonga идёт из OBS: ищем её выход по имени (цель multi-rtmp)
   // статус Bonga — с её консоли (golive.js шлёт live bc); если консоль молчит — что видно по OBS
   // консоль Bonga молчит → судим по OBS: все потоки (включая вывод bonga) идут = Bonga в эфире
-  if (!(LIVE.bc && LIVE.bc.src !== "obs" && Date.now() - LIVE.bc.t < 30000)) {
-    const bo = ol.find(o => /bonga/i.test(o.outputName || ""));
-    const on = bo ? !!bo.outputActive : !!st.outputActive && nOut >= 2 && nOut === ol.length;
-    LIVE.bc = { on, st: "obs", src: "obs", t: Date.now() }; dot("bc", on, on ? "🟢 в эфире" : "🔴 не в эфире");
-  }
-  for (const k of ["cb", "sc", "mv"]) if (LIVE[k] && LIVE[k].on && Date.now() - LIVE[k].t > 40000) { LIVE[k].on = false; dot(k, false); showTot(); if (k === "mv") $("#s-mv").textContent = "не видно (вкладка закрыта?)"; }
+  { const bo = ol.find(o => /bonga/i.test(o.outputName || ""));
+    liveSet("bc", "obs", bo ? !!bo.outputActive : !!st.outputActive && nOut >= 2 && nOut === ol.length, "obs"); }
+  // OBS запустили кнопкой в самом OBS (не «Начать эфир» в панели) — сайты дожимаем сами (22.11: стрим шёл, сайты не открылись)
+  if (st.outputActive && !OBSWAS && Date.now() - GOING > 120000) { GOING = Date.now(); hint("▶ Вижу, OBS начал трансляцию — запускаю сайты сама…"); sitesGo("pre").then(() => setTimeout(() => sitesGo("post"), 8000)); LIVE_T = Date.now(); }
+  OBSWAS = !!st.outputActive;
   $("#st").textContent = (st.outputActive ? "● В ЭФИРЕ " + (st.outputTimecode || "").slice(0, 8) + " " + kb + " · потоков " + nOut + " из " + Math.max(ol.length, 1) : "эфир выключен") + (s === PAUSE ? " · ПАУЗА" : "") + (r.outputActive ? " · ⏺ запись" : "");
   $("#b-go").disabled = !!st.outputActive; $("#b-pause").textContent = s === PAUSE ? "▶ Вернуться" : "⏸ Пауза";
   $("#b-rec").textContent = r.outputActive ? "⏹ Сохранить видео" : "⏺ Снять видео"; }, 2000);
@@ -198,7 +204,20 @@ setInterval(async () => { if (!ok) return; const st = await req("GetStreamStatus
 // запрос с ответом-статусом (req() глотает ошибки OBS)
 function reqS(t, data) { return new Promise(r => { if (!ok) return r({ requestStatus: { result: false, comment: "OBS не подключён" } }); const id = "r" + (++rid); W[id] = x => r(x);
   ws.send(JSON.stringify({ op: 6, d: { requestType: t, requestId: id, requestData: data } })); setTimeout(() => { if (W[id]) { delete W[id]; r({ requestStatus: { result: false, comment: "OBS не ответил" } }); } }, 8000); }); }
+// ── статус эфира по площадке: вкладка сайта + хаб (сам спрашивает сайты) + OBS (Bonga). В эфире, если ХОТЬ ОДИН свежий источник
+// говорит «да» — раньше источники перебивали друг друга и точка мигала зелёный/красный (22.11 «то так, то нормально»)
+let OBSWAS = null, GOING = 0; const LV = {};
+function liveSet(p, src, on, st) { (LV[p] = LV[p] || {})[src] = { on: !!on, st: st || "", t: Date.now() }; liveEval(p); }
+function liveEval(p) {
+  const fr = x => x && Date.now() - x.t < 45000, L = LV[p] || {}, srcs = ["tab", "obs", "hub"].filter(k => fr(L[k]));
+  const onS = srcs.find(k => L[k].on), on = !!onS, was = LIVE[p] && LIVE[p].on;
+  LIVE[p] = { on, st: (onS && L[onS].st) || (srcs[0] && L[srcs[0]].st) || "", src: onS || srcs[0] || "", t: srcs.length ? Date.now() : (LIVE[p] || {}).t || 0 };
+  dot(p, on); if (p === "mv" || p === "bc") $("#s-" + p).textContent = on ? "🟢 в эфире" : srcs.length ? "🔴 не в эфире" : "не видно";
+  if (was !== on) showTot();
+}
+setInterval(() => ["cb", "sc", "bc", "mv"].forEach(liveEval), 5000);
 async function goLive() {
+  GOING = Date.now();
   call("openTab", { url: LOV_PAGE, prefix: "https://rugextension.lovense.com/", pinned: true });
   if (!ok) return hint("⚠️ OBS не подключён — запусти OBS и подожди, пока вверху OBS станет зелёным");
   // Порядок важен для Bonga: сначала на сайте «Начать трансляцию» (откроется консоль), ПОТОМ OBS (вывод bonga
@@ -386,8 +405,7 @@ function onExt(m) {
   }
   // запоминаем только ManyVids (у Bonga 2-й шаг в консоли — её открывать напрямую нельзя)
   if (m.type === "golearn" && m.p === "mv" && /\/live\/cam\//.test(m.url || "")) localStorage.go_mv = m.url;
-  if (m.type === "live") { LIVE[m.p] = { on: !!m.on, st: m.st, t: Date.now() }; dot(m.p, !!m.on); showTot();
-    if (m.p === "mv" || m.p === "bc") $("#s-" + m.p).textContent = m.on ? "🟢 в эфире" : "🔴 не в эфире"; }
+  if (m.type === "live") liveSet(m.p, "tab", m.on, m.st);
   if (m.type === "earn" && m.p === "mv") { ETK.mv = m.tk; showTot(); }
   if (m.type === "lovlog") hint("🎀 " + esc(m.text.replace(/^Lovense: /, "Lovense: ")));
   if (m.type === "lovsites") {
@@ -409,8 +427,17 @@ function onExt(m) {
   if (m.type === "privgone" && PRIVREQ === m.p) privHide();
   if (m.type === "private") privOn(m.p, m.on);
   if (m.type === "probe") admEv("🔎 " + (NAME[m.p] || m.p) + " " + m.text);   // разведка — только в журнал владельца
-  if (m.type === "chat" && m.text && m.who) {                         // кто пишет в чате комнаты — хабу (бот знакомится с ними в личке)
-    const k = m.p + "|" + m.who; ROOM[k] = { p: m.p, who: m.who, text: String(m.text).slice(0, 200), t: Date.now(), n: ((ROOM[k] || {}).n || 0) + 1 };
+  if (m.type === "menubuy" && m.who && m.what) {                      // CB Dream Bot: «ник tipped for → пункт» (сумма отдельной строкой)
+    const a = act(m.what), lt = LOCALTIPS.slice().reverse().find(x => x.p === m.p && x.who === m.who && Date.now() - x.at < 120000);
+    if (lt) lt.text = m.what + (a ? " 👉 " + a : ""); else LOCALTIPS.push({ id: "l" + Date.now() + Math.random(), at: Date.now(), t: nowT(), p: m.p, who: m.who, tk: 0, text: m.what + (a ? " 👉 " + a : ""), kind: "tip" });
+    feedShow(null);
+    PAIDQ.push({ p: m.p, who: m.who, tk: lt ? lt.tk : "", what: m.what, act: a || m.what }); PAIDQ.splice(0, PAIDQ.length - 5); paidShow(); ding(); PAIDBEEP = Date.now();
+    hint(`💰 <b>${esc(m.who)}</b> оплатил «${esc(m.what)}»${a ? "<br>👉 " + esc(a) : ""}`); admEv("💰 оплатили по меню: " + m.who + " — " + m.what);
+  }
+  if (m.type === "saidres" && RSAYDONE.has(m.id)) admEv((m.ok ? "📣 бот написал в общий чат " : "⚠ не ушло в общий чат ") + (PN4[m.p] || m.p) + (m.err ? ": " + m.err : ""));
+  if (m.type === "chat" && m.text && m.who && !m.me && !/^notice$/i.test(m.who)) {   // кто пишет в чате комнаты — хабу (бот знакомится с ними в личке)
+    const k = m.p + "|" + m.who, o = ROOM[k] || {};
+    ROOM[k] = { p: m.p, who: m.who, uid: m.uid || o.uid || "", lvl: Math.max(+m.lvl || 0, o.lvl || 0), text: String(m.text).slice(0, 200), t: Date.now(), n: (o.n || 0) + 1 }; pplShow();
     const ks = Object.keys(ROOM); if (ks.length > 120) ks.sort((x, y) => ROOM[x].t - ROOM[y].t).slice(0, ks.length - 120).forEach(x => delete ROOM[x]);
   }
   if (m.type === "chat" && m.text && PRIVLIVE[m.p]) { PRIVMSG.push({ p: m.p, who: m.who || "", text: String(m.text).slice(0, 400), t: new Date().toTimeString().slice(0, 5) }); PRIVMSG.splice(0, PRIVMSG.length - 150); if (FT === "priv") privShowChat(); }
@@ -495,7 +522,7 @@ function feedShow(l) {
   const seen = new Set(FEEDSEEN || []), fresh = FEEDSEEN && l.some(x => !seen.has(x.id));
   const one = x => {
     const cls = /^(🤖|📨|✍️|✉️)/.test(x.text) ? "bot" : x.kind === "pay" ? "pay" : x.kind === "tip" ? "tipx" : "";
-    return `<div class="nf ${cls} ${FEEDSEEN && !seen.has(x.id) ? "newx" : ""}">${x.kind === "tip" ? `<span class="tkn">${+x.tk || 0} tk</span>` : ""}<span class="pf">${esc(PNAME[x.p] || x.p)}</span><span class="wh">${esc(x.who)}</span>` +
+    return `<div class="nf ${cls} ${FEEDSEEN && !seen.has(x.id) ? "newx" : ""}">${x.kind === "tip" ? `<span class="tkn">${+x.tk || 0} tk</span>` : ""}<span class="pf">${esc(PNAME[x.p] || x.p)}</span><span class="wh" data-p="${esc(x.p)}" data-who="${esc(x.who)}" title="открыть переписку / написать">${esc(x.who)}</span>` +
       `<span class="tx">${esc(x.kind === "tip" ? tipWhat(x.text) : x.text)}</span><span class="tm">${esc((x.t || "").slice(11, 16))}</span></div>`; };
   if (FT === "pay") l = l.filter(x => x.kind === "tip" || x.kind === "pay");
   el.innerHTML = l.slice().reverse().map(one).join("") || '<div class="chat" style="color:#667">пока тихо — тут будут донаты, просьбы и что бот написал</div>';
@@ -518,10 +545,8 @@ async function hubSync() {
   if (alive) { CUSTS = h.customs || []; custRender(); typeShow((h.typing || []).filter(t => !TYPEDONE.has(t.id))); hmShow(h.msgs || []); for (const x of h.psay || []) if (!PSAYDONE.has(x.id)) { PSAYDONE.add(x.id); privSay(x.text); } } else typeShow([]);
   if (alive && h.today) { ETK.bc = h.today.bc || 0; showTot(); }
   // её вкладка сайта молчит (закрыта / скрипт не подцепился) → статус эфира от хаба (он сам спрашивает сайты)
-  for (const k of ["mv", "sc", "cb", "bc"]) if (alive && !(LIVE[k] && LIVE[k].src !== "hub" && Date.now() - LIVE[k].t < 30000)) {
-    const on = !!(h.live_on || {})[k]; LIVE[k] = { on, st: "hub", src: "hub", t: Date.now() };
-    dot(k, on); showTot(); if (k === "mv") $("#s-mv").textContent = on ? "🟢 в эфире" : "🔴 не в эфире";
-  }
+  if (alive) for (const k of ["mv", "sc", "cb", "bc"]) liveSet(k, "hub", !!(h.live_on || {})[k], "hub");
+  if (alive) { HUBPPL = h.ppl || []; pplShow(); for (const x of h.rsay || []) if (!RSAYDONE.has(x.id)) { RSAYDONE.add(x.id); if (port && !PRIVLIVE[x.p]) call("push", { ch: "say-" + x.p, cmd: { id: x.id, text: x.text } }); } }
   if (Date.now() - DMHOLD < 30000) return;                           // она печатает ответ — не перерисовываем
   DMS = (h && h.dm) || [];
   for (const p in PNAME) { const c = $("#a-" + p); c.disabled = !alive; if (h && Date.now() - AUTO_T > 15000) c.checked = !!(h.auto || {})[p]; }
@@ -625,7 +650,7 @@ async function hmAns(rep) {
 // ── вкладки над лентой: все / кто что оплатил / приватный чат
 let FT = "all", PRIVMSG = [], PSAYDONE = new Set(JSON.parse(sessionStorage.psay || "[]"));
 setInterval(() => { sessionStorage.psay = JSON.stringify([...PSAYDONE].slice(-50)); }, 5000);
-function ftab(t) { FT = t; ["all", "priv"].forEach(k => $("#ft-" + k).classList.toggle("sel", k === t));
+function ftab(t) { FT = t; DLG = null; $("#dlgw").style.display = "none"; ["all", "priv"].forEach(k => $("#ft-" + k).classList.toggle("sel", k === t));
   $("#feed").style.display = t === "priv" ? "none" : ""; $("#privw").style.display = t === "priv" ? "flex" : "none"; if (t === "priv") privShowChat(); else feedShow(LASTFEED.length ? LASTFEED : null); }
 function privShowChat() {
   const any = Object.keys(PRIVLIVE).filter(k => PRIVLIVE[k]);
@@ -653,10 +678,54 @@ async function privSay(ownerText) {
 // ── оплатили по меню: карточка + сигнал, пока она не нажмёт «Сделала»
 let PAIDQ = [], PAIDBEEP = 0;
 function paidShow() {
-  $("#paidq").innerHTML = PAIDQ.map((x, i) => `<div class="pq"><span class="tk">${x.tk} tk</span><div class="tx"><b>${esc(x.who)}</b> (${esc(PN4[x.p] || x.p)}) оплатил «${esc(x.what)}»<div class="do">👉 ${esc(x.act)}</div></div><button onclick="paidOk(${i})">✅ OK</button></div>`).join("");
+  $("#paidq").innerHTML = PAIDQ.map((x, i) => `<div class="pq"><span class="tk">${x.tk ? x.tk + " tk" : "💰"}</span><div class="tx"><b>${esc(x.who)}</b> (${esc(PN4[x.p] || x.p)}) оплатил «${esc(x.what)}»<div class="do">👉 ${esc(x.act)}</div></div><button onclick="paidOk(${i})">✅ OK</button></div>`).join("");
 }
 function paidOk(i) { const x = PAIDQ.splice(i, 1)[0]; if (x) admEv("✅ нажала OK: " + x.who + " — " + x.what); paidShow(); }
 setInterval(() => { if (PAIDQ.length && Date.now() - PAIDBEEP > 12000) { ding(); PAIDBEEP = Date.now(); } }, 3000);   // пищит, пока не нажмёт OK
+// ── «В комнате — с токенами»: кто писал в чате эфира (её страницы) + что знает бот (траты, писал ли он уже) — с кнопкой «написать»
+const PQ = "https://alicia-link.videorils.workers.dev/pq", LVN = ["", "есть токены", "тратит", "много тратит", "VIP"];
+let HUBPPL = [], RSAYDONE = new Set(), PPLHOLD = 0;
+async function pq(body) { try { return await (await fetch(PQ, { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ w: "alicia-panel", ...body }) })).json(); } catch (e) { return { ok: false, err: "нет связи с ботом" }; } }
+function pplShow() {
+  if (Date.now() - PPLHOLD < 20000) return;                          // она печатает — не перерисовываем
+  const m = {}; for (const r of Object.values(ROOM)) if (Date.now() - r.t < 3600000) m[r.p + "|" + r.who.toLowerCase()] = { ...r };
+  for (const h of HUBPPL) { const k = h.p + "|" + h.who.toLowerCase(); m[k] = { ...(m[k] || { p: h.p, who: h.who, t: 0, text: "" }), ...h, lvl: Math.max(h.lvl || 0, (m[k] || {}).lvl || 0), text: (m[k] || {}).text || h.said || "" }; }
+  const l = Object.values(m).filter(r => (r.lvl || 0) >= 1 || r.spent).sort((a, b) => (b.spent || 0) - (a.spent || 0) || (b.lvl || 0) - (a.lvl || 0) || b.t - a.t).slice(0, 40);
+  PPL = l;
+  $("#ppl").innerHTML = l.map((r, i) => `<div class="pp ${r.wrote ? "done" : ""}"><span class="pf" style="background:#000a;border-radius:6px;padding:1px 6px;font-size:11px">${esc(PN4[r.p] || r.p)}</span>` +
+    `<span class="nm" data-p="${esc(r.p)}" data-who="${esc(r.who)}" data-uid="${esc(r.uid || "")}">${esc(r.who)}</span><span class="lv">${r.spent ? "дал " + r.spent + " tk" : LVN[r.lvl] || "токены"}</span>` +
+    `<span class="sd" title="${esc(r.text)}">${r.wrote ? "✉️ бот написал · " : ""}${esc(r.text || "")}</span><button onclick="dlgOpen(PPL[${i}].p,PPL[${i}].who,PPL[${i}].uid)">✍️ написать</button></div>`).join("")
+    || '<div class="chat" style="color:#667">пока никого с токенами — появятся, когда напишут в чате эфира</div>';
+}
+let PPL = [];
+// ── переписка с человеком: нажала на ник (в ленте, донатах или списке) → весь диалог, «← Назад», можно написать самой
+let DLG = null;
+document.addEventListener("click", e => { const n = e.target.closest(".wh[data-p],.nm[data-p]"); if (n) dlgOpen(n.dataset.p, n.dataset.who, n.dataset.uid || ""); });
+async function dlgOpen(p, who, uid) {
+  if (!["cb", "sc", "bc", "mv"].includes(p) || !who) return;
+  DLG = { p, who, uid: uid || ((ROOM[p + "|" + who] || {}).uid) || "" };
+  $("#feed").style.display = "none"; $("#privw").style.display = "none"; $("#dlgw").style.display = "flex";
+  $("#dlgh").textContent = (PN4[p] || p) + " · " + who; $("#dlgst").textContent = ""; $("#dlgc").innerHTML = '<div class="chat" style="color:#889">⏳ загружаю переписку…</div>'; $("#dlgin").focus();
+  dlgLoad();
+}
+async function dlgLoad() {
+  if (!DLG) return; const d = DLG, j = await pq({ op: "dlg", p: d.p, who: d.who, uid: d.uid });
+  if (DLG !== d) return;
+  const ms = (j && j.msgs) || [];
+  $("#dlgc").innerHTML = ms.length ? ms.slice().reverse().map(x => `<div class="pm ${x.me ? "me" : ""}"><span class="tm">${esc((x.t || "").slice(5, 16))}</span><b style="color:${x.me ? "#9fbaff" : "#ffd76a"}">${x.me ? "ты" : esc(d.who)}</b>: ${esc(x.ru || x.text)}` +
+      (x.ru && x.ru !== x.text ? `<br><small style="color:#889">${esc(x.text)}</small>` : "") + `</div>`).join("")
+    : `<div class="chat" style="color:#889">${esc((j && j.err) || "переписки с ним ещё нет — напиши первой внизу")}</div>`;
+  if (j && j.info) $("#dlgst").textContent = j.info;
+}
+setInterval(() => { if (DLG && $("#dlgw").style.display === "flex") dlgLoad(); }, 12000);
+function dlgClose() { DLG = null; $("#dlgw").style.display = "none"; ftab(FT); }
+async function dlgSay() {
+  const inp = $("#dlgin"), text = inp.value.trim(); if (!DLG || !text) return;
+  inp.value = ""; $("#dlgst").textContent = "⏳ отправляю… (бот переведёт и отправит ему в личку)";
+  const j = await pq({ op: "send", p: DLG.p, who: DLG.who, uid: DLG.uid, text });
+  $("#dlgst").textContent = j && j.ok ? "✅ ушло в очередь — через ~10–30 сек появится в переписке" : "⚠ " + ((j && j.err) || "не ушло");
+  admEv("✍️ написала " + DLG.who + ": " + text); setTimeout(dlgLoad, 8000); setTimeout(dlgLoad, 25000);
+}
 async function hubLoop() { await hubSync(); setTimeout(hubLoop, TYPES.length ? 2000 : 5000); }
 hubLoop();
 admEv("📂 панель открыта"); setTimeout(admSend, 3000); setInterval(admSend, 15000);
