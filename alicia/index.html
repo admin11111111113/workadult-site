@@ -554,7 +554,7 @@ async function hubSync() {
   if (alive) for (const k of ["mv", "sc", "cb", "bc"]) liveSet(k, "hub", !!(h.live_on || {})[k], "hub");
   if (alive) for (const c of h.rchat || []) if (!RCHSEEN.has(c.id)) { RCHSEEN.add(c.id);    // чат её комнат, который хаб видит сам (как зритель)
     if (!WALLMSG.some(x => !x.me && x.p === c.p && x.who === c.who && x.text === c.text)) wallAdd(c); }
-  if (alive) { HUBPPL = h.ppl || []; pplShow(); for (const x of h.rsay || []) if (!RSAYDONE.has(x.id)) { RSAYDONE.add(x.id); if (port && !PRIVLIVE[x.p]) call("push", { ch: "say-" + x.p, cmd: { id: x.id, text: x.text } }); } }
+  if (alive) { HUBPPL = h.ppl || []; pplShow(); for (const x of h.rsay || []) if (!RSAYDONE.has(x.id)) { RSAYDONE.add(x.id); /* хаб сам кладёт текст на сервер (/say), страница эфира забирает */ } }
   if (Date.now() - DMHOLD < 30000) return;                           // она печатает ответ — не перерисовываем
   DMS = (h && h.dm) || [];
   for (const p in PNAME) { const c = $("#a-" + p); c.disabled = !alive; if (h && Date.now() - AUTO_T > 15000) c.checked = !!(h.auto || {})[p]; }
@@ -694,10 +694,9 @@ function wallShow(force) {
 async function roomSay(p, who, ru, his, bot, out0) {
   const x = { id: "w" + (++WID), me: true, bot, p, to: who, ru, out: "", st: "⏳", t: new Date().toTimeString().slice(0, 5) };
   WALLMSG.push(x); wallShow(true);
-  if (!port) { x.st = "⚠ нет помощника Chrome"; return wallShow(true); }
-  const body = out0 || (hasRu(his) || !hasRu(ru) ? ru : await tr(ru, "en"));
+    const body = out0 || (hasRu(his) || !hasRu(ru) ? ru : await tr(ru, "en"));
   x.out = "@" + who + " " + body; RSAYDONE.add(x.id);
-  await call("push", { ch: "say-" + p, cmd: { id: x.id, text: x.out } }); WSAY[x.id] = x; wallShow(true);
+  await sayQ(p, x.id, x.out); WSAY[x.id] = x; wallShow(true);
   admEv((bot ? "🤖 бот ответил в чат " : "🧱 ответила в чат ") + who + ": " + ru);
   setTimeout(() => { if (x.st === "⏳") { x.st = "⚠ страница сайта не ответила"; wallShow(true); } }, 8000);
 }
@@ -724,7 +723,7 @@ async function privSay(ownerText) {
   const inp = $("#privin"), text = (ownerText || inp.value).trim(); if (!text) return;
   const p = Object.keys(PRIVLIVE).find(k => PRIVLIVE[k]) || (PRIVMSG.length ? PRIVMSG[PRIVMSG.length - 1].p : "");
   if (!p) { inp.placeholder = "привата сейчас нет — писать некуда"; return; }
-  if (!port) { inp.placeholder = "нет помощника Chrome — напиши на сайте"; return; }
+  
   if (!ownerText) inp.value = ""; const his = PRIVMSG.filter(m => !m.me && m.p === p).slice(-3).map(m => m.text).join(" ");
   let out = text;
   if (/[а-яё]/i.test(text) && !/[а-яё]/i.test(his)) {
@@ -732,7 +731,7 @@ async function privSay(ownerText) {
     try { out = JSON.parse(r.text)[0].map(x => x[0]).join("") || text; } catch (e) {}
   }
   const m = { me: true, by: ownerText ? "Роман" : "", p, text, out, t: new Date().toTimeString().slice(0, 5), st: "⏳", id: "s" + Date.now() }; PRIVMSG.push(m); privShowChat();
-  await call("push", { ch: "say-" + p, cmd: { id: m.id, text: out } }); admEv((ownerText ? "🔒 Роман написал в приват: " : "🔒 написала в приват: ") + text); setTimeout(admSend, 1500);
+  await sayQ(p, m.id, out); admEv((ownerText ? "🔒 Роман написал в приват: " : "🔒 написала в приват: ") + text); setTimeout(admSend, 1500);
   setTimeout(() => { if (m.st === "⏳") { m.st = "⚠ страница сайта не ответила — напиши там"; privShowChat(); } }, 8000);
 }
 // ── оплатили по меню: карточка + сигнал, пока она не нажмёт «Сделала»
@@ -743,10 +742,12 @@ function paidShow() {
 function paidOk(i) { const x = PAIDQ.splice(i, 1)[0]; if (x) admEv("✅ нажала OK: " + x.who + " — " + x.what); paidShow(); }
 setInterval(() => { if (PAIDQ.length && Date.now() - PAIDBEEP > 12000) { ding(); PAIDBEEP = Date.now(); } }, 3000);   // пищит, пока не нажмёт OK
 // ── «В комнате — с токенами»: кто писал в чате эфира (её страницы) + что знает бот (траты, писал ли он уже) — с кнопкой «написать»
+// текст в чат сайта: на сервер (/say) — страница эфира забирает сама (помощник 1.0 не передаёт команды вкладкам)
+async function sayQ(p, id, text) { try { await fetch("https://alicia-link.videorils.workers.dev/say?p=" + p, { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ w: "alicia-panel", id, text }) }); } catch (e) {} }
 const PQ = "https://alicia-link.videorils.workers.dev/pq", LVN = ["", "есть токены", "тратит", "много тратит", "VIP"];
 let HUBPPL = [], RSAYDONE = new Set(), PPLHOLD = 0, RCHSEEN = new Set(), RSAID = {};
 // версия панели: хаб пишет в общий чат только через панель, которая это умеет (v ≥ 3); новая версия на сайте → панель обновится сама
-const PANEL_V = 5;
+const PANEL_V = 6;
 setInterval(async () => {
   try { const t = await (await fetch(location.pathname + "?vchk=" + Date.now(), { cache: "no-store" })).text(), v = +((t.match(/const PANEL_V = (\d+)/) || [])[1] || 0);
     const busy = Object.values(PRIVLIVE).some(Boolean) || TYPES.length || PAIDQ.length || [...document.querySelectorAll("input,textarea")].some(i => i.value && i.type !== "file") || Object.keys(CUP).length;
