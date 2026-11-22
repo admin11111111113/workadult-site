@@ -550,6 +550,8 @@ async function hubSync() {
   if (alive && h.today) { ETK.bc = h.today.bc || 0; showTot(); }
   // её вкладка сайта молчит (закрыта / скрипт не подцепился) → статус эфира от хаба (он сам спрашивает сайты)
   if (alive) for (const k of ["mv", "sc", "cb", "bc"]) liveSet(k, "hub", !!(h.live_on || {})[k], "hub");
+  if (alive) for (const c of h.rchat || []) if (!RCHSEEN.has(c.id)) { RCHSEEN.add(c.id);    // чат её комнат, который хаб видит сам (как зритель)
+    if (!WALLMSG.some(x => !x.me && x.p === c.p && x.who === c.who && x.text === c.text)) wallAdd(c); }
   if (alive) { HUBPPL = h.ppl || []; pplShow(); for (const x of h.rsay || []) if (!RSAYDONE.has(x.id)) { RSAYDONE.add(x.id); if (port && !PRIVLIVE[x.p]) call("push", { ch: "say-" + x.p, cmd: { id: x.id, text: x.text } }); } }
   if (Date.now() - DMHOLD < 30000) return;                           // она печатает ответ — не перерисовываем
   DMS = (h && h.dm) || [];
@@ -740,13 +742,15 @@ function paidOk(i) { const x = PAIDQ.splice(i, 1)[0]; if (x) admEv("✅ нажа
 setInterval(() => { if (PAIDQ.length && Date.now() - PAIDBEEP > 12000) { ding(); PAIDBEEP = Date.now(); } }, 3000);   // пищит, пока не нажмёт OK
 // ── «В комнате — с токенами»: кто писал в чате эфира (её страницы) + что знает бот (траты, писал ли он уже) — с кнопкой «написать»
 const PQ = "https://alicia-link.videorils.workers.dev/pq", LVN = ["", "есть токены", "тратит", "много тратит", "VIP"];
-let HUBPPL = [], RSAYDONE = new Set(), PPLHOLD = 0;
+let HUBPPL = [], RSAYDONE = new Set(), PPLHOLD = 0, RCHSEEN = new Set();
 async function pq(body) { try { return await (await fetch(PQ, { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ w: "alicia-panel", ...body }) })).json(); } catch (e) { return { ok: false, err: "нет связи с ботом" }; } }
 function pplShow() {
   if (Date.now() - PPLHOLD < 20000) return;                          // она печатает — не перерисовываем
   const m = {}; for (const r of Object.values(ROOM)) if (Date.now() - r.t < 3600000) m[r.p + "|" + r.who.toLowerCase()] = { ...r };
   for (const h of HUBPPL) { const k = h.p + "|" + h.who.toLowerCase(); m[k] = { ...(m[k] || { p: h.p, who: h.who, t: 0, text: "" }), ...h, lvl: Math.max(h.lvl || 0, (m[k] || {}).lvl || 0), text: (m[k] || {}).text || h.said || "" }; }
-  const l = Object.values(m).filter(r => (r.lvl || 0) >= 1 || r.spent).sort((a, b) => (b.spent || 0) - (a.spent || 0) || (b.lvl || 0) - (a.lvl || 0) || b.t - a.t).slice(0, 40);
+  // сверху самые ценные: $ = (сколько дал + уровень токенов) × цена токена площадки — Stripchat/Chaturbate дороже Бонги
+  const TV = { cb: .05, sc: .05, bc: .025, mv: .08 }, sc = r => ((r.spent || 0) + (r.lvl || 0) * 100) * (TV[r.p] || .05);
+  const l = Object.values(m).filter(r => (r.lvl || 0) >= 1 || r.spent).sort((a, b) => sc(b) - sc(a) || b.t - a.t).slice(0, 40);
   PPL = l; $("#ppln").textContent = l.length ? "(" + l.length + ")" : "";
   $("#ppl").innerHTML = $("#ppl2").innerHTML = l.map((r, i) => `<div class="pp ${r.wrote ? "done" : ""}"><span class="pf" style="background:#000a;border-radius:6px;padding:1px 6px;font-size:11px">${esc(PN4[r.p] || r.p)}</span>` +
     `<span class="nm" data-p="${esc(r.p)}" data-who="${esc(r.who)}" data-uid="${esc(r.uid || "")}">${esc(r.who)}</span><span class="lv">${r.spent ? "дал " + r.spent + " tk" : LVN[r.lvl] || "токены"}</span>` +
