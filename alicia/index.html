@@ -197,7 +197,8 @@ setInterval(async () => { if (!ok) return; const st = await req("GetStreamStatus
   { const bo = ol.find(o => /bonga/i.test(o.outputName || ""));
     liveSet("bc", "obs", bo ? !!bo.outputActive : !!st.outputActive && nOut >= 2 && nOut === ol.length, "obs"); }
   // OBS запустили кнопкой в самом OBS (не «Начать эфир» в панели) — сайты дожимаем сами (22.11: стрим шёл, сайты не открылись)
-  if (st.outputActive && !OBSWAS && Date.now() - GOING > 120000) { GOING = Date.now(); hint("▶ Вижу, OBS начал трансляцию — запускаю сайты сама…"); sitesGo("pre").then(() => setTimeout(() => sitesGo("post"), 8000)); LIVE_T = Date.now(); }
+  // только переход «не шёл → пошёл» при открытой панели (OBSWAS === false). При открытии панели посреди эфира (OBSWAS = null) — ничего не трогаем
+  if (st.outputActive && OBSWAS === false && Date.now() - GOING > 120000 && !["cb", "sc", "bc", "mv"].some(k => LIVE[k] && LIVE[k].on)) { GOING = Date.now(); hint("▶ Вижу, OBS начал трансляцию — запускаю сайты сама…"); sitesGo("pre").then(() => setTimeout(() => sitesGo("post"), 8000)); LIVE_T = Date.now(); }
   OBSWAS = !!st.outputActive;
   $("#st").textContent = (st.outputActive ? "● В ЭФИРЕ " + (st.outputTimecode || "").slice(0, 8) + " " + kb + " · потоков " + nOut + " из " + Math.max(ol.length, 1) : "эфир выключен") + (s === PAUSE ? " · ПАУЗА" : "") + (r.outputActive ? " · ⏺ запись" : "");
   $("#b-go").disabled = !!st.outputActive; $("#b-pause").textContent = s === PAUSE ? "▶ Вернуться" : "⏸ Пауза";
@@ -745,7 +746,7 @@ setInterval(() => { if (PAIDQ.length && Date.now() - PAIDBEEP > 12000) { ding();
 const PQ = "https://alicia-link.videorils.workers.dev/pq", LVN = ["", "есть токены", "тратит", "много тратит", "VIP"];
 let HUBPPL = [], RSAYDONE = new Set(), PPLHOLD = 0, RCHSEEN = new Set(), RSAID = {};
 // версия панели: хаб пишет в общий чат только через панель, которая это умеет (v ≥ 3); новая версия на сайте → панель обновится сама
-const PANEL_V = 3;
+const PANEL_V = 4;
 setInterval(async () => {
   try { const t = await (await fetch(location.pathname + "?vchk=" + Date.now(), { cache: "no-store" })).text(), v = +((t.match(/const PANEL_V = (\d+)/) || [])[1] || 0);
     const busy = Object.values(PRIVLIVE).some(Boolean) || TYPES.length || PAIDQ.length || [...document.querySelectorAll("input,textarea")].some(i => i.value && i.type !== "file") || Object.keys(CUP).length;
