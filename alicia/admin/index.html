@@ -75,8 +75,11 @@ load();
 function tab(t) { $("#hubv").style.display = t === "hub" ? "flex" : "none"; $("#herv").style.display = t === "her" ? "block" : "none";
   $("#ctv").style.display = t === "ct" ? "flex" : "none";
   $("#tb-hub").classList.toggle("sel", t === "hub"); $("#tb-her").classList.toggle("sel", t === "her"); $("#tb-ct").classList.toggle("sel", t === "ct"); localStorage.admTab = t;
-  if (t === "ct" && HUBURL && !$("#ctf").src) $("#ctf").src = HUBURL + "/content"; }
-let HUBURL = "";   // счётчик кастомов — кнопка «🎬 Кастом (N)» внутри Консоли Алисии
+  if (t === "ct" && HUBURL && !$("#ctf").src) $("#ctf").src = HUBURL + "/full?set=content"; }
+let HUBURL = "";
+// цифра новых кастомов на кнопке вкладки — присылает консоль хаба из iframe
+addEventListener("message", e => { if (e.data && typeof e.data.alicia_customs === "number") { const n = e.data.alicia_customs, b = $("#tb-ct");
+  b.innerHTML = "🎬 Консоль ManyVids" + (n ? ` <span style="background:#e74c3c;border-radius:10px;padding:0 7px;margin-left:4px">${n}</span>` : ""); } });
 // консоль хаба: узнаём его текущий адрес и входим тем же паролем прямо в окне
 async function hubOpen() {
   if (!localStorage.admk) return setTimeout(hubOpen, 2000);
@@ -86,7 +89,7 @@ async function hubOpen() {
   const f = document.createElement("form"); f.method = "post"; f.action = j.url + "/login"; f.target = "hubf";
   const i = document.createElement("input"); i.type = "hidden"; i.name = "p"; i.value = localStorage.admk; f.appendChild(i);
   document.body.appendChild(f); f.submit(); f.remove(); HUBURL = j.url;
-  $("#hubf").addEventListener("load", () => { if ($("#ctv").style.display !== "none" && !$("#ctf").src) $("#ctf").src = HUBURL + "/content"; }, { once: true });
+  $("#hubf").addEventListener("load", () => { if (!$("#ctf").src) $("#ctf").src = HUBURL + "/full?set=content"; }, { once: true });   // грузим сразу — чтобы цифра кастомов была видна
   $("#hubmsg").innerHTML = `<a href="${esc(j.url)}/full" target="_blank" style="color:#9fbaff">открыть отдельно</a>`;
 }
 tab("hub"); hubOpen();   // вкладку «её панель» владелец попросил убрать (21.11) — только консоль
