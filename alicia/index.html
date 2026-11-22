@@ -474,7 +474,7 @@ function feedShow(l) {
   // донаты с её страниц приходят сразу (LOCALTIPS); когда тот же донат придёт от бота — локальный убираем
   LOCALTIPS = LOCALTIPS.filter(x => Date.now() - x.at < 600000 && !LASTFEED.some(y => y.kind === "tip" && y.p === x.p && y.who === x.who && +y.tk === +x.tk));
   l = [...LASTFEED, ...LOCALTIPS].sort((a, b) => (a.t || "").localeCompare(b.t || "")).slice(-150);
-  l = l.filter(x => !/^(🤖|📨|✍️|💌)/.test(x.text || ""));            // переписку бота не показываем — он отвечает сам (владелец 22.11)
+  l = l.filter(x => !/^(🤖|📨|✍️|💌|🔁|🎬|📥|⚠)/.test(x.text || "") && !/одобри/.test(x.text || ""));            // переписку бота не показываем — он отвечает сам (владелец 22.11)
   const seen = new Set(FEEDSEEN || []), fresh = FEEDSEEN && l.some(x => !seen.has(x.id));
   const one = x => {
     const cls = /^(🤖|📨|✍️)/.test(x.text) ? "bot" : x.kind === "pay" ? "pay" : x.kind === "tip" ? "tipx" : "";
