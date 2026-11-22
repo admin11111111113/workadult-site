@@ -468,7 +468,7 @@ async function privAns(act) {
 }
 function privOn(p, on) {
   PRIVLIVE[p] = on; const any = Object.keys(PRIVLIVE).filter(k => PRIVLIVE[k]);
-  $("#privbar").style.display = any.length ? "block" : "none"; $("#privbar").textContent = "🔒 ИДЁТ ПРИВАТ — " + any.map(k => PN4[k]).join(", ") + " · его сообщения — в комнате сайта (красная рамка)";
+  $("#privbar").style.display = any.length ? "block" : "none"; $("#privbar").textContent = "🔒 ИДЁТ ПРИВАТ — " + any.map(k => PN4[k]).join(", ") + " · его сообщения и ответ — во вкладке «🔒 Приват»";
   for (const k in PN4) { const b = $("#chat-" + k); if (b) b.style.outline = PRIVLIVE[k] ? "3px solid #e8364f" : ""; }
   $("#ft-priv").classList.toggle("live", any.length > 0); $("#ft-priv").textContent = any.length ? "🔒 Приват — идёт!" : "🔒 Приват";
   if (on && FT !== "priv") ftab("priv"); if (!any.length && FT === "priv") ftab("all"); if (FT === "priv") privShowChat();
@@ -629,7 +629,7 @@ function ftab(t) { FT = t; ["all", "priv"].forEach(k => $("#ft-" + k).classList.
   $("#feed").style.display = t === "priv" ? "none" : ""; $("#privw").style.display = t === "priv" ? "flex" : "none"; if (t === "priv") privShowChat(); else feedShow(LASTFEED.length ? LASTFEED : null); }
 function privShowChat() {
   const any = Object.keys(PRIVLIVE).filter(k => PRIVLIVE[k]);
-  $("#privc").innerHTML = (any.length ? `<div style="color:#ff8b8b;font-weight:700;margin-bottom:6px">🔒 Идёт приват — ${any.map(k => PN4[k]).join(", ")}. Бот молчит, пишешь только ты (в окне сайта).</div>`
+  $("#privc").innerHTML = (any.length ? `<div style="color:#ff8b8b;font-weight:700;margin-bottom:6px">🔒 Идёт приват — ${any.map(k => PN4[k]).join(", ")}. Бот молчит — отвечай ему внизу, уйдёт в чат привата.</div>`
     : '<div style="color:#889;margin-bottom:6px">Привата сейчас нет. Когда начнётся — его сообщения будут тут, бот в это время не пишет.</div>') +
     (PRIVMSG.slice().reverse().map(m => m.me ? `<div class="pm me"><span class="tm">${esc(m.t)} ${m.st || ""}</span><b style="color:#9fbaff">${m.by ? "Роман" : "ты"}</b>: ${esc(m.text)}${m.out && m.out !== m.text ? `<br><small style="color:#99a">ушло: ${esc(m.out)}</small>` : ""}</div>`
       : `<div class="pm"><span class="tm">${esc(m.t)}</span><span style="font-size:12px;color:#99a">${esc(PN4[m.p] || m.p)}</span> <b>${esc(m.who)}</b>: ${esc(m.text)}</div>`).join("") || "");
