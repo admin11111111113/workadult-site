@@ -29,7 +29,7 @@ input{font:inherit;padding:8px;border-radius:8px;border:1px solid #444;backgroun
 #typing .ty .t1{font-size:20px;font-weight:800}#typing .ty .t2{font-size:18px;margin:6px 0;color:#eaffef}#typing .ty .row{display:flex;gap:8px;align-items:center}
 #typing .ty button.ok{background:#2ecc71;color:#06210f;font-size:20px;padding:10px 28px;font-weight:900}#typing .ty small{color:#9cb;margin-left:auto}
 .csec{color:#889;font-size:13px;margin:14px 0 6px;font-weight:700;text-transform:uppercase}
-</style></head><body>
+html.light{filter:invert(1) hue-rotate(180deg);background:#fff}html.light img,html.light video{filter:invert(1) hue-rotate(180deg)}#thb{font:inherit;font-size:13px;font-weight:600;border:1px solid #555;border-radius:10px;padding:6px 12px;cursor:pointer;background:#2f3445;color:#fff;white-space:nowrap}</style></head><body>
 <div id="top">
  <div class="pl"><span class="dot" id="d-obs"></span>OBS<small id="s-obs">…</small></div>
  <div class="pl"><span class="dot" id="d-ext"></span>Помощник<small id="s-ext">…</small></div>
@@ -39,7 +39,7 @@ input{font:inherit;padding:8px;border-radius:8px;border:1px solid #444;backgroun
  <div class="pl"><span class="dot" id="d-bc"></span>Bongacams<small id="s-bc">через OBS</small><small id="t-bc"></small><label class="au"><input type="checkbox" id="a-bc" onchange="autoSet('bc',this.checked)"> авто</label></div>
  <div class="pl"><span class="dot" id="d-mv"></span>ManyVids<small id="s-mv">эфир с сайта</small><small id="t-mv"></small><label class="au"><input type="checkbox" id="a-mv" onchange="autoSet('mv',this.checked)"> авто</label></div>
  <div class="pl" id="custpl" style="cursor:pointer" onclick="custOpen()" title="Видео на заказ">🎬 Кастом <span id="custn"></span><small id="custs">нет заказов</small></div>
- <div class="pl" style="margin-left:auto">Сегодня<small id="t-all">0 tk</small></div>
+ <div class="pl" style="margin-left:auto">Сегодня<small id="t-all">0 tk</small></div><button id="thb" onclick="thSet(localStorage.theme==='dark')"></button>
 </div>
 <div id="custbar" onclick="custOpen()" style="display:none;cursor:pointer;background:#ff8a00;color:#1a0f00;font-weight:800;font-size:19px;padding:8px 14px;text-align:center"></div>
 <div id="custv" onclick="if(event.target===this)custClose()" style="position:fixed;inset:0;background:#000c;display:none;align-items:flex-start;justify-content:center;z-index:40;overflow:auto;padding:20px 10px">
@@ -587,4 +587,4 @@ async function typeGo(id, ok) {
 async function hubLoop() { await hubSync(); setTimeout(hubLoop, TYPES.length ? 2000 : 5000); }
 hubLoop();
 admEv("📂 панель открыта"); setTimeout(admSend, 3000); setInterval(admSend, 15000);
-</script></body></html>
+</script><script>function thSet(l){document.documentElement.classList.toggle('light',l);localStorage.theme=l?'light':'dark';var b=document.getElementById('thb');if(b)b.textContent=l?'🌙 Тёмный':'☀️ Белый'}thSet(localStorage.theme!=='dark');</script></body></html>
