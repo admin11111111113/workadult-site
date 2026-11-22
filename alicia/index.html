@@ -88,7 +88,7 @@ html.light{filter:invert(1) hue-rotate(180deg);background:#fff}html.light img,ht
  </div>
  <div class="col"><div id="wall" style="display:none"></div><div id="bot" style="display:none"></div>
   <div class="ftabs" id="rtabs"><button id="ft-ppl" class="sel" onclick="ftab('ppl')">👥 Зрители <span id="ppln"></span></button><button id="ft-wall" onclick="ftab('wall')">🧱 Стена <span id="walln"></span></button><button id="ft-priv" onclick="ftab('priv')">🔒 Приват</button></div>
-  <div id="pplw" style="flex:1;min-height:0;display:block"><div class="box" id="ppl2" style="height:100%"></div></div>
+  <div id="pplw" style="flex:1;min-height:0;display:flex;flex-direction:column"><div id="pssum" style="font-size:13px;padding:2px 4px 6px;line-height:1.6"></div><div class="box" id="ppl2" style="flex:1;min-height:0"></div></div>
   <div id="wallw" style="flex:1;min-height:0;display:none;flex-direction:column;gap:6px"><div style="color:#99a;font-size:13px">Все сообщения из чатов эфира (Chaturbate, Stripchat, Bonga, ManyVids) по-русски. «✍️ Ответить» — пишешь по-русски, ему уйдёт на его языке в чат сайта; «🤖 Бот» — бот ответит сам. Ник — его переписка.</div><div class="box" id="wallc" style="flex:1;min-height:0"></div></div>
 <div id="privw" style="flex:1;min-height:0;display:none;flex-direction:column;gap:6px"><div class="box" id="privc" style="flex:1;min-height:0"></div>
    <div style="display:flex;gap:6px"><input id="privin" placeholder="пиши ему по-русски — уйдёт в чат привата на английском" style="margin:0;font-size:17px" onkeydown="if(event.key==='Enter')privSay()"><button class="go" onclick="privSay()">➤ Отправить</button></div></div>
@@ -659,7 +659,7 @@ async function hmAns(rep) {
 let FT = "ppl", PRIVMSG = [], PSAYDONE = new Set(JSON.parse(sessionStorage.psay || "[]"));
 setInterval(() => { sessionStorage.psay = JSON.stringify([...PSAYDONE].slice(-50)); }, 5000);
 function ftab(t) { if (!["priv", "wall", "ppl"].includes(t)) t = "ppl"; FT = t; ["priv", "wall", "ppl"].forEach(k => $("#ft-" + k).classList.toggle("sel", k === t));
-  $("#privw").style.display = t === "priv" ? "flex" : "none"; $("#wallw").style.display = t === "wall" ? "flex" : "none"; $("#pplw").style.display = t === "ppl" ? "block" : "none";
+  $("#privw").style.display = t === "priv" ? "flex" : "none"; $("#wallw").style.display = t === "wall" ? "flex" : "none"; $("#pplw").style.display = t === "ppl" ? "flex" : "none";
   if (!DLG) $("#feed").style.display = "";
   if (t === "priv") privShowChat(); else if (t === "wall") { WALLNEW = 0; $("#walln").textContent = ""; wallShow(true); } else pplShow(); }
 // ── СТЕНА: все сообщения чатов эфира со всех сайтов, по-русски; ответ сама (перевод на его язык → чат сайта) или ботом
@@ -747,21 +747,27 @@ async function sayQ(p, id, text) { try { await fetch("https://alicia-link.videor
 const PQ = "https://alicia-link.videorils.workers.dev/pq", LVN = ["", "есть токены", "тратит", "много тратит", "VIP"];
 let HUBPPL = [], RSAYDONE = new Set(), PPLHOLD = 0, RCHSEEN = new Set(), RSAID = {};
 // версия панели: хаб пишет в общий чат только через панель, которая это умеет (v ≥ 3); новая версия на сайте → панель обновится сама
-const PANEL_V = 7;
+const PANEL_V = 8;
 setInterval(async () => {
   try { const t = await (await fetch(location.pathname + "?vchk=" + Date.now(), { cache: "no-store" })).text(), v = +((t.match(/const PANEL_V = (\d+)/) || [])[1] || 0);
     const busy = Object.values(PRIVLIVE).some(Boolean) || TYPES.length || PAIDQ.length || [...document.querySelectorAll("input,textarea")].some(i => i.value && i.type !== "file") || Object.keys(CUP).length;
     if (v > PANEL_V && !busy) { admEv("🔄 панель обновилась сама до v" + v); await admSend(); location.reload(); } } catch (e) {}
 }, 300000);
 async function pq(body) { try { return await (await fetch(PQ, { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ w: "alicia-panel", ...body }) })).json(); } catch (e) { return { ok: false, err: "нет связи с ботом" }; } }
+// сводка зрителей с токенами: сколько уникальных и каких цветов на каждой площадке (цвет ника = сколько токенов)
+const PCOL={cb:{1:['#5ab4ff','голубые'],2:['#1f5fd6','синие'],3:['#a64dff','фиолет.'],4:['#5b1a9e','т.-фиолет.']},sc:{1:['#c9a24b','с лигой'],2:['#2ecc71','зелёные'],3:['#d43cff','Ultimate']},bc:{1:['#999','есть'],2:['#e0b020','Gold'],3:['#8fa6b8','Platinum']},mv:{1:['#ff5aa0','пишут']}};
+const PSN2={cb:'Чатур',sc:'Стрип',bc:'Бонга',mv:'MV'};
+function pplSum(l){const u={};l.forEach(r=>{const k=r.p+'|'+r.who.toLowerCase();u[k]=r});const v=Object.values(u),by={};
+ v.forEach(r=>{const c=((by[r.p]=by[r.p]||{n:0,c:{}}));c.n++;const L=Math.max(1,Math.min(r.lvl||1,4));c.c[L]=(c.c[L]||0)+1});
+ return `<b>${v.length} с токенами</b> · `+['sc','cb','bc','mv'].filter(p=>by[p]).map(p=>`${PSN2[p]} ${by[p].n}: `+Object.keys(by[p].c).sort((a,b)=>b-a).map(L=>{const d=(PCOL[p]||{})[L]||['#999',''];return `<span title="${d[1]}" style="white-space:nowrap"><i style="display:inline-block;width:9px;height:9px;border-radius:50%;background:${d[0]};margin-right:2px"></i>${by[p].c[L]} ${d[1]}</span>`}).join(' ')).join(' · ')}
 function pplShow() {
   if (Date.now() - PPLHOLD < 20000) return;                          // она печатает — не перерисовываем
   const m = {}; for (const r of Object.values(ROOM)) if (Date.now() - r.t < 3600000) m[r.p + "|" + r.who.toLowerCase()] = { ...r };
   for (const h of HUBPPL) { const k = h.p + "|" + h.who.toLowerCase(); m[k] = { ...(m[k] || { p: h.p, who: h.who, t: 0, text: "" }), ...h, lvl: Math.max(h.lvl || 0, (m[k] || {}).lvl || 0), text: (m[k] || {}).text || h.said || "" }; }
   // сверху самые ценные: $ = (сколько дал + уровень токенов) × цена токена площадки — Stripchat/Chaturbate дороже Бонги
   const TV = { cb: .05, sc: .05, bc: .025, mv: .08 }, sc = r => ((r.spent || 0) + (r.lvl || 0) * 100) * (TV[r.p] || .05);
-  const l = Object.values(m).filter(r => (r.lvl || 0) >= 1 || r.spent).sort((a, b) => sc(b) - sc(a) || b.t - a.t).slice(0, 40);
-  PPL = l; $("#ppln").textContent = l.length ? "(" + l.length + ")" : "";
+  const l = Object.values(m).filter(r => (r.lvl || 0) >= 1 || r.spent).sort((a, b) => sc(b) - sc(a) || b.t - a.t).slice(0, 120);
+  PPL = l; $("#ppln").textContent = l.length ? "(" + l.length + ")" : ""; $("#pssum").innerHTML = l.length ? pplSum(l) : "";
   $("#ppl").innerHTML = $("#ppl2").innerHTML = l.map((r, i) => `<div class="pp ${r.wrote ? "done" : ""}"><span class="pf" style="background:#000a;border-radius:6px;padding:1px 6px;font-size:11px">${esc(PN4[r.p] || r.p)}</span>` +
     `<span class="nm" data-p="${esc(r.p)}" data-who="${esc(r.who)}" data-uid="${esc(r.uid || "")}">${esc(r.who)}</span><span class="lv">${r.spent ? "дал " + r.spent + " tk" : LVN[r.lvl] || "токены"}</span>` +
     `<span class="sd" title="${esc(r.text)}">${r.wrote ? "✉️ бот написал · " : ""}${esc(r.text || "")}</span><button onclick="dlgOpen(PPL[${i}].p,PPL[${i}].who,PPL[${i}].uid)">✍️ написать</button></div>`).join("")
