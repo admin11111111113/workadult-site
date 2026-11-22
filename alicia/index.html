@@ -81,11 +81,13 @@ html.light{filter:invert(1) hue-rotate(180deg);background:#fff}html.light img,ht
 </div>
  <div class="col"><b>💬 Подсказки</b><div id="paidq"></div><div id="typing"></div><div id="hint">Подсказки появятся тут, когда начнётся эфир 💋</div>
   <b>💰 Донаты и сообщения <small style="color:#889;font-weight:400">— кто сколько дал и за что, что просит, что ты (бот) ему написала · свежее сверху</small></b>
-  <div class="ftabs"><button id="ft-all" class="sel" onclick="ftab('all')">🔔 Все уведомления</button><button id="ft-priv" onclick="ftab('priv')">🔒 Приват</button></div>
+  <div class="ftabs"><button id="ft-all" class="sel" onclick="ftab('all')">🔔 Все уведомления</button><button id="ft-priv" onclick="ftab('priv')">🔒 Приват</button><button id="ft-wall" onclick="ftab('wall')">🧱 Стена <span id="walln"></span></button><button id="ft-ppl" onclick="ftab('ppl')">👥 Зрители <span id="ppln"></span></button></div>
+  <div id="wallw" style="flex:1;min-height:0;display:none;flex-direction:column;gap:6px"><div style="color:#99a;font-size:13px">Все сообщения из чатов эфира (Chaturbate, Stripchat, Bonga, ManyVids) по-русски. «✍️ Ответить» — пишешь по-русски, ему уйдёт на его языке в чат сайта; «🤖 Бот» — бот ответит сам. Ник — его переписка.</div><div class="box" id="wallc" style="flex:1;min-height:0"></div></div>
+  <div id="pplw" style="flex:1;min-height:0;display:none"><div class="box" id="ppl2" style="height:100%"></div></div>
   <div class="box" id="feed" style="flex:1;min-height:0"></div>
   <div id="dlgw" style="flex:1;min-height:0;display:none;flex-direction:column;gap:6px"><div style="display:flex;gap:8px;align-items:center"><button onclick="dlgClose()">← Назад</button><b id="dlgh" style="font-size:18px"></b></div>
    <div class="box" id="dlgc" style="flex:1;min-height:0"></div>
-   <div style="display:flex;gap:6px"><input id="dlgin" placeholder="пиши ему по-русски — уйдёт на его языке" style="margin:0;font-size:17px" onkeydown="if(event.key==='Enter')dlgSay()"><button class="go" onclick="dlgSay()">➤ Отправить</button></div><small id="dlgst" style="color:#99a"></small></div><div id="privw" style="flex:1;min-height:0;display:none;flex-direction:column;gap:6px"><div class="box" id="privc" style="flex:1;min-height:0"></div>
+   <div style="display:flex;gap:6px"><input id="dlgin" placeholder="пиши ему по-русски — уйдёт на его языке" style="margin:0;font-size:17px" onkeydown="if(event.key==='Enter')dlgSay()"><button class="go" onclick="dlgSay()">➤ Отправить</button><button style="background:#4a3a8a" onclick="dlgBot()">🤖 Пусть бот</button></div><small id="dlgst" style="color:#99a"></small></div><div id="privw" style="flex:1;min-height:0;display:none;flex-direction:column;gap:6px"><div class="box" id="privc" style="flex:1;min-height:0"></div>
    <div style="display:flex;gap:6px"><input id="privin" placeholder="пиши ему по-русски — уйдёт в чат привата на английском" style="margin:0;font-size:17px" onkeydown="if(event.key==='Enter')privSay()"><button class="go" onclick="privSay()">➤ Отправить</button></div></div>
  </div>
  <div class="col"><div id="wall" style="display:none"></div><div id="bot" style="display:none"></div>
@@ -434,7 +436,9 @@ function onExt(m) {
     PAIDQ.push({ p: m.p, who: m.who, tk: lt ? lt.tk : "", what: m.what, act: a || m.what }); PAIDQ.splice(0, PAIDQ.length - 5); paidShow(); ding(); PAIDBEEP = Date.now();
     hint(`💰 <b>${esc(m.who)}</b> оплатил «${esc(m.what)}»${a ? "<br>👉 " + esc(a) : ""}`); admEv("💰 оплатили по меню: " + m.who + " — " + m.what);
   }
-  if (m.type === "saidres" && RSAYDONE.has(m.id)) admEv((m.ok ? "📣 бот написал в общий чат " : "⚠ не ушло в общий чат ") + (PN4[m.p] || m.p) + (m.err ? ": " + m.err : ""));
+  if (m.type === "saidres" && WSAY[m.id]) { WSAY[m.id].st = m.ok ? "✓ ушло" : "⚠ " + (m.err || "не ушло"); wallShow(true); }
+  if (m.type === "chat" && m.text && m.who && !m.me && !/^notice$/i.test(m.who)) wallAdd(m);
+  if (m.type === "saidres" && RSAYDONE.has(m.id) && !WSAY[m.id]) admEv((m.ok ? "📣 бот написал в общий чат " : "⚠ не ушло в общий чат ") + (PN4[m.p] || m.p) + (m.err ? ": " + m.err : ""));
   if (m.type === "chat" && m.text && m.who && !m.me && !/^notice$/i.test(m.who)) {   // кто пишет в чате комнаты — хабу (бот знакомится с ними в личке)
     const k = m.p + "|" + m.who, o = ROOM[k] || {};
     ROOM[k] = { p: m.p, who: m.who, uid: m.uid || o.uid || "", lvl: Math.max(+m.lvl || 0, o.lvl || 0), text: String(m.text).slice(0, 200), t: Date.now(), n: (o.n || 0) + 1 }; pplShow();
@@ -650,8 +654,60 @@ async function hmAns(rep) {
 // ── вкладки над лентой: все / кто что оплатил / приватный чат
 let FT = "all", PRIVMSG = [], PSAYDONE = new Set(JSON.parse(sessionStorage.psay || "[]"));
 setInterval(() => { sessionStorage.psay = JSON.stringify([...PSAYDONE].slice(-50)); }, 5000);
-function ftab(t) { FT = t; DLG = null; $("#dlgw").style.display = "none"; ["all", "priv"].forEach(k => $("#ft-" + k).classList.toggle("sel", k === t));
-  $("#feed").style.display = t === "priv" ? "none" : ""; $("#privw").style.display = t === "priv" ? "flex" : "none"; if (t === "priv") privShowChat(); else feedShow(LASTFEED.length ? LASTFEED : null); }
+function ftab(t) { FT = t; DLG = null; $("#dlgw").style.display = "none"; ["all", "priv", "wall", "ppl"].forEach(k => $("#ft-" + k).classList.toggle("sel", k === t));
+  $("#feed").style.display = t === "all" ? "" : "none"; $("#privw").style.display = t === "priv" ? "flex" : "none";
+  $("#wallw").style.display = t === "wall" ? "flex" : "none"; $("#pplw").style.display = t === "ppl" ? "block" : "none";
+  if (t === "priv") privShowChat(); else if (t === "wall") { WALLNEW = 0; wallShow(true); } else if (t === "ppl") pplShow(); else feedShow(LASTFEED.length ? LASTFEED : null); }
+// ── СТЕНА: все сообщения чатов эфира со всех сайтов, по-русски; ответ сама (перевод на его язык → чат сайта) или ботом
+let WALLMSG = [], WALLNEW = 0, WID = 0;
+const hasRu = s => /[а-яё]/i.test(s || "");
+async function tr(text, to) {                                           // бесплатный переводчик Google через помощник
+  if (!port || !text) return text;
+  const r = await call("fetch", { url: "https://translate.googleapis.com/translate_a/single?client=gtx&sl=auto&tl=" + to + "&dt=t&q=" + encodeURIComponent(text), timeout: 6000 });
+  try { return JSON.parse(r.text)[0].map(x => x[0]).join("") || text; } catch (e) { return text; }
+}
+function wallAdd(m) {
+  const x = { id: "w" + (++WID), p: m.p, who: m.who, uid: m.uid || "", lvl: +m.lvl || 0, text: String(m.text).slice(0, 300), ru: "", t: new Date().toTimeString().slice(0, 5) };
+  WALLMSG.push(x); WALLMSG.splice(0, WALLMSG.length - 200);
+  if (FT !== "wall") { WALLNEW++; $("#walln").textContent = WALLNEW ? "(" + WALLNEW + ")" : ""; }
+  if (hasRu(x.text)) x.ru = x.text; else tr(x.text, "ru").then(r => { x.ru = r; wallShow(); });
+  wallShow();
+}
+function wallShow(force) {
+  if (FT !== "wall") return;
+  const el = $("#wallc"), busy = [...el.querySelectorAll("input")].some(i => i === document.activeElement || i.value);
+  if (busy && !force) return;                                         // она пишет ответ — не перерисовываем
+  el.innerHTML = WALLMSG.slice().reverse().map(x => x.me
+    ? `<div class="pm me"><span class="tm">${esc(x.t)} ${esc(x.st || "")}</span><b style="color:#9fbaff">${x.bot ? "🤖 бот" : "ты"} → ${esc(x.to)}</b> <small style="color:#889">${esc(PN4[x.p] || x.p)}</small>: ${esc(x.ru)}${x.out && x.out !== x.ru ? `<br><small style="color:#889">ушло: ${esc(x.out)}</small>` : ""}</div>`
+    : `<div class="pm"><span class="tm">${esc(x.t)}</span><span style="font-size:11px;background:#000a;border-radius:5px;padding:1px 5px">${esc(PN4[x.p] || x.p)}</span> ` +
+      `<b class="nm" data-p="${esc(x.p)}" data-who="${esc(x.who)}" data-uid="${esc(x.uid)}">${esc(x.who)}</b>${x.lvl ? ` <span style="font-size:11px;background:#2f7d4a;border-radius:5px;padding:1px 5px">${LVN[x.lvl] || "токены"}</span>` : ""}: ` +
+      `${esc(x.ru || x.text)}${x.ru && x.ru !== x.text ? `<br><small style="color:#889">${esc(x.text)}</small>` : ""}` +
+      `<div style="display:flex;gap:5px;margin-top:4px"><input id="wi-${x.id}" placeholder="ответить ему по-русски…" style="margin:0;padding:5px 8px;font-size:14px" onkeydown="if(event.key==='Enter')wallSay('${x.id}')">` +
+      `<button style="padding:5px 10px;font-size:13px" onclick="wallSay('${x.id}')">✍️ Ответить</button><button style="padding:5px 10px;font-size:13px;background:#4a3a8a" onclick="wallBot('${x.id}')">🤖 Бот</button></div></div>`).join("")
+    || '<div class="chat" style="color:#667">пока тихо — тут будут все сообщения из чатов эфира</div>';
+}
+// в чат сайта: «@ник текст» на его языке (пишет по-русски — уходит по-русски)
+async function roomSay(p, who, ru, his, bot, out0) {
+  const x = { id: "w" + (++WID), me: true, bot, p, to: who, ru, out: "", st: "⏳", t: new Date().toTimeString().slice(0, 5) };
+  WALLMSG.push(x); wallShow(true);
+  if (!port) { x.st = "⚠ нет помощника Chrome"; return wallShow(true); }
+  const body = out0 || (hasRu(his) || !hasRu(ru) ? ru : await tr(ru, "en"));
+  x.out = "@" + who + " " + body; RSAYDONE.add(x.id);
+  await call("push", { ch: "say-" + p, cmd: { id: x.id, text: x.out } }); WSAY[x.id] = x; wallShow(true);
+  admEv((bot ? "🤖 бот ответил в чат " : "🧱 ответила в чат ") + who + ": " + ru);
+  setTimeout(() => { if (x.st === "⏳") { x.st = "⚠ страница сайта не ответила"; wallShow(true); } }, 8000);
+}
+const WSAY = {};
+async function wallSay(id) {
+  const x = WALLMSG.find(y => y.id === id), inp = $("#wi-" + id), t = (inp && inp.value || "").trim(); if (!x || !t) return;
+  inp.value = ""; roomSay(x.p, x.who, t, x.text, false);
+}
+async function wallBot(id) {
+  const x = WALLMSG.find(y => y.id === id); if (!x) return;
+  const j = await pq({ op: "botreply", p: x.p, who: x.who, uid: x.uid, text: x.text });
+  if (!j || !j.text) { admEv("⚠ бот не смог ответить: " + ((j && j.err) || "")); return; }
+  roomSay(x.p, x.who, j.ru || j.text, x.text, true, j.text);
+}
 function privShowChat() {
   const any = Object.keys(PRIVLIVE).filter(k => PRIVLIVE[k]);
   $("#privc").innerHTML = (any.length ? `<div style="color:#ff8b8b;font-weight:700;margin-bottom:6px">🔒 Идёт приват — ${any.map(k => PN4[k]).join(", ")}. Бот молчит — отвечай ему внизу, уйдёт в чат привата.</div>`
@@ -691,8 +747,8 @@ function pplShow() {
   const m = {}; for (const r of Object.values(ROOM)) if (Date.now() - r.t < 3600000) m[r.p + "|" + r.who.toLowerCase()] = { ...r };
   for (const h of HUBPPL) { const k = h.p + "|" + h.who.toLowerCase(); m[k] = { ...(m[k] || { p: h.p, who: h.who, t: 0, text: "" }), ...h, lvl: Math.max(h.lvl || 0, (m[k] || {}).lvl || 0), text: (m[k] || {}).text || h.said || "" }; }
   const l = Object.values(m).filter(r => (r.lvl || 0) >= 1 || r.spent).sort((a, b) => (b.spent || 0) - (a.spent || 0) || (b.lvl || 0) - (a.lvl || 0) || b.t - a.t).slice(0, 40);
-  PPL = l;
-  $("#ppl").innerHTML = l.map((r, i) => `<div class="pp ${r.wrote ? "done" : ""}"><span class="pf" style="background:#000a;border-radius:6px;padding:1px 6px;font-size:11px">${esc(PN4[r.p] || r.p)}</span>` +
+  PPL = l; $("#ppln").textContent = l.length ? "(" + l.length + ")" : "";
+  $("#ppl").innerHTML = $("#ppl2").innerHTML = l.map((r, i) => `<div class="pp ${r.wrote ? "done" : ""}"><span class="pf" style="background:#000a;border-radius:6px;padding:1px 6px;font-size:11px">${esc(PN4[r.p] || r.p)}</span>` +
     `<span class="nm" data-p="${esc(r.p)}" data-who="${esc(r.who)}" data-uid="${esc(r.uid || "")}">${esc(r.who)}</span><span class="lv">${r.spent ? "дал " + r.spent + " tk" : LVN[r.lvl] || "токены"}</span>` +
     `<span class="sd" title="${esc(r.text)}">${r.wrote ? "✉️ бот написал · " : ""}${esc(r.text || "")}</span><button onclick="dlgOpen(PPL[${i}].p,PPL[${i}].who,PPL[${i}].uid)">✍️ написать</button></div>`).join("")
     || '<div class="chat" style="color:#667">пока никого с токенами — появятся, когда напишут в чате эфира</div>';
@@ -725,6 +781,12 @@ async function dlgSay() {
   const j = await pq({ op: "send", p: DLG.p, who: DLG.who, uid: DLG.uid, text });
   $("#dlgst").textContent = j && j.ok ? "✅ ушло в очередь — через ~10–30 сек появится в переписке" : "⚠ " + ((j && j.err) || "не ушло");
   admEv("✍️ написала " + DLG.who + ": " + text); setTimeout(dlgLoad, 8000); setTimeout(dlgLoad, 25000);
+}
+async function dlgBot() {
+  if (!DLG) return; $("#dlgst").textContent = "⏳ бот пишет ему в личку…";
+  const j = await pq({ op: "botdm", p: DLG.p, who: DLG.who, uid: DLG.uid });
+  $("#dlgst").textContent = j && j.ok ? "🤖 бот пишет: «" + (j.ru || j.text || "") + "» — через ~10–30 сек появится тут" : "⚠ " + ((j && j.err) || "не вышло");
+  admEv("🤖 попросила бота написать " + DLG.who); setTimeout(dlgLoad, 10000); setTimeout(dlgLoad, 30000);
 }
 async function hubLoop() { await hubSync(); setTimeout(hubLoop, TYPES.length ? 2000 : 5000); }
 hubLoop();
