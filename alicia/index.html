@@ -98,6 +98,12 @@ html.light{filter:invert(1) hue-rotate(180deg);background:#fff}html.light img,ht
 <div id="setup"><div><b>Подключение OBS</b><p style="color:#aab;font-size:14px">В OBS: Сервис → Настройки сервера WebSocket → включить сервер, нажать «Показать данные подключения», скопировать пароль сюда.</p>
  <input id="pw" type="password" placeholder="пароль WebSocket"><button onclick="savePw()">Подключить</button></div></div>
 <script>
+var LVCOL={cb:{1:['#5ab4ff','голубой'],2:['#1f5fd6','синий'],3:['#a64dff','фиолетовый'],4:['#5b1a9e','тёмно-фиолет.']},sc:{1:['#c9a24b','лига'],2:['#2ecc71','зелёный'],3:['#d43cff','Ultimate']},bc:{1:['#999','токены'],2:['#e0b020','Gold'],3:['#8fa6b8','Platinum']},mv:{1:['#ff5aa0','пишет']}};
+function lvD(p,l){return (LVCOL[p]||{})[l]||null}
+function lvO(p,l){var d=lvD(p,l);return d?'border:2px solid '+d[0]+';border-radius:6px;padding:0 5px':''}
+function lvN(p,l){var d=lvD(p,l);return d?d[1]:''}
+function lvB(p,l){var d=lvD(p,l);return d?'background:'+d[0]+';color:#fff':''}
+
 const EXT = "bpjfaaponmehpfmndenonaffigcbmfne", PAUSE = "Пауза", $ = s => document.querySelector(s);
 const MENU = {"I want you baby":"скажи «I want you too, baby» и пошли воздушный поцелуй","Show your feet":"покажи ножки 👣","Play with nipples":"поиграй с сосками","c2c":"он хочет c2c — открой его камеру",
  "Finger in pussy":"пальчик в киску","Finger in ass":"пальчик в попку","Spank myself":"шлёпни себя","Anal plug in the ass":"вставь пробку","All naked":"разденься полностью",
@@ -684,7 +690,7 @@ function wallShow(force) {
   el.innerHTML = WALLMSG.slice().reverse().map(x => x.me
     ? `<div class="pm me"><span class="tm">${esc(x.t)} ${esc(x.st || "")}</span><b style="color:#9fbaff">${x.bot ? "🤖 бот" : "ты"} → ${esc(x.to)}</b> <small style="color:#889">${esc(PN4[x.p] || x.p)}</small>: ${esc(x.ru)}${x.out && x.out !== x.ru ? `<br><small style="color:#889">ушло: ${esc(x.out)}</small>` : ""}</div>`
     : `<div class="pm"><span class="tm">${esc(x.t)}</span><span style="font-size:11px;background:#000a;border-radius:5px;padding:1px 5px">${esc(PN4[x.p] || x.p)}</span> ` +
-      `<b class="nm" data-p="${esc(x.p)}" data-who="${esc(x.who)}" data-uid="${esc(x.uid)}">${esc(x.who)}</b>${x.lvl ? ` <span style="font-size:11px;background:#2f7d4a;border-radius:5px;padding:1px 5px">${LVN[x.lvl] || "токены"}</span>` : ""}: ` +
+      `<b class="nm" data-p="${esc(x.p)}" data-who="${esc(x.who)}" data-uid="${esc(x.uid)}" style="${lvO(x.p, x.lvl)}">${esc(x.who)}</b>${x.lvl ? ` <span style="font-size:11px;background:#2f7d4a;border-radius:5px;padding:1px 5px;${lvB(x.p, x.lvl)}">${lvN(x.p, x.lvl) || LVN[x.lvl] || "токены"}</span>` : ""}: ` +
       `${esc(x.ru || x.text)}${x.ru && x.ru !== x.text ? `<br><small style="color:#889">${esc(x.text)}</small>` : ""}` +
       `<div style="display:flex;gap:5px;margin-top:4px"><input id="wi-${x.id}" placeholder="ответить ему по-русски…" style="margin:0;padding:5px 8px;font-size:14px" onkeydown="if(event.key==='Enter')wallSay('${x.id}')">` +
       `<button style="padding:5px 10px;font-size:13px" onclick="wallSay('${x.id}')">✍️ Ответить</button><button style="padding:5px 10px;font-size:13px;background:#4a3a8a" onclick="wallBot('${x.id}')">🤖 Бот</button></div></div>`).join("")
@@ -747,7 +753,7 @@ async function sayQ(p, id, text) { try { await fetch("https://alicia-link.videor
 const PQ = "https://alicia-link.videorils.workers.dev/pq", LVN = ["", "есть токены", "тратит", "много тратит", "VIP"];
 let HUBPPL = [], RSAYDONE = new Set(), PPLHOLD = 0, RCHSEEN = new Set(), RSAID = {};
 // версия панели: хаб пишет в общий чат только через панель, которая это умеет (v ≥ 3); новая версия на сайте → панель обновится сама
-const PANEL_V = 8;
+const PANEL_V = 9;
 setInterval(async () => {
   try { const t = await (await fetch(location.pathname + "?vchk=" + Date.now(), { cache: "no-store" })).text(), v = +((t.match(/const PANEL_V = (\d+)/) || [])[1] || 0);
     const busy = Object.values(PRIVLIVE).some(Boolean) || TYPES.length || PAIDQ.length || [...document.querySelectorAll("input,textarea")].some(i => i.value && i.type !== "file") || Object.keys(CUP).length;
@@ -769,7 +775,7 @@ function pplShow() {
   const l = Object.values(m).filter(r => (r.lvl || 0) >= 1 || r.spent).sort((a, b) => sc(b) - sc(a) || b.t - a.t).slice(0, 120);
   PPL = l; $("#ppln").textContent = l.length ? "(" + l.length + ")" : ""; $("#pssum").innerHTML = l.length ? pplSum(l) : "";
   $("#ppl").innerHTML = $("#ppl2").innerHTML = l.map((r, i) => `<div class="pp ${r.wrote ? "done" : ""}"><span class="pf" style="background:#000a;border-radius:6px;padding:1px 6px;font-size:11px">${esc(PN4[r.p] || r.p)}</span>` +
-    `<span class="nm" data-p="${esc(r.p)}" data-who="${esc(r.who)}" data-uid="${esc(r.uid || "")}">${esc(r.who)}</span><span class="lv">${r.spent ? "дал " + r.spent + " tk" : LVN[r.lvl] || "токены"}</span>` +
+    `<span class="nm" data-p="${esc(r.p)}" data-who="${esc(r.who)}" data-uid="${esc(r.uid || "")}" style="${lvO(r.p, r.lvl)}">${esc(r.who)}</span><span class="lv" style="${lvB(r.p, r.lvl)}">${r.spent ? "дал " + r.spent + " tk" : lvN(r.p, r.lvl) || LVN[r.lvl] || "токены"}</span>` +
     `<span class="sd" title="${esc(r.text)}">${r.wrote ? "✉️ бот написал · " : ""}${esc(r.text || "")}</span><button onclick="dlgOpen(PPL[${i}].p,PPL[${i}].who,PPL[${i}].uid)">✍️ написать</button></div>`).join("")
     || '<div class="chat" style="color:#667">пока никого с токенами — появятся, когда напишут в чате эфира</div>';
 }
