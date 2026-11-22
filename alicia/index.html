@@ -19,6 +19,13 @@
 .tip{padding:6px 8px;border-radius:8px;background:#233024;margin-bottom:5px}.tip b{color:#7ee08a}.chat{padding:3px 6px;color:#ccd;font-size:14px}
 #setup{position:fixed;inset:0;background:#000c;display:none;align-items:center;justify-content:center}#setup div{background:#1f2230;padding:20px;border-radius:14px;max-width:440px}
 input{font:inherit;padding:8px;border-radius:8px;border:1px solid #444;background:#0f1116;color:#fff;width:100%;margin:8px 0}
+.cu{border-radius:12px;padding:12px 14px;margin-bottom:10px;background:#232733;border-left:6px solid #555}.cu .h{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.cu .pf{background:#5b3ccc;border-radius:6px;padding:2px 8px;font-size:13px;font-weight:700}.cu .w{font-weight:700;font-size:17px}.cu .s{margin-left:auto;font-size:14px;font-weight:700}
+.cu .q{font-size:18px;margin:8px 0 4px;line-height:1.35}.cu .tr{color:#9fe0b0;font-size:15px}.cu .dl{color:#ffcf70;font-size:14px;margin-top:4px}
+.cu.paid{border-left-color:#ff8a00;background:#3a2a10}.cu.paid .q{font-size:21px;font-weight:700}.cu.uploaded{border-left-color:#4aa3ff}.cu.sent,.cu.closed{border-left-color:#2ecc71;opacity:.7}
+.cu.new,.cu.ok{opacity:.85}.cu .up{display:block;margin-top:10px;background:#ff8a00;color:#1a0f00;font-size:20px;padding:14px;text-align:center;border-radius:12px;cursor:pointer;font-weight:800}
+.cu .bar{height:14px;background:#0f1116;border-radius:8px;overflow:hidden;margin-top:10px}.cu .bar i{display:block;height:100%;background:#ff8a00;transition:width .3s}
+.csec{color:#889;font-size:13px;margin:14px 0 6px;font-weight:700;text-transform:uppercase}
 </style></head><body>
 <div id="top">
  <div class="pl"><span class="dot" id="d-obs"></span>OBS<small id="s-obs">…</small></div>
@@ -28,8 +35,15 @@ input{font:inherit;padding:8px;border-radius:8px;border:1px solid #444;backgroun
  <div class="pl"><span class="dot" id="d-sc"></span>Stripchat<small id="t-sc">0 tk</small><label class="au"><input type="checkbox" id="a-sc" onchange="autoSet('sc',this.checked)"> авто</label></div>
  <div class="pl"><span class="dot" id="d-bc"></span>Bongacams<small id="s-bc">через OBS</small><small id="t-bc"></small><label class="au"><input type="checkbox" id="a-bc" onchange="autoSet('bc',this.checked)"> авто</label></div>
  <div class="pl"><span class="dot" id="d-mv"></span>ManyVids<small id="s-mv">эфир с сайта</small><small id="t-mv"></small><label class="au"><input type="checkbox" id="a-mv" onchange="autoSet('mv',this.checked)"> авто</label></div>
+ <div class="pl" id="custpl" style="cursor:pointer" onclick="custOpen()" title="Видео на заказ">🎬 Кастом <span id="custn"></span><small id="custs">нет заказов</small></div>
  <div class="pl" style="margin-left:auto">Сегодня<small id="t-all">0 tk</small></div>
 </div>
+<div id="custbar" onclick="custOpen()" style="display:none;cursor:pointer;background:#ff8a00;color:#1a0f00;font-weight:800;font-size:19px;padding:8px 14px;text-align:center"></div>
+<div id="custv" onclick="if(event.target===this)custClose()" style="position:fixed;inset:0;background:#000c;display:none;align-items:flex-start;justify-content:center;z-index:40;overflow:auto;padding:20px 10px">
+ <div style="background:#1b1d26;border-radius:16px;padding:16px;width:100%;max-width:720px">
+  <div style="display:flex;align-items:center;gap:10px;margin-bottom:6px"><b style="font-size:22px;flex:1">🎬 Видео на заказ</b><button onclick="custClose()">✖ Закрыть</button></div>
+  <div style="color:#99a;font-size:14px;margin-bottom:12px">Сверху — что нужно снять сейчас. Сняла → нажми «Загрузить видео» → бот сам отправит ему и напишет пару слов.</div>
+  <div id="custl"></div></div></div>
 <div id="privbar" style="display:none;background:#e8364f;color:#fff;font-weight:800;font-size:20px;padding:8px 14px;text-align:center"></div>
 <div id="priv" style="position:fixed;inset:0;background:#000b;display:none;align-items:center;justify-content:center;z-index:50">
  <div style="background:#1f1020;border:4px solid #e8364f;border-radius:18px;padding:24px 28px;max-width:560px;text-align:center;box-shadow:0 0 40px #e8364f88">
@@ -474,6 +488,7 @@ async function hubSync() {
   let j; try { j = await (await fetch(HUB_URL, { cache: "no-store" })).json(); } catch (e) { return; }
   const h = j.hub, alive = h && j.now - h.at < 60000;
   feedShow(alive ? h.feed || [] : null);
+  if (alive) { CUSTS = h.customs || []; custRender(); }
   if (alive && h.today) { ETK.bc = h.today.bc || 0; showTot(); }
   // её вкладка сайта молчит (закрыта / скрипт не подцепился) → статус эфира от хаба (он сам спрашивает сайты)
   for (const k of ["mv", "sc", "cb"]) if (alive && !(LIVE[k] && LIVE[k].src !== "hub" && Date.now() - LIVE[k].t < 30000)) {
@@ -491,6 +506,63 @@ async function hubSync() {
           onfocus="DMHOLD=Date.now()" oninput="DMHOLD=Date.now()" onkeydown="if(event.key==='Enter')dmSend(${i})"><button style="padding:4px 10px;font-size:13px" onclick="dmSend(${i})">➤</button></div></div>`).join("")
     : (h.bot || []).slice().reverse().map(b => `<div class="chat"><b>${esc(PNAME[b.p] || b.p)} · ${esc(b.who)}</b> <small style="color:#889">${esc((b.t || "").slice(11, 16))}</small><br>${esc(b.text)}</div>`).join("")
       || '<div class="chat" style="color:#889">пока ничего не писал</div>';
+}
+// ── кастомы: она видит, что просят (решает Роман — кнопок «да/нет» тут нет); оплачено → «сними и загрузи» → бот сам отправит ему
+const UP_URL = "https://alicia-link.videorils.workers.dev/up", CUP = {};      // id → % загрузки / "err:…"
+let CUSTS = [], CUSTPAID = null;
+const CST = { new: ["💬 обсуждают", "#aab"], ok: ["🤝 договорились — ждём оплату", "#9fe0b0"], paid: ["💰 ОПЛАЧЕНО — сними и загрузи", "#ffb347"],
+  uploaded: ["📤 загружено — бот отправляет", "#7fc4ff"], sent: ["✅ отправлено ему", "#7ee08a"], closed: ["✅ готово", "#7ee08a"] };
+const dd = s => s ? new Date(s.replace(" ", "T")).toLocaleDateString("ru", { day: "numeric", month: "long" }) : "";
+function custOpen() { $("#custv").style.display = "flex"; custRender(); }
+function custClose() { $("#custv").style.display = "none"; }
+function custCard(c) {
+  const [st, col] = CST[c.st] || [c.st, "#aab"], up = CUP[c.id];
+  let s = `<div class="cu ${c.st}"><div class="h"><span class="pf">${esc(PNAME[c.p] || ({ fs: "Fansly", mc: "My.Club", x: "X" })[c.p] || c.p)}</span><span class="w">${esc(c.who)}</span><span class="s" style="color:${col}">${st}</span></div>` +
+    `<div class="q">${esc(c.ru || c.what)}</div>` + (c.terms || c.price ? `<div class="tr">💵 ${esc(c.terms || c.price)}</div>` : "");
+  if (c.st === "paid") { const due = c.paid_at ? new Date(new Date(c.paid_at.replace(" ", "T")).getTime() + 7 * 864e5).toISOString() : "";
+    s += due ? `<div class="dl">⏰ отдать до ${dd(due.slice(0, 10))}</div>` : ""; }
+  if (c.st === "uploaded" && c.manual) s += `<div class="dl">видео у Романа — он отправит сам</div>`;
+  if (c.st === "sent") s += `<div class="dl" style="color:#7ee08a">бот отправил ${esc((c.sent_at || "").slice(11, 16))} ${dd(c.sent_at)}</div>`;
+  if (c.st === "paid" || (c.st === "uploaded" && c.manual)) {
+    if (typeof up === "number") s += `<div class="bar"><i style="width:${up}%"></i></div><div class="dl">загружаю… ${up}% — не закрывай панель</div>`;
+    else s += (typeof up === "string" ? `<div class="dl" style="color:#ff7b7b">⚠ ${esc(up)}</div>` : "") +
+      `<label class="up">📤 Загрузить видео<input type="file" accept="video/*" style="display:none" onchange="custUp('${esc(c.id)}',this)"></label>`;
+  }
+  return s + "</div>";
+}
+function custRender() {
+  const paid = CUSTS.filter(c => c.st === "paid"), busy = CUSTS.filter(c => c.st === "uploaded"), talk = CUSTS.filter(c => c.st === "new" || c.st === "ok"), done = CUSTS.filter(c => c.st === "sent" || c.st === "closed");
+  $("#custn").innerHTML = paid.length ? `<span style="background:#ff8a00;color:#1a0f00;border-radius:10px;padding:0 8px">${paid.length}</span>` : talk.length ? `<span style="background:#3a3f52;border-radius:10px;padding:0 8px">${talk.length}</span>` : "";
+  $("#custs").textContent = paid.length ? "надо снять: " + paid.length : talk.length ? "обсуждают: " + talk.length : busy.length ? "бот отправляет" : "нет заказов";
+  $("#custpl").style.background = paid.length ? "#5a3a0c" : "";
+  $("#custbar").style.display = paid.length ? "block" : "none";
+  $("#custbar").textContent = paid.length ? `🎬 Оплачен кастом — ${paid.map(c => c.who).join(", ")}: надо снять и загрузить → нажми сюда` : "";
+  const ids = paid.map(c => c.id).join();
+  if (CUSTPAID !== null && ids && ids !== CUSTPAID && paid.some(c => !CUSTPAID.includes(c.id))) { admEv("🎬 у неё появился оплаченный кастом"); try { const a = new AudioContext(), o = a.createOscillator(), g = a.createGain(); o.frequency.value = 660; o.connect(g); g.connect(a.destination); g.gain.setValueAtTime(.2, a.currentTime); g.gain.exponentialRampToValueAtTime(.001, a.currentTime + .6); o.start(); o.stop(a.currentTime + .6); } catch (e) {} }
+  CUSTPAID = ids;
+  if ($("#custv").style.display !== "flex") return;
+  const sec = (t, l) => l.length ? `<div class="csec">${t}</div>` + l.map(custCard).join("") : "";
+  $("#custl").innerHTML = (sec("🔥 Снять сейчас", paid) + sec("📤 Отправляется", busy) + sec("💬 Просят — пока обсуждают (решать не нужно)", talk) + sec("✅ Сделано", done))
+    || '<div style="color:#889;font-size:16px;padding:20px 0">Заказов пока нет. Когда кто-то оплатит видео на заказ — тут появится оранжевая карточка.</div>';
+}
+async function custUp(id, inp) {
+  const f = inp.files && inp.files[0]; if (!f) return;
+  const c = CUSTS.find(x => x.id === id) || {};
+  if (!confirm(`Отправить это видео (${Math.round(f.size / 1048576)} МБ) для ${c.who}?`)) return;
+  const CH = 20 * 1048576, n = Math.max(1, Math.ceil(f.size / CH)), ext = ((f.name.split(".").pop() || "mp4").toLowerCase().match(/^(mp4|mov|m4v|webm)$/) || ["mp4"])[0];
+  CUP[id] = 0; custRender(); admEv("📤 загружает кастом для " + c.who + " (" + Math.round(f.size / 1048576) + " МБ)");
+  for (let i = 0; i < n; i++) {
+    let j = null;
+    for (let t = 0; t < 4 && !(j && j.ok); t++) {
+      try { j = await (await fetch(`${UP_URL}?id=${encodeURIComponent(id)}&i=${i}&n=${n}&ext=${ext}`, { method: "POST", headers: { "x-w": "alicia-panel" }, body: f.slice(i * CH, (i + 1) * CH) })).json(); }
+      catch (e) { j = { ok: false, err: "нет связи — пробую ещё" }; }
+      if (j && !j.ok && /не ждёт|уже загружено|mp4/.test(j.err || "")) break;
+      if (!(j && j.ok)) await new Promise(r => setTimeout(r, 3000));
+    }
+    if (!(j && j.ok)) { CUP[id] = (j && j.err) || "не загрузилось — попробуй ещё раз"; custRender(); admEv("⚠ кастом не загрузился: " + CUP[id]); return; }
+    CUP[id] = Math.round((i + 1) / n * 100); custRender();
+  }
+  delete CUP[id]; c.st = "uploaded"; custRender(); admEv("✅ загрузила кастом для " + c.who); setTimeout(hubSync, 2000);
 }
 hubSync(); setInterval(hubSync, 10000);
 admEv("📂 панель открыта"); setTimeout(admSend, 3000); setInterval(admSend, 15000);
