@@ -79,7 +79,8 @@ html.light{filter:invert(1) hue-rotate(180deg);background:#fff}html.light img,ht
  <div class="col"><b>💬 Подсказки</b><div id="paidq"></div><div id="typing"></div><div id="hint">Подсказки появятся тут, когда начнётся эфир 💋</div>
   <b>💰 Донаты и сообщения <small style="color:#889;font-weight:400">— кто сколько дал и за что, что просит, что ты (бот) ему написала · свежее сверху</small></b>
   <div class="ftabs"><button id="ft-all" class="sel" onclick="ftab('all')">🔔 Все уведомления</button><button id="ft-pay" onclick="ftab('pay')">💰 Кто что оплатил</button><button id="ft-priv" onclick="ftab('priv')">🔒 Приватный чат</button></div>
-  <div class="box" id="feed" style="flex:1;min-height:0"></div><div class="box" id="privc" style="flex:1;min-height:0;display:none"></div>
+  <div class="box" id="feed" style="flex:1;min-height:0"></div><div id="privw" style="flex:1;min-height:0;display:none;flex-direction:column;gap:6px"><div class="box" id="privc" style="flex:1;min-height:0"></div>
+   <div style="display:flex;gap:6px"><input id="privin" placeholder="пиши ему по-русски — уйдёт в чат привата на английском" style="margin:0;font-size:17px" onkeydown="if(event.key==='Enter')privSay()"><button class="go" onclick="privSay()">➤ Отправить</button></div></div>
  </div>
  <div class="col"><div id="wall" style="display:none"></div><div id="bot" style="display:none"></div><b>💬 Комнаты</b>
   <div id="rooms"><div class="room"><b>Chaturbate</b><div class="box" id="chat-cb"></div></div><div class="room"><b>Stripchat</b><div class="box" id="chat-sc"></div></div>
@@ -403,6 +404,7 @@ function onExt(m) {
     if (a) { PAIDQ.push({ p: m.p, who: m.who, tk: m.tk, what: m.what, act: a }); PAIDQ.splice(0, PAIDQ.length - 5); paidShow(); ding(); PAIDBEEP = Date.now(); admEv("💰 оплатили по меню: " + m.who + " — " + m.what); }
   }
   if (m.type === "lovctl") lovCtl(m);
+  if (m.type === "saidres") { const x = PRIVMSG.find(y => y.id === m.id); if (x) { x.st = m.ok ? "✓ ушло" : "⚠ " + (m.err || "не ушло"); privShowChat(); } }
   if (m.type === "privreq") privShow(m.p, m.text);
   if (m.type === "privgone" && PRIVREQ === m.p) privHide();
   if (m.type === "private") privOn(m.p, m.on);
@@ -623,12 +625,29 @@ async function hmAns(rep) {
 // ── вкладки над лентой: все / кто что оплатил / приватный чат
 let FT = "all", PRIVMSG = [];
 function ftab(t) { FT = t; ["all", "pay", "priv"].forEach(k => $("#ft-" + k).classList.toggle("sel", k === t));
-  $("#feed").style.display = t === "priv" ? "none" : ""; $("#privc").style.display = t === "priv" ? "" : "none"; if (t === "priv") privShowChat(); else feedShow(LASTFEED.length ? LASTFEED : null); }
+  $("#feed").style.display = t === "priv" ? "none" : ""; $("#privw").style.display = t === "priv" ? "flex" : "none"; if (t === "priv") privShowChat(); else feedShow(LASTFEED.length ? LASTFEED : null); }
 function privShowChat() {
   const any = Object.keys(PRIVLIVE).filter(k => PRIVLIVE[k]);
   $("#privc").innerHTML = (any.length ? `<div style="color:#ff8b8b;font-weight:700;margin-bottom:6px">🔒 Идёт приват — ${any.map(k => PN4[k]).join(", ")}. Бот молчит, пишешь только ты (в окне сайта).</div>`
     : '<div style="color:#889;margin-bottom:6px">Привата сейчас нет. Когда начнётся — его сообщения будут тут, бот в это время не пишет.</div>') +
-    (PRIVMSG.slice().reverse().map(m => `<div class="pm"><span class="tm">${esc(m.t)}</span><span style="font-size:12px;color:#99a">${esc(PN4[m.p] || m.p)}</span> <b>${esc(m.who)}</b>: ${esc(m.text)}</div>`).join("") || "");
+    (PRIVMSG.slice().reverse().map(m => m.me ? `<div class="pm me"><span class="tm">${esc(m.t)} ${m.st || ""}</span><b style="color:#9fbaff">ты</b>: ${esc(m.text)}${m.out && m.out !== m.text ? `<br><small style="color:#99a">ушло: ${esc(m.out)}</small>` : ""}</div>`
+      : `<div class="pm"><span class="tm">${esc(m.t)}</span><span style="font-size:12px;color:#99a">${esc(PN4[m.p] || m.p)}</span> <b>${esc(m.who)}</b>: ${esc(m.text)}</div>`).join("") || "");
+}
+// её сообщение в приват: перевод (если он пишет не по-русски) → помощник → поле чата на странице эфира сайта
+async function privSay() {
+  const inp = $("#privin"), text = inp.value.trim(); if (!text) return;
+  const p = Object.keys(PRIVLIVE).find(k => PRIVLIVE[k]) || (PRIVMSG.length ? PRIVMSG[PRIVMSG.length - 1].p : "");
+  if (!p) { inp.placeholder = "привата сейчас нет — писать некуда"; return; }
+  if (!port) { inp.placeholder = "нет помощника Chrome — напиши на сайте"; return; }
+  inp.value = ""; const his = PRIVMSG.filter(m => !m.me && m.p === p).slice(-3).map(m => m.text).join(" ");
+  let out = text;
+  if (/[а-яё]/i.test(text) && !/[а-яё]/i.test(his)) {
+    const r = await call("fetch", { url: "https://translate.googleapis.com/translate_a/single?client=gtx&sl=ru&tl=en&dt=t&q=" + encodeURIComponent(text), timeout: 6000 });
+    try { out = JSON.parse(r.text)[0].map(x => x[0]).join("") || text; } catch (e) {}
+  }
+  const m = { me: true, p, text, out, t: new Date().toTimeString().slice(0, 5), st: "⏳", id: "s" + Date.now() }; PRIVMSG.push(m); privShowChat();
+  await call("push", { ch: "say-" + p, cmd: { id: m.id, text: out } }); admEv("🔒 написала в приват: " + text);
+  setTimeout(() => { if (m.st === "⏳") { m.st = "⚠ страница сайта не ответила — напиши там"; privShowChat(); } }, 8000);
 }
 // ── оплатили по меню: карточка + сигнал, пока она не нажмёт «Сделала»
 let PAIDQ = [], PAIDBEEP = 0;
