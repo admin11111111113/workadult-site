@@ -693,7 +693,7 @@ function wallShow(force) {
     : `<div class="pm"><span class="tm">${esc(x.t)}</span><span style="font-size:11px;background:#000a;border-radius:5px;padding:1px 5px">${esc(PN4[x.p] || x.p)}</span> ` +
       `<b class="nm" data-p="${esc(x.p)}" data-who="${esc(x.who)}" data-uid="${esc(x.uid)}" style="${lvO(x.p, x.lvl, x)}">${esc(x.who)}</b>${x.lvl ? ` <span style="font-size:11px;background:#2f7d4a;border-radius:5px;padding:1px 5px;${lvB(x.p, x.lvl)}">${lvN(x.p, x.lvl) || LVN[x.lvl] || "токены"}</span>` : ""}: ` +
       `${esc(x.ru || x.text)}${x.ru && x.ru !== x.text ? `<br><small style="color:#889">${esc(x.text)}</small>` : ""}` +
-      `<div style="display:flex;gap:5px;margin-top:4px"><input id="wi-${x.id}" placeholder="ответить ему по-русски…" style="margin:0;padding:5px 8px;font-size:14px" onkeydown="if(event.key==='Enter')wallSay('${x.id}')">` +
+      `<div style="display:flex;gap:5px;margin-top:4px"><input id="wi-${x.id}" placeholder="ответить ему по-русски… (Esc — закрыть)" style="margin:0;padding:5px 8px;font-size:14px;display:${WOPEN === x.id ? '' : 'none'}" onkeydown="if(event.key==='Enter')wallSay('${x.id}');if(event.key==='Escape'){this.style.display='none';WOPEN=''}">` +
       `<button style="padding:5px 10px;font-size:13px" onclick="wallSay('${x.id}')">✍️ Ответить</button><button style="padding:5px 10px;font-size:13px;background:#4a3a8a" onclick="wallBot('${x.id}')">🤖 Бот</button></div></div>`).join("")
     || '<div class="chat" style="color:#667">пока тихо — тут будут все сообщения из чатов эфира</div>';
 }
@@ -708,9 +708,12 @@ async function roomSay(p, who, ru, his, bot, out0) {
   setTimeout(() => { if (x.st === "⏳") { x.st = "⚠ страница сайта не ответила"; wallShow(true); } }, 8000);
 }
 const WSAY = {};
+var WOPEN = "";
 async function wallSay(id) {
-  const x = WALLMSG.find(y => y.id === id), inp = $("#wi-" + id), t = (inp && inp.value || "").trim(); if (!x || !t) return;
-  inp.value = ""; roomSay(x.p, x.who, t, x.text, false);
+  const x = WALLMSG.find(y => y.id === id), inp = $("#wi-" + id), t = (inp && inp.value || "").trim();
+  if (inp && inp.style.display === "none") { WOPEN = id; inp.style.display = ""; inp.focus(); return; }
+  if (!x || !t) return;
+  inp.value = ""; WOPEN = ""; roomSay(x.p, x.who, t, x.text, false);
 }
 async function wallBot(id) {
   const x = WALLMSG.find(y => y.id === id); if (!x) return;
@@ -754,7 +757,7 @@ async function sayQ(p, id, text) { try { await fetch("https://alicia-link.videor
 const PQ = "https://alicia-link.videorils.workers.dev/pq", LVN = ["", "есть токены", "тратит", "много тратит", "VIP"];
 let HUBPPL = [], RSAYDONE = new Set(), PPLHOLD = 0, RCHSEEN = new Set(), RSAID = {};
 // версия панели: хаб пишет в общий чат только через панель, которая это умеет (v ≥ 3); новая версия на сайте → панель обновится сама
-const PANEL_V = 10;
+const PANEL_V = 11;
 setInterval(async () => {
   try { const t = await (await fetch(location.pathname + "?vchk=" + Date.now(), { cache: "no-store" })).text(), v = +((t.match(/const PANEL_V = (\d+)/) || [])[1] || 0);
     const busy = Object.values(PRIVLIVE).some(Boolean) || TYPES.length || PAIDQ.length || [...document.querySelectorAll("input,textarea")].some(i => i.value && i.type !== "file") || Object.keys(CUP).length;
