@@ -5,10 +5,10 @@
 #top{display:flex;gap:8px;padding:8px;background:#1b1d26;align-items:center;flex-wrap:wrap}
 .pl{background:#262a36;border-radius:10px;padding:6px 12px;font-weight:600}.pl small{display:block;font-weight:400;color:#9aa;font-size:12px}
 .dot{display:inline-block;width:10px;height:10px;border-radius:50%;background:#666;margin-right:6px}.ok{background:#2ecc71}.no{background:#e74c3c}
-#main{flex:1;display:grid;grid-template-columns:minmax(0,1.3fr) minmax(0,1fr);gap:10px;padding:10px;min-height:0}
+#main{flex:1;display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.25fr) minmax(0,.85fr);gap:10px;padding:10px;min-height:0}
 #cam,#camv{background:#000;border-radius:12px;width:100%;aspect-ratio:16/9;object-fit:contain;max-height:40vh}
 .btns{display:flex;gap:8px;margin:8px 0;flex-wrap:wrap;align-items:center}button{font:inherit;font-weight:600;border:0;border-radius:10px;padding:12px 18px;cursor:pointer;background:#2f3445;color:#fff}
-.lov{background:#1b1d26;border-radius:12px;padding:6px 10px;margin:0}.lov button{padding:8px 12px}#rooms{flex:1;display:grid;grid-template-columns:1fr 1fr;grid-template-rows:1fr 1fr;gap:6px;min-height:0}.room{display:flex;flex-direction:column;min-height:0}.room b{font-size:13px;color:#aab}
+.lov{background:#1b1d26;border-radius:12px;padding:6px 10px;margin:0}.lov button{padding:8px 12px}#rooms{flex:1;display:grid;grid-template-columns:1fr;grid-template-rows:repeat(4,1fr);gap:6px;min-height:0}.room{display:flex;flex-direction:column;min-height:0}.room b{font-size:13px;color:#aab}
 .au{display:block;font-size:12px;font-weight:400;color:#cfd;cursor:pointer}.au input{width:auto;margin:0 4px 0 0}.go{background:#e8364f}.y{background:#c98a14}.g{background:#3a6}button:disabled{opacity:.4}
 .nf{display:flex;gap:8px;align-items:flex-start;padding:8px 10px;margin-bottom:6px;border-radius:10px;background:#2a2410;font-size:15px}
 .nf .pf{background:#000a;border-radius:6px;padding:2px 7px;font-size:12px;font-weight:700;white-space:nowrap}.nf .wh{font-weight:700;color:#ffd76a;white-space:nowrap}
@@ -25,6 +25,10 @@ input{font:inherit;padding:8px;border-radius:8px;border:1px solid #444;backgroun
 .cu.paid{border-left-color:#ff8a00;background:#3a2a10}.cu.paid .q{font-size:21px;font-weight:700}.cu.uploaded{border-left-color:#4aa3ff}.cu.sent,.cu.closed{border-left-color:#2ecc71;opacity:.7}
 .cu.new,.cu.ok{opacity:.85}.cu .up{display:block;margin-top:10px;background:#ff8a00;color:#1a0f00;font-size:20px;padding:14px;text-align:center;border-radius:12px;cursor:pointer;font-weight:800}
 .cu .bar{height:14px;background:#0f1116;border-radius:8px;overflow:hidden;margin-top:10px}.cu .bar i{display:block;height:100%;background:#ff8a00;transition:width .3s}
+#pfeed{flex:1;display:grid;grid-template-columns:1fr 1fr;grid-template-rows:1fr 1fr;gap:6px;min-height:0}
+.pfc{display:flex;flex-direction:column;min-height:0;background:#1b1d26;border-radius:12px;border-top:3px solid #3a3f52}.pfc.on{border-top-color:#2ecc71}
+.pfc>b{padding:6px 8px;font-size:14px;display:flex;gap:6px;align-items:center}.pfc>b small{margin-left:auto;color:#ffd76a;font-size:13px}
+.pfc .box{padding:6px}.pfc .nf .pf{display:none}.pfc .nf{font-size:14px;padding:6px 8px}
 .csec{color:#889;font-size:13px;margin:14px 0 6px;font-weight:700;text-transform:uppercase}
 </style></head><body>
 <div id="top">
@@ -62,10 +66,12 @@ input{font:inherit;padding:8px;border-radius:8px;border:1px solid #444;backgroun
   <div id="lovctl" style="display:none;align-items:center;gap:10px;background:#123224;border:2px solid #2ecc71;border-radius:12px;padding:8px 12px;font-size:17px">
    <span style="flex:1"></span><button style="background:#e8364f" onclick="lovStop()">⏻ Закончить управление</button></div>
   <div id="hint">Подсказки появятся тут, когда начнётся эфир 💋</div>
-  <b>🔔 Донаты и уведомления <small style="color:#889;font-weight:400">— кто сколько дал, кто что просит, кто оплатил, кому что написал бот</small></b>
-  <div class="box" id="feed" style="flex:1;min-height:180px"></div>
  </div>
- <div class="col"><div id="wall" style="display:none"></div><b>💌 Личка — он пишет (жёлтым), мы/бот отвечаем (синим)</b><div class="box" id="bot" style="flex:.6"></div><b>💬 Комнаты</b>
+ <div class="col"><b>💰 Донаты и подсказки по эфирам <small style="color:#889;font-weight:400">— кто сколько дал, что просит, кто оплатил</small></b>
+  <div id="feed" style="display:none"></div>
+  <div id="pfeed"><div class="pfc" id="pfc-cb"><b><span class="dot" id="pfd-cb"></span>Chaturbate<small id="pft-cb"></small></b><div class="box" id="pf-cb"></div></div><div class="pfc" id="pfc-sc"><b><span class="dot" id="pfd-sc"></span>Stripchat<small id="pft-sc"></small></b><div class="box" id="pf-sc"></div></div><div class="pfc" id="pfc-bc"><b><span class="dot" id="pfd-bc"></span>Bongacams<small id="pft-bc"></small></b><div class="box" id="pf-bc"></div></div><div class="pfc" id="pfc-mv"><b><span class="dot" id="pfd-mv"></span>ManyVids<small id="pft-mv"></small></b><div class="box" id="pf-mv"></div></div></div>
+ </div>
+ <div class="col"><div id="wall" style="display:none"></div><div id="bot" style="display:none"></div><b>💬 Комнаты</b>
   <div id="rooms"><div class="room"><b>Chaturbate</b><div class="box" id="chat-cb"></div></div><div class="room"><b>Stripchat</b><div class="box" id="chat-sc"></div></div>
    <div class="room"><b>Bongacams</b><div class="box" id="chat-bc"></div></div><div class="room"><b>ManyVids</b><div class="box" id="chat-mv"></div></div></div></div>
 </div>
@@ -89,6 +95,8 @@ const ROOM = {};                                                   // "p|ник"
 function showTot() { const L = p => !LIVE[p] ? "" : LIVE[p].on ? "🟢 в эфире · " : "🔴 не в эфире · ";
   $("#t-cb").textContent = L("cb") + TOT.cb + " tk"; $("#t-sc").textContent = L("sc") + TOT.sc + " tk";
   $("#t-bc").textContent = "💰 " + ETK.bc + " tk сегодня"; $("#t-mv").textContent = "💰 " + ETK.mv + " tk за эфир";
+  for (const k of ["cb", "sc", "bc", "mv"]) { const on = !!(LIVE[k] && LIVE[k].on); $("#pfc-" + k).classList.toggle("on", on); $("#pfd-" + k).className = "dot " + (on ? "ok" : "no");
+    $("#pft-" + k).textContent = "💰 " + (k === "cb" || k === "sc" ? TOT[k] : ETK[k]) + " tk"; }
   $("#t-all").textContent = (TOT.cb + TOT.sc + ETK.bc + ETK.mv) + " tk"; localStorage["tot" + day] = JSON.stringify(TOT); }
 showTot();
 const ADM_EV = [];                                                  // события для админки (workadult.pro/alicia/admin)
@@ -462,16 +470,17 @@ let FEEDSEEN = null, LASTFEED = [], LOCALTIPS = [];
 const nowT = () => new Date().toLocaleString("sv").slice(0, 16);
 function feedShow(l) {
   const el = $("#feed");
-  if (l) LASTFEED = l; else if (!LOCALTIPS.length) { el.innerHTML = '<div class="chat" style="color:#889">нет связи с компьютером бота</div>'; return; }
+  if (l) LASTFEED = l; else if (!LOCALTIPS.length) { for (const k of ["cb", "sc", "bc", "mv"]) $("#pf-" + k).innerHTML = '<div class="chat" style="color:#889">нет связи с компьютером бота</div>'; return; }
   // донаты с её страниц приходят сразу (LOCALTIPS); когда тот же донат придёт от бота — локальный убираем
   LOCALTIPS = LOCALTIPS.filter(x => Date.now() - x.at < 600000 && !LASTFEED.some(y => y.kind === "tip" && y.p === x.p && y.who === x.who && +y.tk === +x.tk));
-  l = [...LASTFEED, ...LOCALTIPS].sort((a, b) => (a.t || "").localeCompare(b.t || "")).slice(-50);
+  l = [...LASTFEED, ...LOCALTIPS].sort((a, b) => (a.t || "").localeCompare(b.t || "")).slice(-150);
+  l = l.filter(x => !/^(🤖|📨|✍️|💌)/.test(x.text || ""));            // переписку бота не показываем — он отвечает сам (владелец 22.11)
   const seen = new Set(FEEDSEEN || []), fresh = FEEDSEEN && l.some(x => !seen.has(x.id));
-  el.innerHTML = l.slice().reverse().map(x => {
+  const one = x => {
     const cls = /^(🤖|📨|✍️)/.test(x.text) ? "bot" : x.kind === "pay" ? "pay" : x.kind === "tip" ? "tipx" : "";
     return `<div class="nf ${cls} ${FEEDSEEN && !seen.has(x.id) ? "newx" : ""}">${x.kind === "tip" ? `<span class="tkn">${+x.tk || 0} tk</span>` : ""}<span class="pf">${esc(PNAME[x.p] || x.p)}</span><span class="wh">${esc(x.who)}</span>` +
-      `<span class="tx">${esc(x.text)}</span><span class="tm">${esc((x.t || "").slice(11, 16))}</span></div>`; }).join("")
-    || '<div class="chat" style="color:#889">пока пусто — тут будут донаты, просьбы и что бот написал</div>';
+      `<span class="tx">${esc(x.text)}</span><span class="tm">${esc((x.t || "").slice(11, 16))}</span></div>`; };
+  for (const k of ["cb", "sc", "bc", "mv"]) { const ll = l.filter(x => x.p === k).reverse(); $("#pf-" + k).innerHTML = ll.length ? ll.map(one).join("") : '<div class="chat" style="color:#667">пока тихо</div>'; }
   if (fresh) { try { const a = new AudioContext(), o = a.createOscillator(), g = a.createGain(); o.frequency.value = 880; o.connect(g); g.connect(a.destination);
     g.gain.setValueAtTime(.15, a.currentTime); g.gain.exponentialRampToValueAtTime(.001, a.currentTime + .25); o.start(); o.stop(a.currentTime + .25); } catch (e) {} }
   FEEDSEEN = l.map(x => x.id);
@@ -491,7 +500,7 @@ async function hubSync() {
   if (alive) { CUSTS = h.customs || []; custRender(); }
   if (alive && h.today) { ETK.bc = h.today.bc || 0; showTot(); }
   // её вкладка сайта молчит (закрыта / скрипт не подцепился) → статус эфира от хаба (он сам спрашивает сайты)
-  for (const k of ["mv", "sc", "cb"]) if (alive && !(LIVE[k] && LIVE[k].src !== "hub" && Date.now() - LIVE[k].t < 30000)) {
+  for (const k of ["mv", "sc", "cb", "bc"]) if (alive && !(LIVE[k] && LIVE[k].src !== "hub" && Date.now() - LIVE[k].t < 30000)) {
     const on = !!(h.live_on || {})[k]; LIVE[k] = { on, st: "hub", src: "hub", t: Date.now() };
     dot(k, on); showTot(); if (k === "mv") $("#s-mv").textContent = on ? "🟢 в эфире" : "🔴 не в эфире";
   }
