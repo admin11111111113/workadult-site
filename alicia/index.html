@@ -230,6 +230,7 @@ function liveEval(p) {
   const fr = x => x && Date.now() - x.t < 45000, L = LV[p] || {}, srcs = ["tab", "obs", "hub"].filter(k => fr(L[k]));
   const onS = srcs.find(k => L[k].on), on = !!onS, was = LIVE[p] && LIVE[p].on;
   LIVE[p] = { on, st: (onS && L[onS].st) || (srcs[0] && L[srcs[0]].st) || "", src: onS || srcs[0] || "", t: srcs.length ? Date.now() : (LIVE[p] || {}).t || 0 };
+  if (!on && PRIVLIVE[p]) setTimeout(() => privOn(p, false), 0);       // эфир кончился — и приват тоже
   dot(p, on); if (p === "mv" || p === "bc") $("#s-" + p).textContent = on ? "🟢 в эфире" : srcs.length ? "🔴 не в эфире" : "не видно";
   if (was !== on) showTot();
 }
@@ -506,6 +507,7 @@ function ding() { try { const a = new AudioContext(); [880, 1175, 1568, 1175, 15
   g.gain.setValueAtTime(.2, a.currentTime + i * .15); g.gain.exponentialRampToValueAtTime(.001, a.currentTime + i * .15 + .14); o.start(a.currentTime + i * .15); o.stop(a.currentTime + i * .15 + .15); }); } catch (e) {} }
 function privShow(p, text) {
   PRIVREQ = p; $("#privp").textContent = PN4[p] || p; $("#privt").textContent = text || ""; $("#privst").textContent = ""; $("#priv").style.display = "flex"; ding();
+  clearInterval(window.PRING); let n = 0; window.PRING = setInterval(() => { if (!PRIVREQ || ++n > 15) return clearInterval(window.PRING); ding(); }, 2500);   // 23.11: звенит, пока не ответит (до ~40 сек)
   admEv("🔒 запрос привата на " + (PN4[p] || p) + ": " + (text || ""));
 }
 function privHide() { PRIVREQ = null; $("#priv").style.display = "none"; }
@@ -516,13 +518,14 @@ async function privAns(act) {
   admEv(act === "accept" ? "🔒 приняла приват" : "🔒 отклонила приват"); setTimeout(privHide, 6000);
 }
 function privOn(p, on) {
+  if (on && !(LIVE[p] && LIVE[p].on)) on = false;                    // 23.11: не в эфире на этой площадке — привата быть не может
   PRIVLIVE[p] = on; const any = Object.keys(PRIVLIVE).filter(k => PRIVLIVE[k]);
   $("#privbar").style.display = any.length ? "block" : "none"; $("#privbar").textContent = "🔒 ИДЁТ ПРИВАТ — " + any.map(k => PN4[k]).join(", ") + " · его сообщения и ответ — во вкладке «🔒 Приват»";
   for (const k in PN4) { const b = $("#chat-" + k); if (b) b.style.outline = PRIVLIVE[k] ? "3px solid #e8364f" : ""; }
   $("#ft-priv").classList.toggle("live", any.length > 0); $("#ft-priv").textContent = any.length ? "🔒 Приват — идёт!" : "🔒 Приват";
   if (on && FT !== "priv") ftab("priv"); if (!any.length && FT === "priv") ftab("ppl"); if (FT === "priv") privShowChat();
   setTimeout(admSend, 300);                                         // хабу сразу: в привате бот молчит
-  if (on) { admEv("🔒 приват идёт на " + (PN4[p] || p)); hint("🔒 Приват на " + (PN4[p] || p) + " — смотри его сообщения в комнате " + (PN4[p] || p)); }
+  if (on) { ding(); admEv("🔒 приват идёт на " + (PN4[p] || p)); hint("🔒 Приват на " + (PN4[p] || p) + " — смотри его сообщения в комнате " + (PN4[p] || p)); }
 }
 // ── бот (работает на ПК владельца): галочки «авто» по площадкам + что он написал людям
 const HUB_URL = "https://alicia-link.videorils.workers.dev/hub", PNAME = { cb: "Chaturbate", sc: "Stripchat", bc: "Bongacams", mv: "ManyVids" };

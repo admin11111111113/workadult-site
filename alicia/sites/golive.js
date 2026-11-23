@@ -71,7 +71,7 @@
     } else if (REQ) { REQ = null; send({ type: "privgone", p: P }); }
   }, 2000);
   // идёт ли приват сейчас (по надписям на странице)
-  const PRIVON = /(private show (is )?(in progress|started|active)|you are in (a )?private|in private show|приват(ное шоу|ный чат)? (идёт|начал|начато|активн)|в привате|сейчас приват|завершить приват|закончить приват|выйти из привата|end private|stop private|full private|полный приват|групповой приват|đang (show )?riêng tư)/i;
+  const PRIVON = /(private show (is )?(in progress|started|active)|you are in (a )?private|in private show|приват(ное шоу|ный чат)? (идёт|начал|начато|активн)|завершить приват|закончить приват|end private|stop private|đang (show )?riêng tư)/i;
   let PON = null;
   // CB/SC приват шлют cb.js/sc.js по статусу комнаты из API сайта; ManyVids — roomState своей комнаты; Bonga — по надписям консоли
   if (P === "bc") setInterval(() => { const on = PRIVON.test((document.body && document.body.innerText || "").slice(0, 200000)); if (on !== PON) { PON = on; send({ type: "private", p: P, on }); } }, 3000);
