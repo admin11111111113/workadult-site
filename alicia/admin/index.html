@@ -1,28 +1,28 @@
 <!doctype html><html lang="ru"><head><meta charset="utf-8"><title>Алисия — админка</title>
 <meta name="robots" content="noindex,nofollow"><meta name="viewport" content="width=device-width,initial-scale=1">
 <style>
-*{box-sizing:border-box}body{margin:0;font:15px/1.4 Segoe UI,Arial;background:#121319;color:#eee}
-#top{display:flex;gap:8px;padding:8px;background:#1b1d26;align-items:center;flex-wrap:wrap;position:sticky;top:0;z-index:2}
-.pl{background:#262a36;border-radius:10px;padding:6px 12px;font-weight:600}.pl small{display:block;font-weight:400;color:#9aa;font-size:12px}
+*{box-sizing:border-box}body{margin:0;font:15px/1.4 Segoe UI,Arial;background:#262626;color:#eee}
+#top{display:flex;gap:8px;padding:8px;background:#313131;align-items:center;flex-wrap:wrap;position:sticky;top:0;z-index:2}
+.pl{background:#3a3a3a;border-radius:10px;padding:6px 12px;font-weight:600}.pl small{display:block;font-weight:400;color:#9aa;font-size:12px}
 .dot{display:inline-block;width:10px;height:10px;border-radius:50%;background:#666;margin-right:6px}.ok{background:#2ecc71}.no{background:#e74c3c}
 #grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(320px,1fr));gap:10px;padding:10px}
-.box{background:#1b1d26;border-radius:12px;padding:10px}.box h3{margin:0 0 8px;font-size:15px}
-.l{padding:4px 6px;border-bottom:1px solid #262a36;font-size:14px;white-space:pre-wrap}.l i{color:#889;font-style:normal;font-size:12px;margin-right:6px}
-#hint{background:#2a1f3a;border:2px solid #8a5cff;border-radius:12px;padding:10px;font-weight:700;white-space:pre-wrap}
+.box{background:#313131;border-radius:12px;padding:10px}.box h3{margin:0 0 8px;font-size:15px}
+.l{padding:4px 6px;border-bottom:1px solid #3a3a3a;font-size:14px;white-space:pre-wrap}.l i{color:#889;font-style:normal;font-size:12px;margin-right:6px}
+#hint{background:#3a2328;border:2px solid #e0363c;border-radius:12px;padding:10px;font-weight:700;white-space:pre-wrap}
 #shot{width:100%;border-radius:8px;background:#000;display:block}
-a.btn,button{font:inherit;font-weight:600;border:0;border-radius:10px;padding:8px 14px;cursor:pointer;background:#5b3ccc;color:#fff;text-decoration:none}
-#login{position:fixed;inset:0;background:#000d;display:none;align-items:center;justify-content:center;z-index:5}#login div{background:#1f2230;padding:20px;border-radius:14px}
-input{font:inherit;padding:8px;border-radius:8px;border:1px solid #444;background:#0f1116;color:#fff}
+a.btn,button{font:inherit;font-weight:600;border:0;border-radius:10px;padding:8px 14px;cursor:pointer;background:#a2252d;color:#fff;text-decoration:none}
+#login{position:fixed;inset:0;background:#000d;display:none;align-items:center;justify-content:center;z-index:5}#login div{background:#2b2b2b;padding:20px;border-radius:14px}
+input{font:inherit;padding:8px;border-radius:8px;border:1px solid #444;background:#1e1e1e;color:#fff}
 .scroll{max-height:420px;overflow:auto}
 body{height:100vh;display:flex;flex-direction:column}#tabs{display:flex;gap:6px;padding:6px 8px 0;background:#141414;flex:none}
 #tabs button{border-radius:8px 8px 0 0;background:#2b2b2b;color:#fff;padding:8px 18px}#tabs button.sel{background:#e0363c}
-#hubv{flex:1;min-height:0;display:flex}#hubf{flex:1;border:0;background:#121319}#herv{flex:1;overflow:auto;display:none}
-html.light{background:#fff}html.light body{background:#ecedf3}html.light body>*:not(#lbv):not(#hubv):not(#ctv):not(#tabs){filter:invert(1) hue-rotate(180deg)}html.light body>*:not(#lbv):not(#hubv):not(#ctv):not(#tabs) img,html.light body>*:not(#lbv):not(#hubv):not(#ctv):not(#tabs) video{filter:invert(1) hue-rotate(180deg)}html.light #lbf{background:#f4f5f8!important}#thb{font:inherit;font-size:13px;font-weight:600;border:1px solid #555;border-radius:10px;padding:6px 12px;cursor:pointer;background:#2f3445;color:#fff;white-space:nowrap}#thb{display:none!important}</style></head><body>
+#hubv{flex:1;min-height:0;display:flex}#hubf{flex:1;border:0;background:#262626}#herv{flex:1;overflow:auto;display:none}
+html.light{background:#fff}html.light body{background:#ecedf3}html.light body>*:not(#lbv):not(#hubv):not(#ctv):not(#tabs){filter:invert(1) hue-rotate(180deg)}html.light body>*:not(#lbv):not(#hubv):not(#ctv):not(#tabs) img,html.light body>*:not(#lbv):not(#hubv):not(#ctv):not(#tabs) video{filter:invert(1) hue-rotate(180deg)}html.light #lbf{background:#f4f5f8!important}#thb{font:inherit;font-size:13px;font-weight:600;border:1px solid #555;border-radius:10px;padding:6px 12px;cursor:pointer;background:#3d3d3d;color:#fff;white-space:nowrap}#thb{display:none!important}</style></head><body>
 <div id="tabs"><button id="tb-hub" class="sel" onclick="tab('hub')">🖥 Консоль Алисии</button><button id="tb-ct" onclick="tab('ct')">🎬 Консоль ManyVids</button><button id="tb-lb" onclick="tab('lb')">📸 Фото и видео</button><button id="tb-her" style="display:none" onclick="tab('her')"></button>
  <span id="hubmsg" style="color:#889;font-size:13px;align-self:center;margin-left:8px"></span><span style="margin-left:auto;align-self:center"><button id="thb" onclick="thSet(localStorage.theme==='dark')"></button></span></div>
 <div id="hubv"><iframe id="hubf" name="hubf"></iframe></div>
-<div id="ctv" style="flex:1;min-height:0;display:none"><iframe id="ctf" style="flex:1;border:0;background:#121319;width:100%;height:100%"></iframe></div>
-<div id="lbv" style="flex:1;min-height:0;display:none"><iframe id="lbf" style="flex:1;border:0;background:#121319;width:100%;height:100%"></iframe></div>
+<div id="ctv" style="flex:1;min-height:0;display:none"><iframe id="ctf" style="flex:1;border:0;background:#262626;width:100%;height:100%"></iframe></div>
+<div id="lbv" style="flex:1;min-height:0;display:none"><iframe id="lbf" style="flex:1;border:0;background:#262626;width:100%;height:100%"></iframe></div>
 <div id="herv">
 <div id="top">
  <div class="pl"><span class="dot" id="d-on"></span>Её панель<small id="s-on">…</small></div>
@@ -36,9 +36,9 @@ html.light{background:#fff}html.light body{background:#ecedf3}html.light body>*:
  <div class="pl">Сегодня<small id="s-tot">…</small></div>
 </div>
 <div id="grid">
- <div class="box"><h3>📺 Эфир <button id="bimg" style="float:right;padding:3px 10px;font-size:12px;background:#2f3445" onclick="tgImg()"></button></h3>
+ <div class="box"><h3>📺 Эфир <button id="bimg" style="float:right;padding:3px 10px;font-size:12px;background:#3d3d3d" onclick="tgImg()"></button></h3>
   <img id="shot" alt=""><div id="stream" style="margin-top:6px;color:#aab"></div><h3 style="margin-top:10px">💬 Что ей сейчас подсказывает панель</h3><div id="hint">…</div></div>
- <div class="box"><h3>🧾 Что происходило (её нажатия, подсказки, запуск сайтов) <button style="float:right;padding:3px 10px;font-size:12px;background:#2f3445" onclick="if(confirm('Очистить журнал?'))load(1)">очистить</button></h3><div class="scroll" id="ev"></div></div>
+ <div class="box"><h3>🧾 Что происходило (её нажатия, подсказки, запуск сайтов) <button style="float:right;padding:3px 10px;font-size:12px;background:#3d3d3d" onclick="if(confirm('Очистить журнал?'))load(1)">очистить</button></h3><div class="scroll" id="ev"></div></div>
  <div class="box"><h3>▶ Журнал запуска сайтов</h3><div id="golog"></div><h3 style="margin-top:10px">💰 Донаты</h3><div class="scroll" id="wall"></div></div>
  <div class="box"><h3>💬 Чат комнаты</h3><div class="scroll" id="chat"></div></div>
 </div></div>
