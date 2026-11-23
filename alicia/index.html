@@ -1,43 +1,43 @@
 <!doctype html><html lang="ru"><head><meta charset="utf-8"><title>Панель</title>
 <meta name="robots" content="noindex,nofollow"><meta name="viewport" content="width=device-width,initial-scale=1">
 <style>
-*{box-sizing:border-box}body{margin:0;font:16px/1.4 Segoe UI,Arial;background:#121319;color:#eee;height:100vh;display:flex;flex-direction:column}
-#top{display:flex;gap:8px;padding:8px;background:#1b1d26;align-items:center;flex-wrap:wrap}
-.pl{background:#262a36;border-radius:10px;padding:6px 12px;font-weight:600}.pl small{display:block;font-weight:400;color:#9aa;font-size:12px}
+*{box-sizing:border-box}body{margin:0;font:16px/1.4 Segoe UI,Arial;background:#262626;color:#eee;height:100vh;display:flex;flex-direction:column}
+#top{display:flex;gap:8px;padding:8px;background:#313131;align-items:center;flex-wrap:wrap}
+.pl{background:#3a3a3a;border-radius:10px;padding:6px 12px;font-weight:600}.pl small{display:block;font-weight:400;color:#9aa;font-size:12px}
 .dot{display:inline-block;width:10px;height:10px;border-radius:50%;background:#666;margin-right:6px}.ok{background:#2ecc71}.no{background:#e74c3c}
 #main{flex:1;display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.25fr) minmax(0,.85fr);gap:10px;padding:10px;min-height:0}
 #cam,#camv{background:#000;border-radius:12px;width:100%;aspect-ratio:16/9;object-fit:contain;max-height:40vh}
-.btns{display:flex;gap:8px;margin:8px 0;flex-wrap:wrap;align-items:center}button{font:inherit;font-weight:600;border:0;border-radius:10px;padding:12px 18px;cursor:pointer;background:#2f3445;color:#fff}
-.lov{background:#1b1d26;border-radius:12px;padding:6px 10px;margin:0}.lov button{padding:8px 12px}#rooms{flex:1;display:grid;grid-template-columns:1fr;grid-template-rows:repeat(4,1fr);gap:6px;min-height:0}.room{display:flex;flex-direction:column;min-height:0}.room b{font-size:13px;color:#aab}
+.btns{display:flex;gap:8px;margin:8px 0;flex-wrap:wrap;align-items:center}button{font:inherit;font-weight:600;border:0;border-radius:10px;padding:12px 18px;cursor:pointer;background:#3d3d3d;color:#fff}
+.lov{background:#313131;border-radius:12px;padding:6px 10px;margin:0}.lov button{padding:8px 12px}#rooms{flex:1;display:grid;grid-template-columns:1fr;grid-template-rows:repeat(4,1fr);gap:6px;min-height:0}.room{display:flex;flex-direction:column;min-height:0}.room b{font-size:13px;color:#aab}
 .au{display:block;font-size:12px;font-weight:400;color:#cfd;cursor:pointer}.au input{width:auto;margin:0 4px 0 0}.go{background:#e8364f}.y{background:#c98a14}.g{background:#3a6}button:disabled{opacity:.4}
 .nf{display:flex;gap:8px;align-items:flex-start;padding:8px 10px;margin-bottom:6px;border-radius:10px;background:#2a2410;font-size:15px}
 .nf .pf{background:#000a;border-radius:6px;padding:2px 7px;font-size:12px;font-weight:700;white-space:nowrap}.nf .wh{font-weight:700;color:#ffd76a;white-space:nowrap}
-.nf .tx{flex:1}.nf .tm{color:#889;font-size:12px;white-space:nowrap}.nf.bot{background:#1d2440}.nf.bot .wh{color:#9fbaff}.nf.pay{background:#16351f}.nf.pay .wh{color:#7ee08a}
+.nf .tx{flex:1}.nf .tm{color:#889;font-size:12px;white-space:nowrap}.nf.bot{background:#333333}.nf.bot .wh{color:#9fbaff}.nf.pay{background:#16351f}.nf.pay .wh{color:#7ee08a}
 .nf .tkn{font-size:22px;font-weight:800;color:#ffd76a;white-space:nowrap}.nf.tipx{background:#3a2f0c}.nf.newx{animation:fl 1.5s 3}@keyframes fl{50%{filter:brightness(1.8)}}
-#st{color:#aab}#hint{background:#2a1f3a;border:2px solid #8a5cff;border-radius:12px;padding:10px;font-size:20px;font-weight:700;min-height:50px}
-.col{display:flex;flex-direction:column;min-height:0;gap:8px}.box{background:#1b1d26;border-radius:12px;padding:8px;overflow:auto;flex:1;min-height:0}
+#st{color:#aab}#hint{background:#3a2328;border:2px solid #e0363c;border-radius:12px;padding:10px;font-size:20px;font-weight:700;min-height:50px}
+.col{display:flex;flex-direction:column;min-height:0;gap:8px}.box{background:#313131;border-radius:12px;padding:8px;overflow:auto;flex:1;min-height:0}
 .tip{padding:6px 8px;border-radius:8px;background:#233024;margin-bottom:5px}.tip b{color:#7ee08a}.chat{padding:3px 6px;color:#ccd;font-size:14px}
-#setup{position:fixed;inset:0;background:#000c;display:none;align-items:center;justify-content:center}#setup div{background:#1f2230;padding:20px;border-radius:14px;max-width:440px}
-input{font:inherit;padding:8px;border-radius:8px;border:1px solid #444;background:#0f1116;color:#fff;width:100%;margin:8px 0}
-.cu{border-radius:12px;padding:12px 14px;margin-bottom:10px;background:#232733;border-left:6px solid #555}.cu .h{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
-.cu .pf{background:#5b3ccc;border-radius:6px;padding:2px 8px;font-size:13px;font-weight:700}.cu .w{font-weight:700;font-size:17px}.cu .s{margin-left:auto;font-size:14px;font-weight:700}
+#setup{position:fixed;inset:0;background:#000c;display:none;align-items:center;justify-content:center}#setup div{background:#2b2b2b;padding:20px;border-radius:14px;max-width:440px}
+input{font:inherit;padding:8px;border-radius:8px;border:1px solid #444;background:#1e1e1e;color:#fff;width:100%;margin:8px 0}
+.cu{border-radius:12px;padding:12px 14px;margin-bottom:10px;background:#333333;border-left:6px solid #555}.cu .h{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.cu .pf{background:#a2252d;border-radius:6px;padding:2px 8px;font-size:13px;font-weight:700}.cu .w{font-weight:700;font-size:17px}.cu .s{margin-left:auto;font-size:14px;font-weight:700}
 .cu .q{font-size:18px;margin:8px 0 4px;line-height:1.35}.cu .tr{color:#9fe0b0;font-size:15px}.cu .dl{color:#ffcf70;font-size:14px;margin-top:4px}
 .cu.paid{border-left-color:#ff8a00;background:#3a2a10}.cu.paid .q{font-size:21px;font-weight:700}.cu.uploaded{border-left-color:#4aa3ff}.cu.sent,.cu.closed{border-left-color:#2ecc71;opacity:.7}
 .cu.new,.cu.ok{opacity:.85}.cu .up{display:block;margin-top:10px;background:#ff8a00;color:#1a0f00;font-size:20px;padding:14px;text-align:center;border-radius:12px;cursor:pointer;font-weight:800}
-.cu .bar{height:14px;background:#0f1116;border-radius:8px;overflow:hidden;margin-top:10px}.cu .bar i{display:block;height:100%;background:#ff8a00;transition:width .3s}
+.cu .bar{height:14px;background:#1e1e1e;border-radius:8px;overflow:hidden;margin-top:10px}.cu .bar i{display:block;height:100%;background:#ff8a00;transition:width .3s}
 #typing .ty{background:#123a2a;border:3px solid #2ecc71;border-radius:14px;padding:10px 14px;margin-bottom:8px;animation:fl 1.5s 2}
 #typing .ty .t1{font-size:20px;font-weight:800}#typing .ty .t2{font-size:18px;margin:6px 0;color:#eaffef}#typing .ty .row{display:flex;gap:8px;align-items:center}
 #typing .ty button.ok{background:#2ecc71;color:#06210f;font-size:20px;padding:10px 28px;font-weight:900}#typing .ty small{color:#9cb;margin-left:auto}
-.ftabs{display:flex;gap:6px}.ftabs button{padding:8px 12px;font-size:14px}.ftabs button.sel{background:#7c5cff}.ftabs button.live{background:#e8364f;animation:fl 1.5s infinite}
+.ftabs{display:flex;gap:6px}.ftabs button{padding:8px 12px;font-size:14px}.ftabs button.sel{background:#e0363c}.ftabs button.live{background:#e8364f;animation:fl 1.5s infinite}
 #paidq .pq{background:#3a2a05;border:3px solid #ffb020;border-radius:14px;padding:10px 14px;margin-bottom:8px;display:flex;gap:12px;align-items:center}
 #paidq .pq .tk{font-size:28px;font-weight:900;color:#ffd76a;white-space:nowrap}#paidq .pq .tx{flex:1;font-size:18px}#paidq .pq .tx b{color:#ffd76a}#paidq .pq .do{font-size:21px;font-weight:800;color:#fff;margin-top:3px}
 #paidq .pq button{background:#ffb020;color:#2a1a00;font-size:20px;font-weight:900;padding:12px 24px}
-.pm{padding:5px 8px;border-radius:8px;margin-bottom:4px;font-size:16px}.pm b{color:#ffd76a}.pm.me{background:#1d2440}.pm .tm{color:#889;font-size:12px;float:right}
-.pp{display:flex;gap:8px;align-items:center;padding:7px 8px;border-radius:10px;background:#232733;margin-bottom:6px}.pp .lv{font-size:12px;font-weight:800;border-radius:6px;padding:2px 6px;background:#2f7d4a;white-space:nowrap}
+.pm{padding:5px 8px;border-radius:8px;margin-bottom:4px;font-size:16px}.pm b{color:#ffd76a}.pm.me{background:#333333}.pm .tm{color:#889;font-size:12px;float:right}
+.pp{display:flex;gap:8px;align-items:center;padding:7px 8px;border-radius:10px;background:#333333;margin-bottom:6px}.pp .lv{font-size:12px;font-weight:800;border-radius:6px;padding:2px 6px;background:#2f7d4a;white-space:nowrap}
 .pp .nm{font-weight:700;color:#ffd76a}.pp .sd{flex:1;color:#aab;font-size:13px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.pp button{padding:6px 10px;font-size:13px}.pp.done{opacity:.6}
 .wh,.nm{cursor:pointer}.wh:hover,.nm:hover{text-decoration:underline}
 .csec{color:#889;font-size:13px;margin:14px 0 6px;font-weight:700;text-transform:uppercase}
-html.light{filter:invert(1) hue-rotate(180deg);background:#fff}html.light img,html.light video{filter:invert(1) hue-rotate(180deg)}#thb{font:inherit;font-size:13px;font-weight:600;border:1px solid #555;border-radius:10px;padding:6px 12px;cursor:pointer;background:#2f3445;color:#fff;white-space:nowrap}</style></head><body>
+#thb{font:inherit;font-size:13px;font-weight:600;border:1px solid #555;border-radius:10px;padding:6px 12px;cursor:pointer;background:#3d3d3d;color:#fff;white-space:nowrap}#top{background:#141414!important;border-bottom:3px solid #e0363c}#thb{display:none!important}</style></head><body>
 <div id="top">
  <div class="pl"><span class="dot" id="d-obs"></span>OBS<small id="s-obs">…</small></div>
  <div class="pl"><span class="dot" id="d-ext"></span>Помощник<small id="s-ext">…</small></div>
@@ -50,19 +50,19 @@ html.light{filter:invert(1) hue-rotate(180deg);background:#fff}html.light img,ht
  <span style="margin-left:auto"></span><button id="thb" onclick="thSet(localStorage.theme==='dark')"></button>
 </div>
 <div id="hmv" style="position:fixed;inset:0;background:#000b;display:none;align-items:center;justify-content:center;z-index:60">
- <div style="background:#1f2230;border:4px solid #4aa3ff;border-radius:18px;padding:22px 26px;max-width:600px;width:92%;box-shadow:0 0 40px #4aa3ff88">
+ <div style="background:#2b2b2b;border:4px solid #4aa3ff;border-radius:18px;padding:22px 26px;max-width:600px;width:92%;box-shadow:0 0 40px #4aa3ff88">
   <div style="font-size:26px;font-weight:900">✉️ Сообщение от Романа</div><div id="hmtx" style="font-size:22px;margin:12px 0 16px;white-space:pre-wrap"></div>
-  <textarea id="hmrep" placeholder="ответить (необязательно)…" style="width:100%;min-height:60px;font:inherit;font-size:17px;padding:8px;border-radius:10px;border:1px solid #444;background:#0f1116;color:#fff"></textarea>
+  <textarea id="hmrep" placeholder="ответить (необязательно)…" style="width:100%;min-height:60px;font:inherit;font-size:17px;padding:8px;border-radius:10px;border:1px solid #444;background:#1e1e1e;color:#fff"></textarea>
   <div style="display:flex;gap:10px;margin-top:12px"><button class="g" style="font-size:20px;padding:12px 26px" onclick="hmAns(0)">✅ Прочитала</button><button style="font-size:20px;padding:12px 26px;background:#4aa3ff" onclick="hmAns(1)">💬 Ответить</button>
    <small id="hmn" style="margin-left:auto;align-self:center;color:#99a"></small></div></div></div>
 <div id="custbar" onclick="custOpen()" style="display:none;cursor:pointer;background:#ff8a00;color:#1a0f00;font-weight:800;font-size:19px;padding:8px 14px;text-align:center"></div>
 <div id="custv" onclick="if(event.target===this)custClose()" style="position:fixed;inset:0;background:#000c;display:none;align-items:flex-start;justify-content:center;z-index:40;overflow:auto;padding:20px 10px">
- <div style="background:#1b1d26;border-radius:16px;padding:16px;width:100%;max-width:720px">
+ <div style="background:#313131;border-radius:16px;padding:16px;width:100%;max-width:720px">
   <div style="display:flex;align-items:center;gap:10px;margin-bottom:6px"><b style="font-size:22px;flex:1">🎬 Видео на заказ</b><button onclick="custClose()">✖ Закрыть</button></div>
   <div style="color:#99a;font-size:14px;margin-bottom:12px">Сверху — что нужно снять сейчас. Сняла → нажми «Загрузить видео» → бот сам отправит ему и напишет пару слов.</div>
   <div id="custl"></div></div></div>
 <div id="libv" onclick="if(event.target===this)libClose()" style="position:fixed;inset:0;background:#000c;display:none;align-items:flex-start;justify-content:center;z-index:40;overflow:auto;padding:20px 10px">
- <div style="background:#1b1d26;border-radius:16px;padding:16px;width:100%;max-width:860px">
+ <div style="background:#313131;border-radius:16px;padding:16px;width:100%;max-width:860px">
   <div style="display:flex;align-items:center;gap:10px;margin-bottom:6px"><b style="font-size:22px;flex:1">📸 Фото и видео</b>
    <label style="font-weight:700;border-radius:10px;padding:10px 18px;cursor:pointer;background:#2ecc71;color:#06210f;font-size:17px">⬆ Загрузить<input type="file" multiple accept="image/*,video/*" style="display:none" onchange="libUp(this)"></label>
    <button onclick="libClose()">✖ Закрыть</button></div>
@@ -81,7 +81,7 @@ html.light{filter:invert(1) hue-rotate(180deg);background:#fff}html.light img,ht
   <!-- место под окно OBS «Проектор — предпросмотр» (видео в самой панели убрано — тормозило) -->
   <video id="camv" muted playsinline style="display:none;background:#000;border-radius:12px;width:100%;aspect-ratio:16/9;object-fit:contain"></video><img id="cam" alt="">
   <div class="btns"><button class="go" id="b-go" onclick="goLive()">▶ Начать эфир</button><button class="y" id="b-pause" onclick="pause()">⏸ Пауза</button>
-   <button onclick="stopLive()">⏹ Закончить</button><button class="g" id="b-rec" onclick="rec()">⏺ Снять видео</button><button style="background:#4a3a8a" onclick="libOpen()">📸 Фото и видео</button><span id="st"></span></div>
+   <button onclick="stopLive()">⏹ Закончить</button><button class="g" id="b-rec" onclick="rec()">⏺ Снять видео</button><button style="background:#6e2a30" onclick="libOpen()">📸 Фото и видео</button><span id="st"></span></div>
   <div class="btns lov"><b>🎀 Игрушка</b><button class="g" onclick="lovLink()">🔗 Ссылка управления</button><button onclick="lovTest()">📳 Тест</button>
    <button onclick="lovVib(5)">Слабо</button><button onclick="lovVib(12)">Средне</button><button onclick="lovVib(20)">Сильно</button><button onclick="lovVib(0)">⏹ Стоп</button></div>
   <div id="lovctl" style="display:none;align-items:center;gap:10px;background:#123224;border:2px solid #2ecc71;border-radius:12px;padding:8px 12px;font-size:17px">
@@ -92,7 +92,7 @@ html.light{filter:invert(1) hue-rotate(180deg);background:#fff}html.light img,ht
   <div class="box" id="feed" style="flex:1;min-height:0"></div>
   <div id="dlgw" style="flex:1;min-height:0;display:none;flex-direction:column;gap:6px"><div style="display:flex;gap:8px;align-items:center"><button onclick="dlgClose()">← Назад</button><b id="dlgh" style="font-size:18px"></b></div>
    <div class="box" id="dlgc" style="flex:1;min-height:0"></div>
-   <div style="display:flex;gap:6px"><input id="dlgin" placeholder="пиши ему по-русски — уйдёт на его языке" style="margin:0;font-size:17px" onkeydown="if(event.key==='Enter')dlgSay()"><button class="go" onclick="dlgSay()">➤ Отправить</button><button style="background:#4a3a8a" onclick="dlgBot()">🤖 Пусть бот</button></div><small id="dlgst" style="color:#99a"></small></div>
+   <div style="display:flex;gap:6px"><input id="dlgin" placeholder="пиши ему по-русски — уйдёт на его языке" style="margin:0;font-size:17px" onkeydown="if(event.key==='Enter')dlgSay()"><button class="go" onclick="dlgSay()">➤ Отправить</button><button style="background:#6e2a30" onclick="dlgBot()">🤖 Пусть бот</button></div><small id="dlgst" style="color:#99a"></small></div>
  </div>
  <div class="col"><div id="wall" style="display:none"></div><div id="bot" style="display:none"></div>
   <div class="ftabs" id="rtabs"><button id="ft-ppl" class="sel" onclick="ftab('ppl')">👥 Зрители <span id="ppln"></span></button><button id="ft-wall" onclick="ftab('wall')">🧱 Стена <span id="walln"></span></button><button id="ft-priv" onclick="ftab('priv')">🔒 Приват</button></div>
@@ -108,7 +108,7 @@ html.light{filter:invert(1) hue-rotate(180deg);background:#fff}html.light img,ht
 <script>
 var LVCOL={cb:{1:['#5ab4ff','голубой'],2:['#1f5fd6','синий'],3:['#a64dff','фиолетовый'],4:['#5b1a9e','тёмно-фиолет.']},sc:{1:['#c9a24b','лига'],2:['#2ecc71','зелёный'],3:['#d43cff','Ultimate']},bc:{1:['#999','токены'],2:['#e0b020','Gold'],3:['#8fa6b8','Platinum']},mv:{1:['#ff5aa0','пишет']}};
 function lvD(p,l){return (LVCOL[p]||{})[l]||null}
-var NKC={cb:{1:'#6699aa',2:'#000099',3:'#be6aff',4:'#804baa'},bc:{1:'#555',2:'#c08a00',3:'#5f7a8c'}},NKL={grey:'#a0a0a0',bronze:'#d38c4f',silver:'#a5b6c8',gold:'#f5b30f',platinum:'#7fd3d0',diamond:'#4fb8ff',royal:'#c178ff',legend:'#ff4f6b'},NKF={cb:'Verdana,Arial,sans-serif',bc:'Arial,sans-serif',sc:'Inter,Roboto,Arial,sans-serif',mv:'Roboto,Arial,sans-serif'},NKB={cb:'#fff',bc:'#fff',sc:'#26292f',mv:'#26292f'};
+var NKC={cb:{1:'#6699aa',2:'#000099',3:'#be6aff',4:'#804baa'},bc:{1:'#555',2:'#c08a00',3:'#5f7a8c'}},NKL={grey:'#a0a0a0',bronze:'#d38c4f',silver:'#a5b6c8',gold:'#f5b30f',platinum:'#7fd3d0',diamond:'#4fb8ff',royal:'#c178ff',legend:'#ff4f6b'},NKF={cb:'Verdana,Arial,sans-serif',bc:'Arial,sans-serif',sc:'Inter,Roboto,Arial,sans-serif',mv:'Roboto,Arial,sans-serif'},NKB={cb:'#fff',bc:'#fff',sc:'#2e2e2e',mv:'#2e2e2e'};
 function lvO(p,l,o){o=o||{};var c=o.col||(p=='sc'&&o.lg&&NKL[o.lg])||(NKC[p]||{})[l]||(lvD(p,l)||[])[0];if(!c)return '';return 'color:'+c+';font-weight:700;font-family:'+(o.ff||NKF[p]||'inherit')+';background:'+(NKB[p]||'transparent')+';border-radius:4px;padding:0 5px;opacity:1'}
 function lvN(p,l){var d=lvD(p,l);return d?d[1]:''}
 function lvB(p,l){var d=lvD(p,l);return d?'background:'+d[0]+';color:#fff':''}
@@ -574,7 +574,7 @@ async function hubSync() {
   DMS = (h && h.dm) || [];
   for (const p in PNAME) { const c = $("#a-" + p); c.disabled = !alive; if (h && Date.now() - AUTO_T > 15000) c.checked = !!(h.auto || {})[p]; }
   $("#bot").innerHTML = !alive ? '<div class="chat" style="color:#889">бот выключен (не на связи компьютер с ботом)</div>'
-    : (h.dm || []).length ? h.dm.map((c, i) => `<div class="chat" style="border-left:3px solid #8a5cff;margin-bottom:6px"><b>${esc(PNAME[c.p] || c.p)} · ${esc(c.who)}</b>` +
+    : (h.dm || []).length ? h.dm.map((c, i) => `<div class="chat" style="border-left:3px solid #e0363c;margin-bottom:6px"><b>${esc(PNAME[c.p] || c.p)} · ${esc(c.who)}</b>` +
         c.msgs.map(x => `<br><span style="color:${x.me ? "#9fbaff" : "#ffd76a"}">${x.me ? "мы" : "он"}:</span> ${esc(x.ru || x.text)}` +
           (x.ru && x.ru !== x.text ? ` <small style="color:#778">(${esc(x.text)})</small>` : "")).join("") +
         `<div style="display:flex;gap:4px;margin-top:4px"><input id="dmi${i}" placeholder="ответить по-русски — уйдёт ему на его языке" style="margin:0;padding:5px;font-size:13px"
@@ -647,7 +647,7 @@ async function libLoad() {
   let l = []; try { l = await (await fetch(LLS, { cache: "no-store" })).json(); } catch (e) { $("#libst").textContent = "нет связи с ботом"; return; }
   if (!Array.isArray(l)) { $("#libst").textContent = l.err || "нет связи с ботом"; return; }
   const mm = d => d ? Math.floor(d / 60) + ":" + String(d % 60).padStart(2, "0") : "";
-  $("#libl").innerHTML = l.map(x => `<div style="position:relative;background:#262a36;border-radius:6px;overflow:hidden;aspect-ratio:1/1">${x.th ? `<img src="${x.th}" loading="lazy" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:block">` : '<div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;color:#889">⏳</div>'}
+  $("#libl").innerHTML = l.map(x => `<div style="position:relative;background:#3a3a3a;border-radius:6px;overflow:hidden;aspect-ratio:1/1">${x.th ? `<img src="${x.th}" loading="lazy" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:block">` : '<div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;color:#889">⏳</div>'}
     ${x.kind === "video" ? `<span style="position:absolute;left:3px;bottom:3px;background:#000a;color:#fff;border-radius:5px;padding:0 4px;font-size:11px">🎬 ${mm(x.dur)}</span>` : ""}</div>`).join("")
     || '<div style="color:#889;font-size:16px;padding:20px 0">Пока пусто — нажми «⬆ Загрузить».</div>';
   if (l.some(x => x.st === "new") && $("#libv").style.display === "flex") setTimeout(libLoad, 10000);
@@ -734,7 +734,7 @@ function wallShow(force) {
       `<b class="nm" data-p="${esc(x.p)}" data-who="${esc(x.who)}" data-uid="${esc(x.uid)}" style="${lvO(x.p, x.lvl, x)}">${esc(x.who)}</b>${x.lvl ? ` <span style="font-size:11px;background:#2f7d4a;border-radius:5px;padding:1px 5px;${lvB(x.p, x.lvl)}">${lvN(x.p, x.lvl) || LVN[x.lvl] || "токены"}</span>` : ""}: ` +
       `${esc(x.ru || x.text)}${x.ru && x.ru !== x.text ? `<br><small style="color:#889">${esc(x.text)}</small>` : ""}` +
       `<div style="display:flex;gap:5px;margin-top:4px"><input id="wi-${x.id}" placeholder="ответить ему по-русски… (Esc — закрыть)" style="margin:0;padding:5px 8px;font-size:14px;display:${WOPEN === x.id ? '' : 'none'}" onkeydown="if(event.key==='Enter')wallSay('${x.id}');if(event.key==='Escape'){this.style.display='none';WOPEN=''}">` +
-      `<button style="padding:5px 10px;font-size:13px" onclick="wallSay('${x.id}')">✍️ Ответить</button><button style="padding:5px 10px;font-size:13px;background:#4a3a8a" onclick="wallBot('${x.id}')">🤖 Бот</button></div></div>`).join("")
+      `<button style="padding:5px 10px;font-size:13px" onclick="wallSay('${x.id}')">✍️ Ответить</button><button style="padding:5px 10px;font-size:13px;background:#6e2a30" onclick="wallBot('${x.id}')">🤖 Бот</button></div></div>`).join("")
     || '<div class="chat" style="color:#667">пока тихо — тут будут все сообщения из чатов эфира</div>';
 }
 // в чат сайта: «@ник текст» на его языке (пишет по-русски — уходит по-русски)
