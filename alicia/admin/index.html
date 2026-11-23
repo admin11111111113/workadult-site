@@ -17,7 +17,7 @@ input{font:inherit;padding:8px;border-radius:8px;border:1px solid #444;backgroun
 body{height:100vh;display:flex;flex-direction:column}#tabs{display:flex;gap:6px;padding:6px 8px 0;background:#0d0e13;flex:none}
 #tabs button{border-radius:10px 10px 0 0;background:#232733;padding:8px 18px}#tabs button.sel{background:#7c5cff}
 #hubv{flex:1;min-height:0;display:flex}#hubf{flex:1;border:0;background:#121319}#herv{flex:1;overflow:auto;display:none}
-html.light{filter:invert(1) hue-rotate(180deg);background:#fff}html.light img,html.light video{filter:invert(1) hue-rotate(180deg)}#thb{font:inherit;font-size:13px;font-weight:600;border:1px solid #555;border-radius:10px;padding:6px 12px;cursor:pointer;background:#2f3445;color:#fff;white-space:nowrap}</style></head><body>
+html.light{background:#fff}html.light body{background:#ecedf3}html.light body>*:not(#lbv){filter:invert(1) hue-rotate(180deg)}html.light body>*:not(#lbv) img,html.light body>*:not(#lbv) video{filter:invert(1) hue-rotate(180deg)}html.light #lbf{background:#f4f5f8!important}#thb{font:inherit;font-size:13px;font-weight:600;border:1px solid #555;border-radius:10px;padding:6px 12px;cursor:pointer;background:#2f3445;color:#fff;white-space:nowrap}</style></head><body>
 <div id="tabs"><button id="tb-hub" class="sel" onclick="tab('hub')">🖥 Консоль Алисии</button><button id="tb-ct" onclick="tab('ct')">🎬 Консоль ManyVids</button><button id="tb-lb" onclick="tab('lb')">📸 Фото и видео</button><button id="tb-her" style="display:none" onclick="tab('her')"></button>
  <span id="hubmsg" style="color:#889;font-size:13px;align-self:center;margin-left:8px"></span><span style="margin-left:auto;align-self:center"><button id="thb" onclick="thSet(localStorage.theme==='dark')"></button></span></div>
 <div id="hubv"><iframe id="hubf" name="hubf"></iframe></div>
@@ -76,7 +76,6 @@ load();
 function tab(t) { $("#hubv").style.display = t === "hub" ? "flex" : "none"; $("#herv").style.display = t === "her" ? "block" : "none";
   $("#ctv").style.display = t === "ct" ? "flex" : "none"; $("#lbv").style.display = t === "lb" ? "flex" : "none"; $("#tb-lb").classList.toggle("sel", t === "lb");
   if (t === "lb" && HUBURL && !$("#lbf").src) $("#lbf").src = HUBURL + "/library";
-  if (t === "lb") document.documentElement.classList.remove("light"); else document.documentElement.classList.toggle("light", localStorage.theme !== "dark");   // светлая тема «засвечивает» фото — в галерее всегда тёмная
   $("#tb-hub").classList.toggle("sel", t === "hub"); $("#tb-her").classList.toggle("sel", t === "her"); $("#tb-ct").classList.toggle("sel", t === "ct"); localStorage.admTab = t;
   if (t === "ct" && HUBURL && !$("#ctf").src) $("#ctf").src = HUBURL + "/full?set=content"; }
 let HUBURL = "";
@@ -96,4 +95,4 @@ async function hubOpen() {
   $("#hubmsg").innerHTML = `<a href="${esc(j.url)}/full" target="_blank" style="color:#9fbaff">открыть отдельно</a>`;
 }
 tab("hub"); hubOpen();   // вкладку «её панель» владелец попросил убрать (21.11) — только консоль
-</script><script>function thSet(l){document.documentElement.classList.toggle('light',l&&localStorage.admTab!=='lb');localStorage.theme=l?'light':'dark';var b=document.getElementById('thb');if(b)b.textContent=l?'🌙 Тёмный':'☀️ Белый';document.querySelectorAll('iframe').forEach(f=>{try{f.contentWindow.postMessage({alicia_theme:l},'*')}catch(x){}})}addEventListener('message',e=>{if(e.data&&e.data.alicia_theme_ask)try{e.source.postMessage({alicia_theme:localStorage.theme!=='dark'},'*')}catch(x){}});thSet(localStorage.theme!=='dark');</script></body></html>
+</script><script>function thSet(l){document.documentElement.classList.toggle('light',l);localStorage.theme=l?'light':'dark';var b=document.getElementById('thb');if(b)b.textContent=l?'🌙 Тёмный':'☀️ Белый';document.querySelectorAll('iframe').forEach(f=>{try{f.contentWindow.postMessage({alicia_theme:l},'*')}catch(x){}})}addEventListener('message',e=>{if(e.data&&e.data.alicia_theme_ask)try{e.source.postMessage({alicia_theme:localStorage.theme!=='dark'},'*')}catch(x){}});thSet(localStorage.theme!=='dark');</script></body></html>
