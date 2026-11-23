@@ -541,6 +541,7 @@ function feedShow(l) {
   l = [...LASTFEED, ...LOCALTIPS].sort((a, b) => (a.t || "").localeCompare(b.t || "")).slice(-150);
   l = l.filter(x => ["cb", "sc", "bc", "mv"].includes(x.p) && !/^(🤖|📨|✍️|💌|🔁|🎬|📥|⚠|💰 дал)/.test(x.text || "") && !/одобри/.test(x.text || "") && !(x.p === "mv" && x.kind !== "tip" && !/^✉️/.test(x.text || "")));            // переписку бота не показываем — он отвечает сам (владелец 22.11)
   const seen = new Set(FEEDSEEN || []), fresh = FEEDSEEN && l.some(x => !seen.has(x.id));
+  if (FEEDSEEN) { const ph = l.filter(x => !seen.has(x.id) && /^(💡|🔥|🚫)/.test(x.text || "")).pop(); if (ph) hint(`<b>${esc(ph.who)}</b> <small>(${esc(PNAME[ph.p] || ph.p)})</small><br>${esc(ph.text)}`); }   // 23.11: приват-подсказки — крупно в «Подсказки»
   const one = x => {
     const cls = /^(🤖|📨|✍️|✉️)/.test(x.text) ? "bot" : x.kind === "pay" ? "pay" : x.kind === "tip" ? "tipx" : "";
     return `<div class="nf ${cls} ${FEEDSEEN && !seen.has(x.id) ? "newx" : ""}">${x.kind === "tip" ? `<span class="tkn">${+x.tk || 0} tk</span>` : ""}<span class="pf pf-${esc(x.p)}">${esc(PNAME[x.p] || x.p)}</span><span class="wh" data-p="${esc(x.p)}" data-who="${esc(x.who)}" title="открыть переписку / написать">${esc(x.who)}</span>` +
