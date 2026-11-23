@@ -37,7 +37,7 @@ input{font:inherit;padding:8px;border-radius:8px;border:1px solid #444;backgroun
 .pp .nm{font-weight:700;color:#ffd76a}.pp .sd{flex:1;color:#aab;font-size:13px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.pp button{padding:6px 10px;font-size:13px}.pp.done{opacity:.6}
 .wh,.nm{cursor:pointer}.wh:hover,.nm:hover{text-decoration:underline}
 .csec{color:#889;font-size:13px;margin:14px 0 6px;font-weight:700;text-transform:uppercase}
-#thb{font:inherit;font-size:13px;font-weight:600;border:1px solid #555;border-radius:10px;padding:6px 12px;cursor:pointer;background:#3d3d3d;color:#fff;white-space:nowrap}#top{background:#141414!important;border-bottom:3px solid #e0363c}#thb{display:none!important}</style></head><body>
+#thb{font:inherit;font-size:13px;font-weight:600;border:1px solid #555;border-radius:10px;padding:6px 12px;cursor:pointer;background:#3d3d3d;color:#fff;white-space:nowrap}#top{background:#141414!important;border-bottom:3px solid #e0363c}#thb{display:none!important}.nf{font-size:13px!important;padding:5px 8px!important;gap:8px!important;margin-bottom:4px!important}.nf .wh{font-size:12px!important}.nf .pf{font-size:10px!important;padding:1px 5px!important;border-radius:5px}.nf .tm{font-size:10px!important}.nf .tx{font-size:12.5px!important;font-weight:400!important;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;line-height:1.3}.nf.tipx .tx{-webkit-line-clamp:3}.pf.pf-sc{background:#e0363c!important;color:#fff!important}.pf.pf-cb{background:#ffe08a!important;color:#1a1a1a!important}.pf.pf-bc{background:#2ecc71!important;color:#0d2a17!important}.pf.pf-mv{background:#ff2d8f!important;color:#fff!important}</style></head><body>
 <div id="top">
  <div class="pl"><span class="dot" id="d-obs"></span>OBS<small id="s-obs">…</small></div>
  <div class="pl"><span class="dot" id="d-ext"></span>Помощник<small id="s-ext">…</small></div>
@@ -543,8 +543,8 @@ function feedShow(l) {
   const seen = new Set(FEEDSEEN || []), fresh = FEEDSEEN && l.some(x => !seen.has(x.id));
   const one = x => {
     const cls = /^(🤖|📨|✍️|✉️)/.test(x.text) ? "bot" : x.kind === "pay" ? "pay" : x.kind === "tip" ? "tipx" : "";
-    return `<div class="nf ${cls} ${FEEDSEEN && !seen.has(x.id) ? "newx" : ""}">${x.kind === "tip" ? `<span class="tkn">${+x.tk || 0} tk</span>` : ""}<span class="pf">${esc(PNAME[x.p] || x.p)}</span><span class="wh" data-p="${esc(x.p)}" data-who="${esc(x.who)}" title="открыть переписку / написать">${esc(x.who)}</span>` +
-      `<span class="tx">${esc(x.kind === "tip" ? tipWhat(x.text) : x.text)}</span><span class="tm">${esc((x.t || "").slice(11, 16))}</span></div>`; };
+    return `<div class="nf ${cls} ${FEEDSEEN && !seen.has(x.id) ? "newx" : ""}">${x.kind === "tip" ? `<span class="tkn">${+x.tk || 0} tk</span>` : ""}<span class="pf pf-${esc(x.p)}">${esc(PNAME[x.p] || x.p)}</span><span class="wh" data-p="${esc(x.p)}" data-who="${esc(x.who)}" title="открыть переписку / написать">${esc(x.who)}</span>` +
+      `<span class="tx" title="${esc(x.text)}">${esc(x.kind === "tip" ? tipWhat(x.text) : x.text)}</span><span class="tm">${esc((x.t || "").slice(11, 16))}</span></div>`; };
   if (FT === "pay") l = l.filter(x => x.kind === "tip" || x.kind === "pay");
   el.innerHTML = l.slice().reverse().map(one).join("") || '<div class="chat" style="color:#667">пока тихо — тут будут донаты, просьбы и что бот написал</div>';
   if (fresh) { try { const a = new AudioContext(), o = a.createOscillator(), g = a.createGain(); o.frequency.value = 880; o.connect(g); g.connect(a.destination);
@@ -606,7 +606,7 @@ function custCard(c) {
   return s + "</div>";
 }
 function custRender() {
-  const paid = CUSTS.filter(c => c.st === "paid"), busy = CUSTS.filter(c => c.st === "uploaded"), talk = CUSTS.filter(c => c.st === "new" || c.st === "ok"), done = CUSTS.filter(c => c.st === "sent" || c.st === "closed");
+  const paid = CUSTS.filter(c => c.st === "paid"), busy = CUSTS.filter(c => c.st === "uploaded"), talk = [], done = CUSTS.filter(c => c.st === "sent" || c.st === "closed");
   $("#custn").innerHTML = paid.length ? `<span style="background:#ff8a00;color:#1a0f00;border-radius:10px;padding:0 8px">${paid.length}</span>` : talk.length ? `<span style="background:#3a3f52;border-radius:10px;padding:0 8px">${talk.length}</span>` : "";
   $("#custs").textContent = paid.length ? "надо снять: " + paid.length : talk.length ? "обсуждают: " + talk.length : busy.length ? "бот отправляет" : "нет заказов";
   $("#custpl").style.background = paid.length ? "#5a3a0c" : "";
