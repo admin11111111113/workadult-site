@@ -435,6 +435,7 @@ function onExt(m) {
     if (m.done) hint(miss.length ? "🎀 Lovense: не добавились " + miss.join(", ") + " — добавь вручную на странице Lovense" : "🎀 Lovense подключён ко всем 4 сайтам ✅");
     lovense();
   }
+  if (m.type === "c2c") hint(m.ok ? "📷 Камера <b>" + esc(m.who) + "</b> открыта — окошко справа внизу на Бонге (тяни за верх, размер — за угол, ⧉ — поверх всех окон)" : "⚠ Камера " + esc(m.who) + " не открылась сама — на Бонге нажми его ник → «камера»");
   if (m.type === "tip") {
     if (!m.what && m.p === "sc" && +m.tk === 55) m.what = "секс-машина 1 мин (Lovense включает сама)";   // 23.11 владелец
     if (!m.what && (TIPMENU[m.p] || {})[String(+m.tk)]) m.what = TIPMENU[m.p][String(+m.tk)];          // сумма = цена в меню → это оплата пункта меню
@@ -805,7 +806,17 @@ async function privSay(ownerText, op) {
 // ── оплатили по меню: карточка + сигнал, пока она не нажмёт «Сделала»
 let PAIDQ = [], PAIDBEEP = 0;
 function paidShow() {
-  $("#paidq").innerHTML = PAIDQ.map((x, i) => `<div class="pq"><span class="tk">${x.tk ? x.tk + " tk" : "💰"}</span><div class="tx"><b>${esc(x.who)}</b> (${esc(PN4[x.p] || x.p)}) оплатил «${esc(x.what)}»<div class="do">👉 ${esc(x.act)}</div></div><button onclick="paidOk(${i})">✅ OK</button></div>`).join("");
+  $("#paidq").innerHTML = PAIDQ.map((x, i) => `<div class="pq"><span class="tk">${x.tk ? x.tk + " tk" : "💰"}</span><div class="tx"><b>${esc(x.who)}</b> (${esc(PN4[x.p] || x.p)}) оплатил «${esc(x.what)}»<div class="do">👉 ${esc(x.act)}</div></div>${isC2C(x) ? `<button onclick="c2cGo(${i})" style="background:#2ecc71;color:#06210f">📷 Подключиться</button>` : ""}<button onclick="paidOk(${i})">✅ OK</button></div>`).join("");
+}
+// 24.11 владелец: Bonga «Посмотреть камеру» оплачен → одна кнопка: помощник жмёт его ник → камера, окошко «как пачка сигарет» на странице Бонги
+const isC2C = x => x.p === "bc" && /view your cam|посмотреть камеру|c2c|cam2cam/i.test(x.what || "");
+async function c2cGo(i) {
+  const x = PAIDQ[i]; if (!x) return;
+  try { await fetch("https://alicia-link.videorils.workers.dev/pcmd?p=bc", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ w: "alicia-panel", act: "c2c", who: x.who }) }); }
+  catch (e) { hint("⚠ нет связи — открой его камеру на Бонге сама (его ник → камера)"); return; }
+  hint("📷 Подключаюсь к камере <b>" + esc(x.who) + "</b> — открываю Бонгу, его камера появится маленьким окошком справа внизу. ⧉ — поверх всех окон");
+  call("openTab", { url: "https://rf.bongamodels.com/", prefix: "https://rf.bongamodels.com/", focus: true });
+  admEv("📷 C2C: подключилась к камере " + x.who); paidOk(i);
 }
 function paidOk(i) { const x = PAIDQ.splice(i, 1)[0]; if (x) admEv("✅ нажала OK: " + x.who + " — " + x.what); paidShow(); }
 setInterval(() => { if (PAIDQ.length && Date.now() - PAIDBEEP > 12000) { ding(); PAIDBEEP = Date.now(); } }, 3000);   // пищит, пока не нажмёт OK

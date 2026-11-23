@@ -223,4 +223,51 @@
     if ([...document.querySelectorAll("button,a,[role=button]")].some(b => b.offsetParent !== null && STREAM.test(txt(b))))
       send({ type: "golearn", p: P, url: location.href });
   }, 5000);
+
+  // ── C2C на Bonga (владелец 24.11): он оплатил «посмотреть камеру» → кнопка в её панели → тут жмём его ник → «камера»,
+  // его видео выносим маленьким окошком (как пачка сигарет): тянуть за верх, размер — за правый нижний угол, ⧉ — поверх всех окон.
+  if (P === "bc") {
+    let C2C = null;
+    const findNick = who => { const w = who.toLowerCase();
+      return [...document.querySelectorAll("a,span,b,div,button")].filter(e => vis(e) && e.children.length <= 1 && (e.innerText || "").trim().toLowerCase().replace(/[:：]$/, "") === w).pop(); };
+    const camItem = () => { const l = [...document.querySelectorAll("button,a,[role=button],[role=menuitem],li,div,span")].filter(e => vis(e) && e.children.length <= 2 && (e.innerText || "").length < 40 && /(посмотреть|смотреть|открыть|подключ\S*).{0,12}(камер|веб)|(view|watch|open).{0,10}(cam|webcam)|c2c|cam2cam/i.test(e.innerText || ""));
+      const cl = l.filter(e => /^(BUTTON|A)$/.test(e.tagName) || e.getAttribute("role")); return (cl.length ? cl : l).pop(); };   // кнопка/ссылка, самая вложенная
+    const herVid = () => { const vs = [...document.querySelectorAll("video")].filter(v => vis(v)); return vs.sort((a, b) => b.clientWidth * b.clientHeight - a.clientWidth * a.clientHeight)[0]; };
+    function floatBox(src) {
+      let box = document.getElementById("aliciaC2C");
+      if (!box) {
+        box = document.createElement("div"); box.id = "aliciaC2C";
+        box.style.cssText = "position:fixed;right:12px;bottom:12px;width:150px;height:230px;min-width:80px;min-height:110px;z-index:2147483647;background:#000;border:2px solid #e0363c;border-radius:8px;overflow:hidden;resize:both;box-shadow:0 4px 16px #000a";
+        box.innerHTML = '<div id="aliciaC2Ch" style="position:absolute;top:0;left:0;right:0;height:20px;background:#000a;color:#fff;font:12px Arial;cursor:move;display:flex;align-items:center;gap:6px;padding:0 4px;z-index:2"><span id="aliciaC2Cn" style="flex:1;overflow:hidden;white-space:nowrap"></span><b id="aliciaC2Cp" title="поверх всех окон" style="cursor:pointer">⧉</b><b id="aliciaC2Cx" title="закрыть" style="cursor:pointer">✕</b></div><video id="aliciaC2Cv" autoplay muted playsinline style="width:100%;height:100%;object-fit:cover"></video>';
+        document.body.appendChild(box);
+        const h = box.querySelector("#aliciaC2Ch"); let d = null;
+        h.addEventListener("mousedown", e => { d = { x: e.clientX, y: e.clientY, r: box.getBoundingClientRect() }; e.preventDefault(); });
+        addEventListener("mousemove", e => { if (!d) return; box.style.left = (d.r.left + e.clientX - d.x) + "px"; box.style.top = (d.r.top + e.clientY - d.y) + "px"; box.style.right = box.style.bottom = "auto"; });
+        addEventListener("mouseup", () => d = null);
+        box.querySelector("#aliciaC2Cx").onclick = () => { box.remove(); C2C = null; };
+        box.querySelector("#aliciaC2Cp").onclick = () => box.querySelector("video").requestPictureInPicture().catch(e => log("C2C: окно поверх не открылось — " + e.message));
+      }
+      box.querySelector("#aliciaC2Cn").textContent = "📷 " + (C2C && C2C.who || "");
+      const v = box.querySelector("video");
+      try { const st = src.srcObject || (src.captureStream ? src.captureStream() : null); if (st && v.srcObject !== st) { v.srcObject = st; v.play().catch(() => {}); } } catch (e) { log("C2C: видео не взялось — " + e.message); }
+      v.requestPictureInPicture && v.addEventListener("loadedmetadata", () => v.requestPictureInPicture().catch(() => {}), { once: true });   // если Chrome разрешит — сразу поверх всех окон
+    }
+    setInterval(async () => {
+      if (C2C && Date.now() - C2C.at < 45000) {                            // ждём, когда появится его камера (новое видео, не её)
+        if (!C2C.menu) { const it = camItem(); if (it) { it.click(); C2C.menu = 1; log("C2C: нажала «камера» у " + C2C.who); } }
+        const her = herVid(), vs = [...document.querySelectorAll("video")].filter(v => vis(v) && v !== her && !v.closest("#aliciaC2C") && !C2C.old.has(v));
+        if (vs.length) { floatBox(vs[0]); send({ type: "c2c", p: P, who: C2C.who, ok: true }); log("C2C: камера " + C2C.who + " открыта окошком"); C2C.at = 0; }
+        else if (Date.now() - C2C.at > 40000) { send({ type: "c2c", p: P, who: C2C.who, ok: false }); log("C2C: камера " + C2C.who + " не появилась — открой на сайте сама (ник → камера)"); C2C.at = 0; }
+        return;
+      }
+      if (REQ || LC) return;                                             // команды привата/Lovense забирают свои циклы
+      try { const c = await (await fetch(PCMD, { cache: "no-store" })).json();
+        if (c && c.act === "c2c" && c.who) {
+          C2C = { who: c.who, at: Date.now(), menu: 0, old: new Set(document.querySelectorAll("video")) };
+          const n = findNick(c.who);
+          if (n) { n.click(); log("C2C: открыла ник " + c.who); } else log("C2C: ника " + c.who + " не вижу в чате — открой его камеру на сайте сама");
+        }
+      } catch (e) {}
+    }, 1500);
+  }
 })();
