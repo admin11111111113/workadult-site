@@ -76,6 +76,7 @@ load();
 function tab(t) { $("#hubv").style.display = t === "hub" ? "flex" : "none"; $("#herv").style.display = t === "her" ? "block" : "none";
   $("#ctv").style.display = t === "ct" ? "flex" : "none"; $("#lbv").style.display = t === "lb" ? "flex" : "none"; $("#tb-lb").classList.toggle("sel", t === "lb");
   if (t === "lb" && HUBURL && !$("#lbf").src) $("#lbf").src = HUBURL + "/library";
+  if (t === "lb") document.documentElement.classList.remove("light"); else document.documentElement.classList.toggle("light", localStorage.theme !== "dark");   // светлая тема «засвечивает» фото — в галерее всегда тёмная
   $("#tb-hub").classList.toggle("sel", t === "hub"); $("#tb-her").classList.toggle("sel", t === "her"); $("#tb-ct").classList.toggle("sel", t === "ct"); localStorage.admTab = t;
   if (t === "ct" && HUBURL && !$("#ctf").src) $("#ctf").src = HUBURL + "/full?set=content"; }
 let HUBURL = "";
@@ -95,4 +96,4 @@ async function hubOpen() {
   $("#hubmsg").innerHTML = `<a href="${esc(j.url)}/full" target="_blank" style="color:#9fbaff">открыть отдельно</a>`;
 }
 tab("hub"); hubOpen();   // вкладку «её панель» владелец попросил убрать (21.11) — только консоль
-</script><script>function thSet(l){document.documentElement.classList.toggle('light',l);localStorage.theme=l?'light':'dark';var b=document.getElementById('thb');if(b)b.textContent=l?'🌙 Тёмный':'☀️ Белый';document.querySelectorAll('iframe').forEach(f=>{try{f.contentWindow.postMessage({alicia_theme:l},'*')}catch(x){}})}addEventListener('message',e=>{if(e.data&&e.data.alicia_theme_ask)try{e.source.postMessage({alicia_theme:localStorage.theme!=='dark'},'*')}catch(x){}});thSet(localStorage.theme!=='dark');</script></body></html>
+</script><script>function thSet(l){document.documentElement.classList.toggle('light',l&&localStorage.admTab!=='lb');localStorage.theme=l?'light':'dark';var b=document.getElementById('thb');if(b)b.textContent=l?'🌙 Тёмный':'☀️ Белый';document.querySelectorAll('iframe').forEach(f=>{try{f.contentWindow.postMessage({alicia_theme:l},'*')}catch(x){}})}addEventListener('message',e=>{if(e.data&&e.data.alicia_theme_ask)try{e.source.postMessage({alicia_theme:localStorage.theme!=='dark'},'*')}catch(x){}});thSet(localStorage.theme!=='dark');</script></body></html>
