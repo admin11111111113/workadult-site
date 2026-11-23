@@ -115,10 +115,12 @@ function lvB(p,l){var d=lvD(p,l);return d?'background:'+d[0]+';color:#fff':''}
 
 const EXT = "bpjfaaponmehpfmndenonaffigcbmfne", PAUSE = "Пауза", $ = s => document.querySelector(s);
 const MENU = {"I want you baby":"скажи «I want you too, baby» и пошли воздушный поцелуй","Show your feet":"покажи ножки 👣","Play with nipples":"поиграй с сосками","c2c":"он хочет c2c — открой его камеру",
- "Finger in pussy":"пальчик в киску","Finger in ass":"пальчик в попку","Spank myself":"шлёпни себя","Anal plug in the ass":"вставь пробку","All naked":"разденься полностью",
+ "Finger in pussy":"пальчик в киску","finger in the pussy":"пальчик в киску","my personal tg":"он оплатил твой личный Telegram","Finger in ass":"пальчик в попку","Spank myself":"шлёпни себя","Anal plug in the ass":"вставь пробку","All naked":"разденься полностью",
  "Playing with clitoris":"поиграй с клитором","Change my outfit":"смени наряд","Domi in the ass":"Domi к попке","Sex machine control":"дай ему управление секс-машиной",
  "Riding a small dildo":"поскачи на маленьком дилдо","Fuck myself with big dildo":"большой дилдо","ATM":"ATM — только в привате","Give flowers":"он подарил цветы 🌹 — мило поблагодари",
- "Have a glass of wine":"выпей бокал вина за него 🍷"};
+ "Have a glass of wine":"выпей бокал вина за него 🍷",
+ "hi baby":"скажи ему «hi baby» 😘","ahegao":"сделай ахегао","if you like me":"он говорит, что ты нравишься — мило поблагодари","oil on the ass":"масло на попку","blowjob":"минет (игрушкой)","completely naked":"разденься полностью","Put on stockings":"надень / сними чулки","Show boobs":"покажи грудь","View your cam":"он хочет, чтобы ты посмотрела его камеру","Put on heels":"надень туфли","turn on the machine":"включи машинку (до 30 сек)","Lush CONTROL":"дай ему управление Lush","sex machine control":"дай ему управление секс-машиной","fuck yourself big dildo":"большой дилдо","Fuck yourself":"большой дилдо","drink a glass":"выпей бокал вина за него 🍷","give me flowers":"он подарил цветы 🌹","give me a day off":"он оплатил тебе выходной завтра 💝","Exclusive no spy private":"эксклюзивный приват","Sex machine":"дай ему управление секс-машиной","секс-машина 1 мин":"машинка включится сама на 1 мин"};
+let TIPMENU = (() => { try { return JSON.parse(localStorage.tipmenu || "{}"); } catch (e) { return {}; } })();   // 23.11: цены её меню с хаба → «за что заплатил»
 const norm = s => (s || "").replace(/[^\w ]/g, "").trim().toLowerCase();
 function act(w) { w = norm(w); for (const k in MENU) if (w && w.startsWith(norm(k))) return MENU[k]; return ""; }
 const esc = s => String(s ?? "").replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"})[c]);
@@ -435,10 +437,11 @@ function onExt(m) {
   }
   if (m.type === "tip") {
     if (!m.what && m.p === "sc" && +m.tk === 55) m.what = "секс-машина 1 мин (Lovense включает сама)";   // 23.11 владелец
+    if (!m.what && (TIPMENU[m.p] || {})[String(+m.tk)]) m.what = TIPMENU[m.p][String(+m.tk)];          // сумма = цена в меню → это оплата пункта меню
     TOT[m.p] = (TOT[m.p] || 0) + m.tk; showTot(); const a = act(m.what);
     LOCALTIPS.push({ id: "l" + Date.now() + Math.random(), at: Date.now(), t: nowT(), p: m.p, who: m.who, tk: m.tk, text: (m.what || "") + (a ? " 👉 " + a : ""), kind: "tip" }); feedShow(null);
     $("#wall").insertAdjacentHTML("afterbegin", `<div class="tip"><b>${esc(m.who)}</b> ${m.tk} tk · ${({ cb: "Chaturbate", sc: "Stripchat", bc: "Bongacams", mv: "ManyVids" })[m.p] || m.p}${m.what ? " — " + esc(m.what) : ""}${a ? "<br>👉 " + esc(a) : ""}</div>`);
-    hint(`💰 <b>${esc(m.who)}</b> дал ${m.tk} tk${a ? "<br>👉 " + esc(a) : ""}<br>Скажи: «Thank you ${esc(m.who)} 😘»`);
+    hint(`💰 <b>${esc(m.who)}</b> дал ${m.tk} tk <small>(${esc(PN4[m.p] || m.p)})</small><br>${m.what ? `<b style="color:#ffd24d">ЗА: ${esc(m.what)}</b>` : `<span style="color:#aaa">просто чаевые (не по меню)</span>`}${a ? "<br>👉 СДЕЛАЙ: " + esc(a) : ""}<br>Скажи: «Thank you ${esc(m.who)} 😘»`);
     if (a) { PAIDQ.push({ p: m.p, who: m.who, tk: m.tk, what: m.what, act: a }); PAIDQ.splice(0, PAIDQ.length - 5); paidShow(); ding(); PAIDBEEP = Date.now(); admEv("💰 оплатили по меню: " + m.who + " — " + m.what); }
   }
   if (m.type === "lovctl") lovCtl(m);
@@ -571,7 +574,7 @@ async function hubSync() {
   let j; try { j = await (await fetch(HUB_URL, { cache: "no-store" })).json(); } catch (e) { return; }
   const h = j.hub, alive = h && j.now - h.at < 60000;
   feedShow(alive ? h.feed || [] : null);
-  if (alive) { CUSTS = h.customs || []; custRender(); typeShow((h.typing || []).filter(t => !TYPEDONE.has(t.id))); hmShow(h.msgs || []); for (const x of h.psay || []) if (!PSAYDONE.has(x.id)) { PSAYDONE.add(x.id); privSay(x.text, x.p); } } else typeShow([]);
+  if (alive) { if (h.tipmenu) { TIPMENU = h.tipmenu; try { localStorage.tipmenu = JSON.stringify(TIPMENU); } catch (e) {} } CUSTS = h.customs || []; custRender(); typeShow((h.typing || []).filter(t => !TYPEDONE.has(t.id))); hmShow(h.msgs || []); for (const x of h.psay || []) if (!PSAYDONE.has(x.id)) { PSAYDONE.add(x.id); privSay(x.text, x.p); } } else typeShow([]);
   if (alive && h.today) { ETK.bc = h.today.bc || 0; ETK.bcl = h.ltk ? h.ltk.bc || 0 : null; showTot(); }
   // её вкладка сайта молчит (закрыта / скрипт не подцепился) → статус эфира от хаба (он сам спрашивает сайты)
   if (alive) for (const k of ["mv", "sc", "cb", "bc"]) liveSet(k, "hub", !!(h.live_on || {})[k], "hub");
