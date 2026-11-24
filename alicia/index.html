@@ -933,7 +933,7 @@ async function sayQ(p, id, text) { try { await fetch("https://alicia-link.videor
 const PQ = "https://alicia-link.videorils.workers.dev/pq", LVN = ["", "есть токены", "тратит", "много тратит", "VIP"];
 let HUBPPL = [], RSAYDONE = new Set(), PPLHOLD = 0, RCHSEEN = new Set(), RSAID = {};
 // версия панели: хаб пишет в общий чат только через панель, которая это умеет (v ≥ 3); новая версия на сайте → панель обновится сама
-const PANEL_V = 30;
+const PANEL_V = 31;
 setInterval(async () => {
   try { const t = await (await fetch(location.pathname + "?vchk=" + Date.now(), { cache: "no-store" })).text(), v = +((t.match(/const PANEL_V = (\d+)/) || [])[1] || 0);
     const busy = Object.values(PRIVLIVE).some(Boolean) || TYPES.length || PAIDQ.length || [...document.querySelectorAll("input,textarea")].some(i => i.value && i.type !== "file") || Object.keys(CUP).length;
@@ -943,9 +943,8 @@ async function pq(body) { try { return await (await fetch(PQ, { method: "POST", 
 // сводка зрителей с токенами: сколько уникальных и каких цветов на каждой площадке (цвет ника = сколько токенов)
 const PCOL={cb:{1:['#5ab4ff','голубые'],2:['#1f5fd6','синие'],3:['#a64dff','фиолет.'],4:['#5b1a9e','т.-фиолет.']},sc:{1:['#c9a24b','с лигой'],2:['#2ecc71','зелёные'],3:['#d43cff','Ultimate']},bc:{1:['#999','есть'],2:['#e0b020','Gold'],3:['#8fa6b8','Platinum']},mv:{1:['#ff5aa0','пишут']}};
 const PSN2={cb:'Чатур',sc:'Стрип',bc:'Бонга',mv:'MV'};
-function pplSum(l){const u={};l.forEach(r=>{const k=r.p+'|'+r.who.toLowerCase();u[k]=r});const v=Object.values(u),by={};
- v.forEach(r=>{const c=((by[r.p]=by[r.p]||{n:0,c:{}}));c.n++;const L=Math.max(1,Math.min(r.lvl||1,4));c.c[L]=(c.c[L]||0)+1});
- return `<b>${v.length} с токенами</b> · `+['sc','cb','bc','mv'].filter(p=>by[p]).map(p=>`${PSN2[p]} ${by[p].n}: `+Object.keys(by[p].c).sort((a,b)=>b-a).map(L=>{const d=(PCOL[p]||{})[L]||['#999',''];return `<span title="${d[1]}" style="white-space:nowrap"><i style="display:inline-block;width:9px;height:9px;border-radius:50%;background:${d[0]};margin-right:2px"></i>${by[p].c[L]} ${d[1]}</span>`}).join(' ')).join(' · ')}
+function pplSum(l){const u={};l.forEach(r=>{const k=r.p+'|'+r.who.toLowerCase();u[k]=r});const v=Object.values(u),by={};v.forEach(r=>{by[r.p]=(by[r.p]||0)+1});   // 24.11 владелец: без лиг — только сколько с токенами на каждом сайте
+ return `<b>${v.length} с токенами</b> · `+['sc','cb','bc','mv'].filter(p=>by[p]).map(p=>`${PSN2[p]} ${by[p]}`).join(' · ')}
 function pplShow() {
   if (Date.now() - PPLHOLD < 20000) return;                          // она печатает — не перерисовываем
   const m = {}; for (const r of Object.values(ROOM)) if (Date.now() - r.t < 3600000) m[r.p + "|" + r.who.toLowerCase()] = { ...r };
