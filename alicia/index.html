@@ -472,7 +472,7 @@ function onExt(m) {
   if (m.type === "chat" && m.text) {
     const box = $("#chat-" + m.p) || $("#chat-cb"); box.insertAdjacentHTML("afterbegin", `<div class="chat"><b>${esc(m.who)}</b>: ${esc(m.text)}</div>`);
     while (box.children.length > 80) box.lastChild.remove();
-    if (/\b(hi|hello|hey)\b|привет/i.test(m.text)) hint(`👋 Скажи: «Hello ${esc(m.who)}!» и улыбнись`);
+    if (/\b(hi|hello|hey)\b|привет/i.test(m.text) && !/skitlstrynka|analqueenka|bad_?secret/i.test(m.who || "")) hint(`👋 Скажи: «Hello ${esc(m.who)}!» и улыбнись`);
   }
 }
 if (window.chrome && chrome.runtime && chrome.runtime.connect) ext(); else dot("ext", false, "нужен Chrome с помощником");
