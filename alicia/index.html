@@ -138,7 +138,15 @@ function showTot() { const L = p => !LIVE[p] ? "" : LIVE[p].on ? "🟢 в эфи
 showTot();
 const ADM_EV = [];                                                  // события для админки (workadult.pro/alicia/admin)
 const admEv = t => { t = String(t).trim(); if (t && (!ADM_EV.length || ADM_EV[ADM_EV.length - 1].t !== t)) ADM_EV.push({ t, at: Date.now() }); ADM_EV.splice(0, ADM_EV.length - 60); };
-function hint(t) { $("#hint").innerHTML = t; admEv($("#hint").innerText); }
+// 24.11 владелец: «уведомление, которое не убрать» — у подсказки крестик ✕ и сама гаснет через 3 мин; закрытую повторно не показываем
+let HINTX = "", HINTT = 0;
+function hint(t) { const h = $("#hint"); h.innerHTML = t; const tx = h.innerText; admEv(tx);
+  if (tx && tx === HINTX) { hintOff(); return; }
+  const b = document.createElement("span"); b.textContent = "✕"; b.title = "убрать";
+  b.style.cssText = "float:right;cursor:pointer;font-size:22px;line-height:1;margin:-4px 0 4px 10px;color:#fff;opacity:.8";
+  b.onclick = () => { HINTX = tx; hintOff(); }; h.prepend(b);
+  clearTimeout(HINTT); HINTT = setTimeout(hintOff, 180000); }
+function hintOff() { clearTimeout(HINTT); $("#hint").innerHTML = '<span style="color:#888;font-size:15px;font-weight:400">подсказок пока нет</span>'; }
 function dot(k, on, txt) { $("#d-" + k).className = "dot " + (on ? "ok" : "no"); if (txt !== undefined && $("#s-" + k)) $("#s-" + k).textContent = txt; }
 
 // ── OBS (obs-websocket 5, на её компе)
@@ -967,7 +975,7 @@ async function sayQ(p, id, text) { try { await fetch("https://alicia-link.videor
 const PQ = "https://alicia-link.videorils.workers.dev/pq", LVN = ["", "есть токены", "тратит", "много тратит", "VIP"];
 let HUBPPL = [], RSAYDONE = new Set(), PPLHOLD = 0, RCHSEEN = new Set(), RSAID = {};
 // версия панели: хаб пишет в общий чат только через панель, которая это умеет (v ≥ 3); новая версия на сайте → панель обновится сама
-const PANEL_V = 34;
+const PANEL_V = 35;
 setInterval(async () => {
   try { const t = await (await fetch(location.pathname + "?vchk=" + Date.now(), { cache: "no-store" })).text(), v = +((t.match(/const PANEL_V = (\d+)/) || [])[1] || 0);
     const busy = Object.values(PRIVLIVE).some(Boolean) || TYPES.length || PAIDQ.length || [...document.querySelectorAll("input,textarea")].some(i => i.value && i.type !== "file") || Object.keys(CUP).length;
