@@ -2,7 +2,7 @@
 <meta name="robots" content="noindex,nofollow"><meta name="viewport" content="width=device-width,initial-scale=1">
 <style>
 *{box-sizing:border-box}body{margin:0;font:16px/1.4 Segoe UI,Arial;background:#262626;color:#eee;height:100vh;display:flex;flex-direction:column}
-#top{display:flex;gap:8px;padding:8px;background:#313131;align-items:center;flex-wrap:wrap}#topr{display:grid;grid-template-columns:auto auto;gap:4px}#topr .pl.mini{padding:3px 9px;font-size:13px;border-radius:8px}#topr .pl.mini small{display:inline;margin-left:6px;font-size:11px}
+#top{display:flex;gap:8px;padding:8px;background:#313131;align-items:center;flex-wrap:wrap}#top .pl.site{width:215px;height:86px;box-sizing:border-box;overflow:hidden}#top .pl.site small{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}#topr{display:grid;grid-template-columns:auto auto;gap:4px}#topr .pl.mini{padding:3px 9px;font-size:13px;border-radius:8px}#topr .pl.mini small{display:inline;margin-left:6px;font-size:11px}
 .pl{background:#3a3a3a;border-radius:10px;padding:6px 12px;font-weight:600}.pl small{display:block;font-weight:400;color:#9aa;font-size:12px}
 .dot{display:inline-block;width:10px;height:10px;border-radius:50%;background:#666;margin-right:6px}.ok{background:#2ecc71}.no{background:#e74c3c}
 #main{flex:1;display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.25fr) minmax(0,.85fr);gap:10px;padding:10px;min-height:0}
@@ -39,11 +39,11 @@ input{font:inherit;padding:8px;border-radius:8px;border:1px solid #444;backgroun
 .csec{color:#889;font-size:13px;margin:14px 0 6px;font-weight:700;text-transform:uppercase}
 #thb{font:inherit;font-size:13px;font-weight:600;border:1px solid #555;border-radius:10px;padding:6px 12px;cursor:pointer;background:#3d3d3d;color:#fff;white-space:nowrap}#top{background:#141414!important;border-bottom:3px solid #e0363c}#thb{display:none!important}.nf{font-size:13px!important;padding:5px 8px!important;gap:8px!important;margin-bottom:4px!important}.nf .wh{font-size:12px!important}.nf .pf{font-size:10px!important;padding:1px 5px!important;border-radius:5px}.nf .tm{font-size:10px!important}.nf .tx{font-size:12.5px!important;font-weight:400!important;line-height:1.3}.pf.pf-sc{background:#e0363c!important;color:#fff!important}.pf.pf-cb{background:#ffe08a!important;color:#1a1a1a!important}.pf.pf-bc{background:#2ecc71!important;color:#0d2a17!important}.pf.pf-mv{background:#ff2d8f!important;color:#fff!important}.nf .tkn{font-size:13px!important;font-weight:700!important;min-width:0!important;color:#ffd24d}</style></head><body>
 <div id="top">
+ <div class="pl site"><span class="dot" id="d-cb"></span>Chaturbate<small id="t-cb">0 tk</small><label class="au"><input type="checkbox" id="a-cb" onchange="autoSet('cb',this.checked)"> авто</label></div>
+ <div class="pl site"><span class="dot" id="d-sc"></span>Stripchat<small id="t-sc">0 tk</small><label class="au"><input type="checkbox" id="a-sc" onchange="autoSet('sc',this.checked)"> авто</label></div>
+ <div class="pl site"><span class="dot" id="d-bc"></span>Bongacams<small id="s-bc">через OBS</small><small id="t-bc"></small><label class="au"><input type="checkbox" id="a-bc" onchange="autoSet('bc',this.checked)"> авто</label></div>
+ <div class="pl site"><span class="dot" id="d-mv"></span>ManyVids<small id="s-mv">эфир с сайта</small><small id="t-mv"></small><label class="au"><input type="checkbox" id="a-mv" onchange="autoSet('mv',this.checked)"> авто</label></div>
  <div class="pl" style="cursor:pointer" onclick="lovOpen()" title="Открыть панель Lovense"><span class="dot" id="d-lov"></span>🎀 Lovense<small id="s-lov">…</small></div>
- <div class="pl"><span class="dot" id="d-cb"></span>Chaturbate<small id="t-cb">0 tk</small><label class="au"><input type="checkbox" id="a-cb" onchange="autoSet('cb',this.checked)"> авто</label></div>
- <div class="pl"><span class="dot" id="d-sc"></span>Stripchat<small id="t-sc">0 tk</small><label class="au"><input type="checkbox" id="a-sc" onchange="autoSet('sc',this.checked)"> авто</label></div>
- <div class="pl"><span class="dot" id="d-bc"></span>Bongacams<small id="s-bc">через OBS</small><small id="t-bc"></small><label class="au"><input type="checkbox" id="a-bc" onchange="autoSet('bc',this.checked)"> авто</label></div>
- <div class="pl"><span class="dot" id="d-mv"></span>ManyVids<small id="s-mv">эфир с сайта</small><small id="t-mv"></small><label class="au"><input type="checkbox" id="a-mv" onchange="autoSet('mv',this.checked)"> авто</label></div>
  <span style="margin-left:auto"></span>
  <div id="topr"> <div class="pl mini"><span class="dot" id="d-obs"></span>OBS<small id="s-obs">…</small></div> <div class="pl mini"><span class="dot" id="d-ext"></span>Помощник<small id="s-ext">…</small></div> <div class="pl mini" style="cursor:pointer" onclick="updOpen()" title="Скачать обновления">⬇️ Обновления<small id="s-upd">скачать</small></div> <div class="pl mini" id="custpl" style="cursor:pointer" onclick="custOpen()" title="Видео на заказ">🎬 Кастом <span id="custn"></span><small id="custs">нет заказов</small></div></div> <button id="thb" onclick="thSet(localStorage.theme==='dark')"></button>
 </div>
@@ -978,7 +978,7 @@ async function sayQ(p, id, text) { try { await fetch("https://alicia-link.videor
 const PQ = "https://alicia-link.videorils.workers.dev/pq", LVN = ["", "есть токены", "тратит", "много тратит", "VIP"];
 let HUBPPL = [], RSAYDONE = new Set(), PPLHOLD = 0, RCHSEEN = new Set(), RSAID = {};
 // версия панели: хаб пишет в общий чат только через панель, которая это умеет (v ≥ 3); новая версия на сайте → панель обновится сама
-const PANEL_V = 40;
+const PANEL_V = 41;
 setInterval(async () => {
   try { const t = await (await fetch(location.pathname + "?vchk=" + Date.now(), { cache: "no-store" })).text(), v = +((t.match(/const PANEL_V = (\d+)/) || [])[1] || 0);
     const busy = Object.values(PRIVLIVE).some(Boolean) || TYPES.length || PAIDQ.length || [...document.querySelectorAll("input,textarea")].some(i => i.value && i.type !== "file") || Object.keys(CUP).length;
