@@ -94,5 +94,9 @@ async function hubOpen() {
   $("#hubf").addEventListener("load", () => { if (!$("#ctf").src) $("#ctf").src = HUBURL + "/full?set=content"; }, { once: true });   // грузим сразу — чтобы цифра кастомов была видна
   $("#hubmsg").innerHTML = "";
 }
+// 24.11: хаб перезапустился → адрес туннеля новый, старое окно консоли мёртвое. Раз в 20 с сверяем адрес и сами переподключаемся.
+setInterval(async () => { if (!HUBURL || !localStorage.admk) return; let j = {};
+  try { j = await (await fetch("https://alicia-link.videorils.workers.dev/url", { headers: { "x-k": localStorage.admk }, cache: "no-store" })).json(); } catch (e) { return; }
+  if (j.url && j.url !== HUBURL) { $("#ctf").removeAttribute("src"); hubOpen(); } }, 20000);
 tab("hub"); hubOpen();   // вкладку «её панель» владелец попросил убрать (21.11) — только консоль
 </script><script>function thSet(l){document.documentElement.classList.toggle('light',l);localStorage.theme=l?'light':'dark';var b=document.getElementById('thb');if(b)b.textContent=l?'🌙 Тёмный':'☀️ Белый';document.querySelectorAll('iframe').forEach(f=>{try{f.contentWindow.postMessage({alicia_theme:l},'*')}catch(x){}})}addEventListener('message',e=>{if(e.data&&e.data.alicia_theme_ask)try{e.source.postMessage({alicia_theme:localStorage.theme!=='dark'},'*')}catch(x){}});thSet(false);</script></body></html>
