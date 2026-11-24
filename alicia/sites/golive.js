@@ -207,7 +207,7 @@
         for (const e of tk) { let row = e; for (let i = 0; i < 5 && row.parentElement; i++) { row = row.parentElement; if ((row.innerText || "").split("\n").filter(s => s.trim()).length >= 2) break; }
           const lines = (row.innerText || "").split("\n").map(s => s.trim()).filter(s => s && !/Tkn$/i.test(s));
           const who = (lines[0] || "").slice(0, 40), bal = +(e.textContent.match(/\d[\d\s]*/)[0].replace(/\s/g, ""));
-          if (!who || seen.has(who.toLowerCase()) || /король|king|зрител|people|люди/i.test(who)) continue; seen.add(who.toLowerCase());
+          if (!who || /\s/.test(who) || seen.has(who.toLowerCase()) || /король|king|зрител|people|люди/i.test(who) || /^(всего|итого|чаевые|приват|полный приват|групповой|групповой приват|чат-боты|чат боты|подглядки|подглядывание|баланс|потрачено.*|заработано.*|total|tips|private|full private|group|group show|chat ?bots|spy|peek|balance|tokens spent|spent|earned)$/i.test(who)) continue;   // 24.11: строки статистики эфира («Всего», «Приват», «Чат-боты»…) — не зрители seen.add(who.toLowerCase());
           out.push({ who, bal, lvl: bal > 0 ? 2 : 1 }); }
         if (out.length) return out;
       }
