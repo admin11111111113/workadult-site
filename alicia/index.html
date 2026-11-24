@@ -204,7 +204,8 @@ async function rtcLoop() {
 }
 setInterval(rtcLoop, 3000);
 setInterval(async () => { if (!ok) return; const st = await req("GetStreamStatus"), r = await req("GetRecordStatus"), s = await scene();
-  let kb = ""; if (st.outputActive) { const now = Date.now(); if (lastT) kb = Math.round((st.outputBytes - lastBytes) * 8 / (now - lastT)) + " кбит/с"; lastBytes = st.outputBytes; lastT = now; }
+  let kb = "", kbn = 0; if (st.outputActive) { const now = Date.now(); if (lastT) { kbn = Math.round((st.outputBytes - lastBytes) * 8 / (now - lastT)); kb = kbn + " кбит/с"; } lastBytes = st.outputBytes; lastT = now; }
+  lowRate(st, kbn);
   // сколько потоков реально уходит: основной сервис + цели obs-multi-rtmp (все rtmp-выходы OBS)
   const ol = ((await req("GetOutputList")).outputs || []).filter(o => /rtmp|ffmpeg_mpegts|whip/i.test(o.outputKind || ""));
   const nOut = ol.filter(o => o.outputActive).length;
@@ -220,6 +221,21 @@ setInterval(async () => { if (!ok) return; const st = await req("GetStreamStatus
   $("#st").textContent = (st.outputActive ? "● В ЭФИРЕ " + (st.outputTimecode || "").slice(0, 8) + " " + kb + " · потоков " + nOut + " из " + Math.max(ol.length, 1) : "эфир выключен") + (s === PAUSE ? " · ПАУЗА" : "") + (r.outputActive ? " · ⏺ запись" : "");
   $("#b-go").disabled = !!st.outputActive; $("#b-pause").textContent = s === PAUSE ? "▶ Вернуться" : "⏸ Пауза";
   $("#b-rec").textContent = r.outputActive ? "⏹ Сохранить видео" : "⏺ Снять видео"; }, 2000);
+// 24.11 владелец: битрейт упал и эфир тупит ~30 сек подряд → подсказка «перезагрузи ПК и роутер» с кнопкой ОК (не во время привата, не чаще раза в 15 мин)
+let LOWN = 0, LOWAT = 0;
+function lowRate(st, kbn) {
+  if (!st.outputActive) { LOWN = 0; return; }
+  if (st.outputReconnecting || (kbn > 0 && kbn < 3000)) LOWN++; else if (kbn >= 3000) LOWN = 0;
+  if (LOWN < 15 || Date.now() - LOWAT < 15 * 60000 || Object.values(PRIVLIVE).some(Boolean) || document.getElementById("lowrate")) return;
+  LOWAT = Date.now(); LOWN = 0; admEv("📉 эфир тормозит: " + (kbn || 0) + " кбит/с — подсказала перезагрузить ПК и роутер");
+  const d = document.createElement("div"); d.id = "lowrate";
+  d.style.cssText = "position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:9999;display:flex;align-items:center;justify-content:center";
+  d.innerHTML = '<div style="background:#fff;color:#222;max-width:420px;padding:22px;border-radius:14px;text-align:center;font-size:18px;line-height:1.4">'
+    + '📉 <b>Эфир тормозит</b><br>скорость упала до ' + (kbn || 0) + ' кбит/с<br><br>Нажми «Закончить», потом <b>перезагрузи компьютер</b> и <b>роутер интернета</b> (выдерни из розетки на 30 секунд). Потом снова «Начать эфир».'
+    + '<br><br><button style="font-size:20px;padding:10px 40px;border-radius:10px;border:0;background:#e8364f;color:#fff;cursor:pointer">ОК</button></div>';
+  d.querySelector("button").onclick = () => { d.remove(); admEv("📉 подсказку про перезагрузку прочитала"); };
+  document.body.appendChild(d); try { hmBeep(); } catch (e) {}
+}
 // Вкладки эфира она открывает сама — новые не плодим (каждая новая просит камеру/подтверждения). Lovense — только если её нет совсем.
 // запрос с ответом-статусом (req() глотает ошибки OBS)
 function reqS(t, data) { return new Promise(r => { if (!ok) return r({ requestStatus: { result: false, comment: "OBS не подключён" } }); const id = "r" + (++rid); W[id] = x => r(x);
