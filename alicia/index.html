@@ -513,7 +513,7 @@ function onExt(m) {
   if (m.type === "saidres") { const x = PRIVMSG.find(y => y.id === m.id); if (x) { x.st = m.ok ? "✓ ушло" : "⚠ " + (m.err || "не ушло"); privShowChat(); } }
   if (m.type === "privreq") privShow(m.p, m.text);
   if (m.type === "privgone" && PRIVREQ === m.p) privHide();
-  if (m.type === "private") privOn(m.p, m.on);
+  if (m.type === "private") { if (!m.on) delete PRIVIGN[m.p]; if (!(m.on && PRIVIGN[m.p])) privOn(m.p, m.on); }   // PRIVIGN: она сама нажала «приват закончился» — старый сигнал «идёт» не слушаем, пока сайт не скажет «кончился»
   if (m.type === "probe") admEv("🔎 " + (NAME[m.p] || m.p) + " " + m.text);   // разведка — только в журнал владельца
   // 24.11: Dream Bot пишет «tipped for → пункт» на ЛЮБЫЕ чаевые с такой суммой — это не выбор зрителя. Пункт засчитываем,
   // только если в самих чаевых есть подпись (он выбрал пункт в окне чаевых) — это ловит обработчик "tip" выше.
@@ -641,12 +641,14 @@ async function privAns(act) {
   catch (e) { $("#privst").textContent = "⚠ нет связи — нажми на сайте"; return; }
   admEv(act === "accept" ? "🔒 приняла приват" : "🔒 отклонила приват"); setTimeout(privHide, 6000);
 }
+const PRIVIGN = {};
+function privEnd() { for (const k of Object.keys(PRIVLIVE)) if (PRIVLIVE[k]) { PRIVIGN[k] = 1; privOn(k, false); } admEv("🔓 сама закрыла приват кнопкой"); }   // 24.11 владелец: приват кончился, а панель не закрыла
 function privOn(p, on) {
   if (on && !(LIVE[p] && LIVE[p].on)) on = false;                    // 23.11: не в эфире на этой площадке — привата быть не может
   PRIVLIVE[p] = on;
   PORDER = PORDER.filter(k => k !== p && PRIVLIVE[k]); if (on) { PORDER.push(p); if (!PSEL || !PRIVLIVE[PSEL]) PSEL = p; } else if (PSEL === p) PSEL = PORDER[0] || "";   // 23.11: два привата сразу — «Приват 1/2»
   const any = Object.keys(PRIVLIVE).filter(k => PRIVLIVE[k]);
-  $("#privbar").style.display = any.length ? "block" : "none"; $("#privbar").textContent = "🔒 ИДЁТ ПРИВАТ — " + PORDER.map((k, i) => (PORDER.length > 1 ? (i + 1) + ") " : "") + PN4[k]).join(", ") + " · его сообщения и ответ — во вкладке «🔒 Приват»";
+  $("#privbar").style.display = any.length ? "block" : "none"; $("#privbar").innerHTML = "🔒 ИДЁТ ПРИВАТ — " + PORDER.map((k, i) => (PORDER.length > 1 ? (i + 1) + ") " : "") + PN4[k]).join(", ") + " · его сообщения и ответ — во вкладке «🔒 Приват» " + '<button onclick="privEnd()" style="margin-left:10px;padding:3px 10px;font-size:13px;background:#2e7d32">✓ приват закончился</button>';
   for (const k in PN4) { const b = $("#chat-" + k); if (b) b.style.outline = PRIVLIVE[k] ? "3px solid #e8364f" : ""; }
   $("#ft-priv").classList.toggle("live", any.length > 0); $("#ft-priv").textContent = any.length ? "🔒 Приват — идёт!" : "🔒 Приват";
   if (on && FT !== "priv") ftab("priv"); if (!any.length && FT === "priv") ftab("ppl"); if (FT === "priv") privShowChat();
@@ -982,7 +984,7 @@ async function sayQ(p, id, text) { try { await fetch("https://alicia-link.videor
 const PQ = "https://alicia-link.videorils.workers.dev/pq", LVN = ["", "есть токены", "тратит", "много тратит", "VIP"];
 let HUBPPL = [], RSAYDONE = new Set(), PPLHOLD = 0, RCHSEEN = new Set(), RSAID = {};
 // версия панели: хаб пишет в общий чат только через панель, которая это умеет (v ≥ 3); новая версия на сайте → панель обновится сама
-const PANEL_V = 54;
+const PANEL_V = 55;
 setInterval(async () => {
   try { const t = await (await fetch(location.pathname + "?vchk=" + Date.now(), { cache: "no-store" })).text(), v = +((t.match(/const PANEL_V = (\d+)/) || [])[1] || 0);
     const busy = Object.values(PRIVLIVE).some(Boolean) || TYPES.length || PAIDQ.length || [...document.querySelectorAll("input,textarea")].some(i => i.value && i.type !== "file") || Object.keys(CUP).length;

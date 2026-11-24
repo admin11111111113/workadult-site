@@ -74,7 +74,12 @@
   const PRIVON = /(private show (is )?(in progress|started|active)|you are in (a )?private|in private show|приват(ное шоу|ный чат)? (идёт|начал|начато|активн)|завершить приват|закончить приват|end private|stop private|đang (show )?riêng tư)/i;
   let PON = null;
   // CB/SC приват шлют cb.js/sc.js по статусу комнаты из API сайта; ManyVids — roomState своей комнаты; Bonga — по надписям консоли
-  if (P === "bc") setInterval(() => { const on = PRIVON.test((document.body && document.body.innerText || "").slice(0, 200000)); if (on !== PON) { PON = on; send({ type: "private", p: P, on }); } }, 3000);
+  if (P === "bc") setInterval(() => {   // 24.11 владелец: приват кончился, а панель не закрыла — фраза «приват начат» оставалась в ЧАТЕ. Чат и сообщения не считаем, только интерфейс
+    const CHAT = '[class*="chat" i],[class*="message" i],[class*="msg" i],[class*="history" i]';
+    let txt = "", n = 0; const w = document.createTreeWalker(document.body || document.documentElement, NodeFilter.SHOW_TEXT);
+    while (w.nextNode() && n < 4000) { const t = w.currentNode, el = t.parentElement; n++;
+      if (!el || el.closest(CHAT) || !(t.nodeValue || "").trim()) continue; const r = el.getBoundingClientRect(); if (!r.width || !r.height) continue; txt += " " + t.nodeValue; }
+    const on = PRIVON.test(txt); if (on !== PON) { PON = on; send({ type: "private", p: P, on }); } }, 3000);
   if (P === "mv" && /\/live/i.test(location.pathname)) setInterval(async () => {
     try { const t = await (await fetch("/live/cam/bad_secret", { cache: "no-store" })).text(), m = t.match(/roomState\\?":\\?"([A-Z_]+)/);
       const on = !!m && /PRIVATE|EXCLUSIVE|GROUP/.test(m[1]); if (on !== PON) { PON = on; send({ type: "private", p: P, on }); } } catch (e) {} }, 5000);
