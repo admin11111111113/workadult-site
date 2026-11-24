@@ -982,7 +982,7 @@ async function sayQ(p, id, text) { try { await fetch("https://alicia-link.videor
 const PQ = "https://alicia-link.videorils.workers.dev/pq", LVN = ["", "есть токены", "тратит", "много тратит", "VIP"];
 let HUBPPL = [], RSAYDONE = new Set(), PPLHOLD = 0, RCHSEEN = new Set(), RSAID = {};
 // версия панели: хаб пишет в общий чат только через панель, которая это умеет (v ≥ 3); новая версия на сайте → панель обновится сама
-const PANEL_V = 52;
+const PANEL_V = 53;
 setInterval(async () => {
   try { const t = await (await fetch(location.pathname + "?vchk=" + Date.now(), { cache: "no-store" })).text(), v = +((t.match(/const PANEL_V = (\d+)/) || [])[1] || 0);
     const busy = Object.values(PRIVLIVE).some(Boolean) || TYPES.length || PAIDQ.length || [...document.querySelectorAll("input,textarea")].some(i => i.value && i.type !== "file") || Object.keys(CUP).length;
@@ -1014,8 +1014,8 @@ let PPL = [];
 // 24.11 владелец: «у неё зрители так же, как у меня» — копия списка из его консоли (hub.html siteList)
 let PSITE = localStorage.psite || "sc", MHBM = {};   // MHBM: «p|ник» → {u30: $ за 30 дн всем моделям, n, all} (MHB)
 const u30 = r => (MHBM[r.p + "|" + String(r.who).toLowerCase()] || {}).u30;
-function usdTag(r) { const v = u30(r); if (v == null) return ""; const c = v >= 200 ? "#ffd700" : v >= 50 ? "#4cd964" : v >= 10 ? "#bdbdbd" : "#777";
-  return `<span title="тратит за 30 дней всем моделям (MHB)" style="color:${c};font-weight:${v >= 50 ? 800 : 600};font-size:13px;margin-left:8px;white-space:nowrap">$${Math.round(v)}/мес</span>`; }
+function usdTag(r) { const v = u30(r), vd = (MHBM[r.p + "|" + String(r.who).toLowerCase()] || {}).vd || 0; if (v == null) return ""; const c = v >= 200 ? "#ffd700" : v >= 50 ? "#4cd964" : v >= 10 ? "#bdbdbd" : "#777";
+  return `<span title="тратит за 30 дней всем моделям (MHB) · был у неё в эфире ${vd} дн." style="color:${c};font-weight:${v >= 50 ? 800 : 600};font-size:13px;margin-left:8px;white-space:nowrap">$${Math.round(v)}/мес</span>`; }
 const PSN = { cb: "Чатур", sc: "Стрип", bc: "Бонга", mv: "MV" };
 const DKC = { cb: { 1: "#6ec6ff", 2: "#5b8cff", 3: "#c77dff", 4: "#9b59ff" }, bc: { 1: "#cfcfcf", 2: "#f0b52a", 3: "#a9c4d6" } };
 function psite(p) { PSITE = localStorage.psite = p; PPLHOLD = 0; pplSite(PPL); }
