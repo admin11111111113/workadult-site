@@ -497,7 +497,7 @@ function onExt(m) {
   if (m.type === "lovsites") {
     LOV.sites = m.n; LOV.have = m.have || []; LOV.toys = m.toys || [];
     const miss = (m.need || []).filter(x => !LOV.have.includes(x));
-    if (m.done) hint(miss.length ? "🎀 Lovense: не добавились " + miss.join(", ") + " — добавь вручную на странице Lovense" : "🎀 Lovense подключён ко всем 4 сайтам ✅");
+    if (m.done) if (miss.length) hint("🎀 Lovense: не добавились " + miss.join(", ") + " — добавь вручную на странице Lovense"); else admEv("🎀 Lovense подключён ко всем 4 сайтам");   // 24.11 владелец: «всё ок» в подсказки не писать
     lovense();
   }
   if (m.type === "c2c") hint(m.ok ? "📷 Камера <b>" + esc(m.who) + "</b> открыта — окошко справа внизу на Бонге (тяни за верх, размер — за угол, ⧉ — поверх всех окон)" : "⚠ Камера " + esc(m.who) + " не открылась сама — на Бонге нажми его ник → «камера»");
@@ -682,15 +682,19 @@ function feedShow(l, force) {
   l = l.filter(x => ["cb", "sc", "bc", "mv"].includes(x.p) && !/^(⚠|💰 дал)/.test(x.text || "") && !/одобри/.test(x.text || ""));
   const seen = new Set(FEEDSEEN || []), fresh = FEEDSEEN && l.some(x => !seen.has(x.id));
   if (FEEDSEEN) { const ph = l.filter(x => !seen.has(x.id) && /^(💡|🔥|🚫)/.test(x.text || "")).pop(); if (ph) hint(`<b>${esc(ph.who)}</b> <small>(${esc(PNAME[ph.p] || ph.p)})</small><br>${esc(ph.text)}`); }   // 23.11: приват-подсказки — крупно в «Подсказки»
-  const one = x => {
+  const one = (x, n) => {
     const cls = /^(🤖|📨|✍️|✉️)/.test(x.text) ? "bot" : x.kind === "pay" ? "pay" : x.kind === "tip" ? "tipx" : "";
-    return `<div class="nf ${cls} ${FEEDSEEN && !seen.has(x.id) ? "newx" : ""}">${x.kind === "tip" ? `<span class="tkn">${+x.tk || 0} tk</span>` : ""}<span class="pf pf-${esc(x.p)}">${esc(PNAME[x.p] || x.p)}</span><span class="wh" data-p="${esc(x.p)}" data-who="${esc(x.who)}" title="открыть переписку / написать">${esc(x.who)}</span>` +
+    return `<div class="nf ${cls} ${FEEDSEEN && !seen.has(x.id) ? "newx" : ""}">${x.kind === "tip" ? `<span class="tkn">${n > 1 ? n + "× " : ""}${+x.tk || 0} tk</span>` : ""}<span class="pf pf-${esc(x.p)}">${esc(PNAME[x.p] || x.p)}</span><span class="wh" data-p="${esc(x.p)}" data-who="${esc(x.who)}" title="открыть переписку / написать">${esc(x.who)}</span>` +
       `<span class="tx" title="${esc(x.text)}">${esc(x.kind === "tip" ? tipWhat(x.text) : feedRu(x.text))}</span><span class="tm">${esc((x.t || "").slice(11, 16))}</span></div>`; };
   if (FT === "pay") l = l.filter(x => x.kind === "tip" || x.kind === "pay");
   const hmOne = x => `<div class="nf" style="background:${x.kind === "rep" ? "#1d2a44" : "#4a1020"};border:2px solid ${x.kind === "rep" ? "#4a6fb3" : "#e8364f"}"><span class="wh" style="color:#fff;cursor:default">${x.kind === "rep" ? "💬 ты → Роману" : "✉️ Роман"}</span><span class="tx">${esc(x.text)}</span><span class="tm">${esc((x.ft || "").slice(11, 16))}</span></div>`;
-  const all = [...l.map(x => ({ k: x.t || "", h: () => one(x) })), ...WALLMSG.map(x => ({ k: x.ft || "", h: () => wallOne(x) })), ...HMLOG.map(x => ({ k: x.ft || "", h: () => hmOne(x) }))]
-    .sort((a, b) => a.k.localeCompare(b.k)).slice(-200);
-  el.innerHTML = all.reverse().map(x => x.h()).join("") || '<div class="chat" style="color:#667">пока тихо — тут будут донаты, сообщения из чатов, что бот написал и сообщения Романа</div>';
+  // 24.11 владелец: «Подарил 1 Токен!» из чата сайта — это донат, он и так есть строкой доната; одинаковые подряд — одной строкой «N×»
+  const SYS = /^\s*(подарил[аи]?|tipped|sent|отправил[аи]?)\s+\d+\s*(токен|token|tk|tkn)/i;
+  const all0 = [...l.map(x => ({ k: x.t || "", s: x.p + "|" + x.who + "|" + (x.kind === "tip" ? "tip" + x.tk + (x.text || "") : x.text), h: n => one(x, n) })),
+    ...WALLMSG.filter(x => x.me || !(SYS.test(x.text || "") || SYS.test(x.ru || ""))).map(x => ({ k: x.ft || "", s: x.me ? "" : "w|" + x.p + "|" + x.who + "|" + (x.ru || x.text), h: n => wallOne(x, n) })),
+    ...HMLOG.map(x => ({ k: x.ft || "", s: "", h: () => hmOne(x) }))].sort((a, b) => a.k.localeCompare(b.k)).slice(-250);
+  const all = []; for (const y of all0) { const z = all[all.length - 1]; if (z && y.s && z.s === y.s && (y.k || "").slice(0, 15) === (z.k || "").slice(0, 15)) { z.n = (z.n || 1) + 1; z.k = y.k; continue; } all.push(y); }
+  el.innerHTML = all.slice(-200).reverse().map(x => x.h(x.n || 1)).join("") || '<div class="chat" style="color:#667">пока тихо — тут будут донаты, сообщения из чатов, что бот написал и сообщения Романа</div>';
   if (fresh) { try { const a = new AudioContext(), o = a.createOscillator(), g = a.createGain(); o.frequency.value = 880; o.connect(g); g.connect(a.destination);
     g.gain.setValueAtTime(.15, a.currentTime); g.gain.exponentialRampToValueAtTime(.001, a.currentTime + .25); o.start(); o.stop(a.currentTime + .25); } catch (e) {} }
   FEEDSEEN = l.map(x => x.id);
@@ -887,11 +891,11 @@ function feedRu(t) {
 function ruOf(x) { if (!x.ru || hasRu(x.ru)) return; const o = x.ru; tr(o, "ru").then(r => { if (r && r !== o) { x.ru = r; wallShow(); } }); }   // сообщения бота в чат — тоже по-русски
 // 24.11 владелец: стены справа нет — её сообщения идут в общую ленту слева (feedShow), тут только вёрстка одной строки
 function wallShow(force) { if (!DLG) feedShow(LASTFEED, force); }
-function wallOne(x) {
+function wallOne(x, n) {
   return (x.me
     ? `<div class="pm me"><span class="tm">${esc(x.t)} ${esc(x.st || "")}</span><b style="color:#9fbaff">${x.bot ? "🤖 бот" : "ты"} → ${esc(x.to)}</b> <small style="color:#889">${esc(PN4[x.p] || x.p)}</small>: ${esc(x.ru)}</div>`   // 24.11 владелец: только по-русски, без английского дубля
     : `<div class="pm"><span class="tm">${esc(x.t)}</span><span style="font-size:11px;background:#000a;border-radius:5px;padding:1px 5px">${esc(PN4[x.p] || x.p)}</span> ` +
-      `<b class="nm" data-p="${esc(x.p)}" data-who="${esc(x.who)}" data-uid="${esc(x.uid)}" style="${lvO(x.p, x.lvl, x)}">${esc(x.who)}</b>: ` +           // 24.11: цвет ника и так виден — подпись «зелёный» убрана
+      `<b class="nm" data-p="${esc(x.p)}" data-who="${esc(x.who)}" data-uid="${esc(x.uid)}" style="${lvO(x.p, x.lvl, x)}">${esc(x.who)}</b>${n > 1 ? ` <b style="color:#ffd76a">${n}×</b>` : ""}: ` +           // 24.11: цвет ника и так виден — подпись «зелёный» убрана
       `${x.ru ? esc(x.ru) : '<span style="color:#889">⏳ перевожу…</span>'}` +                    // только по-русски, английский не показываем
 
       `<div style="display:flex;gap:5px;margin-top:4px"><input id="wi-${x.id}" placeholder="ответить ему по-русски… (Esc — закрыть)" style="margin:0;padding:5px 8px;font-size:14px;display:${WOPEN === x.id ? '' : 'none'}" onkeydown="if(event.key==='Enter')wallSay('${x.id}');if(event.key==='Escape'){this.style.display='none';WOPEN=''}">` +
@@ -975,7 +979,7 @@ async function sayQ(p, id, text) { try { await fetch("https://alicia-link.videor
 const PQ = "https://alicia-link.videorils.workers.dev/pq", LVN = ["", "есть токены", "тратит", "много тратит", "VIP"];
 let HUBPPL = [], RSAYDONE = new Set(), PPLHOLD = 0, RCHSEEN = new Set(), RSAID = {};
 // версия панели: хаб пишет в общий чат только через панель, которая это умеет (v ≥ 3); новая версия на сайте → панель обновится сама
-const PANEL_V = 37;
+const PANEL_V = 38;
 setInterval(async () => {
   try { const t = await (await fetch(location.pathname + "?vchk=" + Date.now(), { cache: "no-store" })).text(), v = +((t.match(/const PANEL_V = (\d+)/) || [])[1] || 0);
     const busy = Object.values(PRIVLIVE).some(Boolean) || TYPES.length || PAIDQ.length || [...document.querySelectorAll("input,textarea")].some(i => i.value && i.type !== "file") || Object.keys(CUP).length;
