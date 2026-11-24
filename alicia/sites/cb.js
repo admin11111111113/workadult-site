@@ -21,12 +21,26 @@
     if (!text) return;
     send({ type: "chat", p: "cb", who: nick, text: text.slice(0, 300), lvl: lvlOf(u), me: ME.test(nick) });
   }
+  // 24.11: у неё СТАРЫЙ вид страницы эфира (вкладки «ЧАТ / MESSAGES / ПОЛЬЗОВАТЕЛИ», строки «ник tipped 1 token -- текст», «ник: текст»),
+  // там нет data-testid → ничего не шло в панель (gooshy0211). Берём новые строки чата по тексту, только внутри блока чата.
+  const SYS = /^(пользователь|user|notice|новое описание|room subject|new room subject|уведомлен)/i;
+  function classic(n) {
+    if (seen.has(n) || !n.closest || n.closest("[data-testid=chat-message]")) return;
+    const box = n.closest("[class*=chat i],[id*=chat i]"); if (!box || n.querySelector("input,textarea,button")) return;
+    seen.add(n);
+    const t = (n.innerText || "").replace(/\s+/g, " ").trim(); if (!t || t.length > 500 || SYS.test(t)) return;
+    let k = MENUBUY.exec(t);
+    if (k) return send({ type: "menubuy", p: "cb", who: k[1], what: k[2].replace(/[^\p{L}\p{N} '’&+-]/gu, "").trim() });
+    if ((k = /^(\S+)\s+tipped\s+(\d+)\s+tokens?(?:\s*--\s*(.+))?$/i.exec(t))) return send({ type: "tip", p: "cb", who: k[1], tk: +k[2], what: (k[3] || "").trim() });
+    if ((k = /^([\w.\-]{2,40})\s*:\s*(.+)$/.exec(t))) send({ type: "chat", p: "cb", who: k[1], text: k[2].slice(0, 300), lvl: 0, me: ME.test(k[1]) });
+  }
   new MutationObserver(ms => {
     if (Date.now() - t0 < 5000) return;                                // старое при загрузке не шлём
     for (const m of ms) for (const n of m.addedNodes) {
       if (n.nodeType !== 1) continue;
       const list = n.matches && n.matches("[data-testid=chat-message]") ? [n] : n.querySelectorAll ? n.querySelectorAll("[data-testid=chat-message]") : [];
       for (const e of list) line(e);
+      if (!list.length) classic(n);
     }
   }).observe(document.body, { childList: true, subtree: true });
   send({ type: "login", p: "cb", ok: !/login|auth/.test(location.pathname) });
