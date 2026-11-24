@@ -381,6 +381,14 @@
         b.click(); nfDone = true;
         setTimeout(() => {   // если открылось окно подтверждения — жмём «отправить/да»
           const ok = [...document.querySelectorAll("button,input[type=submit],[role=button]")].filter(e => vis(e) && !e.closest("form[id*=chat i],[class*=chat i]") && /^\s*(отправить|оповестить|да|send|notify|notify followers|yes|ok)\s*$/i.test((e.innerText || e.value || "").trim()) && e !== b)[0];
+          // 25.11 владелец: «посмотри это окно — можно ли фото, текст» — снимок окна оповещения хабу (поля, кнопки, подписи)
+          try {
+            const dlg = [...document.querySelectorAll("[role=dialog],[class*=Modal i],[class*=Notif i],[class*=Dialog i]")].filter(vis).sort((a, c) => (c.innerText || "").length - (a.innerText || "").length)[0];
+            if (dlg) {
+              const f = [...dlg.querySelectorAll("input,textarea,select,button")].map(e => e.tagName.toLowerCase() + (e.type ? ":" + e.type : "") + (e.name ? "[" + e.name + "]" : "") + (e.placeholder ? "{" + e.placeholder + "}" : "") + (e.innerText ? "«" + e.innerText.trim().slice(0, 30) + "»" : "")).join(" ");
+              send({ type: "golog", p: P, text: "🔎 окно оповещения: " + (dlg.innerText || "").replace(/\s+/g, " ").slice(0, 400) + " || поля: " + f.slice(0, 400) });
+            }
+          } catch (e) {}
           if (ok) ok.click();
           send({ type: "golog", p: P, text: "📣 Чатурбейт: нажала «Оповестить, что вы в сети»" + (ok ? " + подтвердила" : "") });
         }, 1500);
