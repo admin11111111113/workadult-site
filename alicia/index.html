@@ -508,11 +508,27 @@ async function lovStop() { if (!LOVCTL || !confirm("Закончить упра�
 // ── ПРИВАТ: запрос с сайта → большое окно тут; «Принять/Отклонить» уходит на сайт (golive.js нажмёт кнопку сам)
 let PRIVREQ = null, PRIVLIVE = {}, PORDER = [], PSEL = "", PUNREAD = {};
 const PN4 = { cb: "Chaturbate", sc: "Stripchat", bc: "Bongacams", mv: "ManyVids" };
+// 24.11 владелец: разные звуки — приват = «звонок телефона», сообщение от Романа = противная сирена (слышно и с другой вкладки)
+let ACX = null;
+function acx() { try { if (!ACX) ACX = new AudioContext(); if (ACX.state === "suspended") ACX.resume(); } catch (e) {} return ACX; }
+document.addEventListener("click", acx, true); document.addEventListener("keydown", acx, true);
+function tone(a, f, t0, dur, vol, type) { const o = a.createOscillator(), g = a.createGain(); o.type = type || "sine"; o.frequency.value = f; o.connect(g); g.connect(a.destination);
+  g.gain.setValueAtTime(vol, t0); g.gain.setValueAtTime(vol, t0 + dur * .8); g.gain.exponentialRampToValueAtTime(.001, t0 + dur); o.start(t0); o.stop(t0 + dur + .02); }
+function privRing() { const a = acx(); if (!a) return; const t = a.currentTime;                    // «дзынь-дзынь» как телефон: 2 трели
+  [0, 1.1].forEach(b => { for (let i = 0; i < 10; i++) { tone(a, 1000, t + b + i * .08, .07, .3); tone(a, 1250, t + b + i * .08 + .04, .04, .2); } }); }
+function hmAlarm() { const a = acx(); if (!a) return; const t = a.currentTime;                      // противная сирена: низко-высоко, «пила», громко
+  for (let i = 0; i < 6; i++) tone(a, i % 2 ? 1400 : 520, t + i * .22, .2, .45, "sawtooth"); }
+let TFL = null; function titleFlash(on, txt) { clearInterval(TFL); if (!window.T0) window.T0 = document.title;
+  if (!on) { document.title = window.T0; return; } let k = 0; TFL = setInterval(() => { document.title = (k++ % 2) ? txt : window.T0; }, 700); }
+function sysNote(title, body) { try { if (!("Notification" in window)) return;
+  if (Notification.permission === "granted") { const n = new Notification(title, { body, requireInteraction: true, tag: "alicia-" + title }); n.onclick = () => { window.focus(); n.close(); }; }
+  else if (Notification.permission !== "denied") Notification.requestPermission(); } catch (e) {} }
+document.addEventListener("click", () => { try { if ("Notification" in window && Notification.permission === "default") Notification.requestPermission(); } catch (e) {} }, { once: true });
 function ding() { try { const a = new AudioContext(); [880, 1175, 1568, 1175, 1568].forEach((f, i) => { const o = a.createOscillator(), g = a.createGain(); o.frequency.value = f; o.connect(g); g.connect(a.destination);
   g.gain.setValueAtTime(.2, a.currentTime + i * .15); g.gain.exponentialRampToValueAtTime(.001, a.currentTime + i * .15 + .14); o.start(a.currentTime + i * .15); o.stop(a.currentTime + i * .15 + .15); }); } catch (e) {} }
 function privShow(p, text) {
-  PRIVREQ = p; $("#privp").textContent = PN4[p] || p; $("#privt").textContent = text || ""; $("#privst").textContent = ""; $("#priv").style.display = "flex"; ding();
-  clearInterval(window.PRING); let n = 0; window.PRING = setInterval(() => { if (!PRIVREQ || ++n > 15) return clearInterval(window.PRING); ding(); }, 2500);   // 23.11: звенит, пока не ответит (до ~40 сек)
+  PRIVREQ = p; $("#privp").textContent = PN4[p] || p; $("#privt").textContent = text || ""; $("#privst").textContent = ""; $("#priv").style.display = "flex"; privRing(); titleFlash(true, "🔒 ПРИВАТ!"); sysNote("🔒 Запрос привата", (PN4[p] || p) + " — зайди в панель");
+  clearInterval(window.PRING); let n = 0; window.PRING = setInterval(() => { if (!PRIVREQ || ++n > 15) { titleFlash(false); return clearInterval(window.PRING); } privRing(); }, 2500);   // 23.11: звенит, пока не ответит (до ~40 сек)
   admEv("🔒 запрос привата на " + (PN4[p] || p) + ": " + (text || ""));
 }
 function privHide() { PRIVREQ = null; $("#priv").style.display = "none"; }
@@ -701,11 +717,12 @@ let HMQ = [], HMDONE = new Set(), HMSEEN = new Set(), HMBEEP = 0;
 function hmBeep() { try { const a = new AudioContext(); [880, 1320, 880, 1320].forEach((f, i) => { const o = a.createOscillator(), g = a.createGain(); o.frequency.value = f; o.connect(g); g.connect(a.destination); const t = a.currentTime + i * .16; g.gain.setValueAtTime(.25, t); g.gain.exponentialRampToValueAtTime(.001, t + .14); o.start(t); o.stop(t + .15); }); } catch (e) {} }
 function hmShow(l) {
   HMQ = (l || []).filter(m => m.st === "sent" && !HMDONE.has(m.id));
-  if (!HMQ.length) { $("#hmv").style.display = "none"; return; }
+  if (!HMQ.length) { if ($("#hmv").style.display !== "none" && !PRIVREQ) titleFlash(false); $("#hmv").style.display = "none"; return; }
   const m = HMQ[0], neu = !HMSEEN.has(m.id);
   if ($("#hmv").style.display !== "flex" || neu) { $("#hmtx").textContent = m.text; if (neu) $("#hmrep").value = ""; }
   $("#hmn").textContent = HMQ.length > 1 ? "ещё " + (HMQ.length - 1) : ""; $("#hmv").style.display = "flex";
-  if (neu || Date.now() - HMBEEP > 30000) { hmBeep(); HMBEEP = Date.now(); }            // новое — пик сразу, потом напоминание раз в 30 сек
+  if (neu || Date.now() - HMBEEP > 10000) { hmAlarm(); HMBEEP = Date.now(); titleFlash(true, "✉️ СООБЩЕНИЕ!"); }
+  if (neu) sysNote("✉️ Сообщение от Романа", m.text.slice(0, 120));            // новое — пик сразу, потом напоминание раз в 30 сек
   if (neu) { HMSEEN.add(m.id); admEv("✉️ пришло сообщение от Романа"); }
 }
 async function hmAns(rep) {
