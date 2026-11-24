@@ -2,7 +2,7 @@
 <meta name="robots" content="noindex,nofollow"><meta name="viewport" content="width=device-width,initial-scale=1">
 <style>
 *{box-sizing:border-box}body{margin:0;font:16px/1.4 Segoe UI,Arial;background:#262626;color:#eee;height:100vh;display:flex;flex-direction:column}
-#top{display:flex;gap:8px;padding:8px;background:#313131;align-items:center;flex-wrap:wrap}#top{flex-wrap:nowrap!important}#top .pl.site{flex:1 1 0;min-width:0;max-width:250px;height:86px;box-sizing:border-box;overflow:hidden}#top .pl.site small{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}#topr{flex:none;display:grid;grid-template-columns:auto auto;gap:4px}#topr .pl.mini{padding:3px 9px;font-size:13px;border-radius:8px}#topr .pl.mini small{display:inline;margin-left:6px;font-size:11px}
+#top{display:flex;gap:8px;padding:8px;background:#313131;align-items:center;flex-wrap:wrap}#top{flex-wrap:nowrap!important}#top .pl.site{flex:1 1 0;min-width:0;max-width:250px;height:86px;box-sizing:border-box;overflow:hidden}#top .pl.site small{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}#topr{flex:none;display:grid;grid-template-rows:auto auto;grid-auto-flow:column;gap:4px}#topr .pl.mini{padding:3px 9px;font-size:13px;border-radius:8px}#topr .pl.mini small{display:inline;margin-left:6px;font-size:11px}
 .pl{background:#3a3a3a;border-radius:10px;padding:6px 12px;font-weight:600}.pl small{display:block;font-weight:400;color:#9aa;font-size:12px}
 .dot{display:inline-block;width:10px;height:10px;border-radius:50%;background:#666;margin-right:6px}.ok{background:#2ecc71}.no{background:#e74c3c}
 #main{flex:1;display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.25fr) minmax(0,.85fr);gap:10px;padding:10px;min-height:0}
@@ -982,7 +982,7 @@ async function sayQ(p, id, text) { try { await fetch("https://alicia-link.videor
 const PQ = "https://alicia-link.videorils.workers.dev/pq", LVN = ["", "есть токены", "тратит", "много тратит", "VIP"];
 let HUBPPL = [], RSAYDONE = new Set(), PPLHOLD = 0, RCHSEEN = new Set(), RSAID = {};
 // версия панели: хаб пишет в общий чат только через панель, которая это умеет (v ≥ 3); новая версия на сайте → панель обновится сама
-const PANEL_V = 49;
+const PANEL_V = 50;
 setInterval(async () => {
   try { const t = await (await fetch(location.pathname + "?vchk=" + Date.now(), { cache: "no-store" })).text(), v = +((t.match(/const PANEL_V = (\d+)/) || [])[1] || 0);
     const busy = Object.values(PRIVLIVE).some(Boolean) || TYPES.length || PAIDQ.length || [...document.querySelectorAll("input,textarea")].some(i => i.value && i.type !== "file") || Object.keys(CUP).length;
