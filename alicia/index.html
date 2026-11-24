@@ -883,7 +883,7 @@ async function sayQ(p, id, text) { try { await fetch("https://alicia-link.videor
 const PQ = "https://alicia-link.videorils.workers.dev/pq", LVN = ["", "есть токены", "тратит", "много тратит", "VIP"];
 let HUBPPL = [], RSAYDONE = new Set(), PPLHOLD = 0, RCHSEEN = new Set(), RSAID = {};
 // версия панели: хаб пишет в общий чат только через панель, которая это умеет (v ≥ 3); новая версия на сайте → панель обновится сама
-const PANEL_V = 17;
+const PANEL_V = 18;
 setInterval(async () => {
   try { const t = await (await fetch(location.pathname + "?vchk=" + Date.now(), { cache: "no-store" })).text(), v = +((t.match(/const PANEL_V = (\d+)/) || [])[1] || 0);
     const busy = Object.values(PRIVLIVE).some(Boolean) || TYPES.length || PAIDQ.length || [...document.querySelectorAll("input,textarea")].some(i => i.value && i.type !== "file") || Object.keys(CUP).length;
@@ -906,10 +906,20 @@ function pplShow() {
   PPL = l; $("#ppln").textContent = l.length ? "(" + l.length + ")" : ""; $("#pssum").innerHTML = l.length ? pplSum(l) : "";
   // 24.11 владелец: в строке только площадка, цветной ник и сколько tk — больше ничего (нажать на ник — переписка)
   $("#ppl").innerHTML = $("#ppl2").innerHTML = l.map((r, i) => `<div class="pp"><span class="pf pf-${esc(r.p)}" style="border-radius:6px;padding:1px 6px;font-size:11px;font-weight:700">${esc(PN4[r.p] || r.p)}</span>` +
-    `<span class="nm" data-p="${esc(r.p)}" data-who="${esc(r.who)}" data-uid="${esc(r.uid || "")}" style="flex:1;font-size:17px;${lvO(r.p, r.lvl, r)}">${esc(r.who)}</span><span style="font-weight:800;color:#ffd76a;white-space:nowrap">${+r.spent || 0} tk</span></div>`).join("")
+    `<span class="nm" data-p="${esc(r.p)}" data-who="${esc(r.who)}" data-uid="${esc(r.uid || "")}" style="flex:1;font-size:17px;${lvO(r.p, r.lvl, r)}">${esc(r.who)}</span><span style="font-weight:800;color:#ffd76a;white-space:nowrap;text-align:right">${esc(nowTk(r))}${r.spent ? `<br><small style="color:#aab;font-weight:600">дал ей ${+r.spent} tk</small>` : ""}</span></div>`).join("")
     || '<div class="chat" style="color:#667">пока никого с токенами — появятся, когда напишут в чате эфира</div>';
 }
 let PPL = [];
+// 24.11 владелец: сколько у него токенов СЕЙЧАС. Точный баланс зрителя сайты не показывают никому — показываем то, что сайт даёт:
+// Чатур — цвет ника (сколько тратит за 2 недели), Стрип — лига/Ultimate/зелёный, Бонга — статус.
+function nowTk(r) {
+  const l = +r.lvl || 0;
+  if (r.p === "cb") return ["", "есть токены", "50+ tk за 2 нед", "250+ tk за 2 нед", "1000+ tk за 2 нед"][l] || "";
+  if (r.p === "sc") { const g = (r.lg || "").toLowerCase(), L = { bronze: "бронза", silver: "серебро", gold: "золото", diamond: "бриллиант", royal: "royal", legend: "legend" }[g];
+    return [l >= 3 && !L ? "Ultimate" : "", L ? "лига " + L : "", l === 2 && !L ? "есть токены" : ""].filter(Boolean).join(" · ") || (l ? "есть токены" : ""); }
+  if (r.p === "bc") return ["", "есть токены", "Gold", "Platinum+"][l] || "";
+  return l ? "есть токены" : "";
+}
 // ── переписка с человеком: нажала на ник (в ленте, донатах или списке) → весь диалог, «← Назад», можно написать самой
 let DLG = null;
 document.addEventListener("click", e => { const n = e.target.closest(".wh[data-p],.nm[data-p]"); if (n) dlgOpen(n.dataset.p, n.dataset.who, n.dataset.uid || ""); });
