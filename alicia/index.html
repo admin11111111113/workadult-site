@@ -639,7 +639,8 @@ async function hubSync() {
   if (alive) { HUBPPL = h.ppl || []; pplShow(); for (const x of h.rsay || []) if (!RSAYDONE.has(x.id)) { RSAYDONE.add(x.id); /* хаб сам кладёт текст на сервер (/say), страница эфира забирает */
       // 24.11: что бот (или Роман) написал в общий чат — тоже в ленту
       const d = x.at ? new Date(x.at * 1000) : new Date();
-      WALLMSG.push({ id: "r" + x.id, me: true, bot: !/^🙋/.test(x.ru || ""), p: x.p, to: "чат", ru: x.ru || x.text, out: x.text, st: "", t: d.toTimeString().slice(0, 5), ft: d.toLocaleString("sv").slice(0, 16) }); wallShow(); } }
+      const w = { id: "r" + x.id, me: true, bot: !/^🙋/.test(x.ru || ""), p: x.p, to: "чат", ru: x.ru || x.text, out: x.text, st: "", t: d.toTimeString().slice(0, 5), ft: d.toLocaleString("sv").slice(0, 16) };
+      WALLMSG.push(w); ruOf(w); wallShow(); } }
   if (Date.now() - DMHOLD < 30000) return;                           // она печатает ответ — не перерисовываем
   DMS = (h && h.dm) || [];
   for (const p in PNAME) { const c = $("#a-" + p); c.disabled = !alive; if (h && Date.now() - AUTO_T > 15000) c.checked = !!(h.auto || {})[p]; }
@@ -792,17 +793,20 @@ function wallAdd(m) {
   const x = { id: "w" + (++WID), p: m.p, who: m.who, uid: m.uid || "", lvl: +m.lvl || 0, text: String(m.text).slice(0, 300), ru: "", t: new Date().toTimeString().slice(0, 5), ft: nowT() };
   WALLMSG.push(x); WALLMSG.splice(0, WALLMSG.length - 200);
   if (FT !== "wall") { WALLNEW++; $("#walln").textContent = WALLNEW ? "(" + WALLNEW + ")" : ""; }
-  if (hasRu(x.text)) x.ru = x.text; else tr(x.text, "ru").then(r => { x.ru = r; wallShow(); });
+  if (hasRu(x.text)) x.ru = x.text; else tr(x.text, "ru").then(r => { x.ru = r || x.text; wallShow(); });
+  setTimeout(() => { if (!x.ru) { x.ru = x.text; wallShow(); } }, 8000);   // переводчик не ответил — показываем как есть
   wallShow();
 }
+function ruOf(x) { if (!x.ru || hasRu(x.ru)) return; const o = x.ru; tr(o, "ru").then(r => { if (r && r !== o) { x.ru = r; wallShow(); } }); }   // сообщения бота в чат — тоже по-русски
 // 24.11 владелец: стены справа нет — её сообщения идут в общую ленту слева (feedShow), тут только вёрстка одной строки
 function wallShow(force) { if (!DLG) feedShow(LASTFEED, force); }
 function wallOne(x) {
   return (x.me
-    ? `<div class="pm me"><span class="tm">${esc(x.t)} ${esc(x.st || "")}</span><b style="color:#9fbaff">${x.bot ? "🤖 бот" : "ты"} → ${esc(x.to)}</b> <small style="color:#889">${esc(PN4[x.p] || x.p)}</small>: ${esc(x.ru)}${x.out && x.out !== x.ru ? `<br><small style="color:#889">ушло: ${esc(x.out)}</small>` : ""}</div>`
+    ? `<div class="pm me"><span class="tm">${esc(x.t)} ${esc(x.st || "")}</span><b style="color:#9fbaff">${x.bot ? "🤖 бот" : "ты"} → ${esc(x.to)}</b> <small style="color:#889">${esc(PN4[x.p] || x.p)}</small>: ${esc(x.ru)}</div>`   // 24.11 владелец: только по-русски, без английского дубля
     : `<div class="pm"><span class="tm">${esc(x.t)}</span><span style="font-size:11px;background:#000a;border-radius:5px;padding:1px 5px">${esc(PN4[x.p] || x.p)}</span> ` +
-      `<b class="nm" data-p="${esc(x.p)}" data-who="${esc(x.who)}" data-uid="${esc(x.uid)}" style="${lvO(x.p, x.lvl, x)}">${esc(x.who)}</b>${x.lvl ? ` <span style="font-size:11px;background:#2f7d4a;border-radius:5px;padding:1px 5px;${lvB(x.p, x.lvl)}">${lvN(x.p, x.lvl) || LVN[x.lvl] || "токены"}</span>` : ""}: ` +
-      `${esc(x.ru || x.text)}${x.ru && x.ru !== x.text ? `<br><small style="color:#889">${esc(x.text)}</small>` : ""}` +
+      `<b class="nm" data-p="${esc(x.p)}" data-who="${esc(x.who)}" data-uid="${esc(x.uid)}" style="${lvO(x.p, x.lvl, x)}">${esc(x.who)}</b>: ` +           // 24.11: цвет ника и так виден — подпись «зелёный» убрана
+      `${x.ru ? esc(x.ru) : '<span style="color:#889">⏳ перевожу…</span>'}` +                    // только по-русски, английский не показываем
+
       `<div style="display:flex;gap:5px;margin-top:4px"><input id="wi-${x.id}" placeholder="ответить ему по-русски… (Esc — закрыть)" style="margin:0;padding:5px 8px;font-size:14px;display:${WOPEN === x.id ? '' : 'none'}" onkeydown="if(event.key==='Enter')wallSay('${x.id}');if(event.key==='Escape'){this.style.display='none';WOPEN=''}">` +
       `<button style="padding:5px 10px;font-size:13px" onclick="wallSay('${x.id}')">✍️ Ответить</button><button style="padding:5px 10px;font-size:13px;background:#6e2a30" onclick="wallBot('${x.id}')">🤖 Бот</button></div></div>`);
 }
@@ -883,7 +887,7 @@ async function sayQ(p, id, text) { try { await fetch("https://alicia-link.videor
 const PQ = "https://alicia-link.videorils.workers.dev/pq", LVN = ["", "есть токены", "тратит", "много тратит", "VIP"];
 let HUBPPL = [], RSAYDONE = new Set(), PPLHOLD = 0, RCHSEEN = new Set(), RSAID = {};
 // версия панели: хаб пишет в общий чат только через панель, которая это умеет (v ≥ 3); новая версия на сайте → панель обновится сама
-const PANEL_V = 18;
+const PANEL_V = 19;
 setInterval(async () => {
   try { const t = await (await fetch(location.pathname + "?vchk=" + Date.now(), { cache: "no-store" })).text(), v = +((t.match(/const PANEL_V = (\d+)/) || [])[1] || 0);
     const busy = Object.values(PRIVLIVE).some(Boolean) || TYPES.length || PAIDQ.length || [...document.querySelectorAll("input,textarea")].some(i => i.value && i.type !== "file") || Object.keys(CUP).length;
