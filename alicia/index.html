@@ -721,7 +721,7 @@ async function hubSync() {
   if (alive) for (const k of ["mv", "sc", "cb", "bc"]) liveSet(k, "hub", !!(h.live_on || {})[k], "hub");
   if (alive) for (const c of h.rchat || []) if (!RCHSEEN.has(c.id)) { RCHSEEN.add(c.id);    // чат её комнат, который хаб видит сам (как зритель)
     if (!WALLMSG.some(x => !x.me && x.p === c.p && x.who === c.who && x.text === c.text)) wallAdd(c); }
-  if (alive) { HUBPPL = h.ppl || []; MHBM = h.mhb || {}; pplShow(); for (const x of h.rsay || []) if (!RSAYDONE.has(x.id)) { RSAYDONE.add(x.id); /* хаб сам кладёт текст на сервер (/say), страница эфира забирает */
+  if (alive) { HUBPPL = h.ppl || []; MHBM = h.mhb || {}; MVV = h.mvv || {}; pplShow(); for (const x of h.rsay || []) if (!RSAYDONE.has(x.id)) { RSAYDONE.add(x.id); /* хаб сам кладёт текст на сервер (/say), страница эфира забирает */
       // 24.11: что бот (или Роман) написал в общий чат — тоже в ленту
       const d = x.at ? new Date(x.at * 1000) : new Date();
       const w = { id: "r" + x.id, me: true, bot: !/^🙋/.test(x.ru || ""), p: x.p, to: "чат", ru: x.ru || x.text, out: x.text, st: "", t: d.toTimeString().slice(0, 5), ft: d.toLocaleString("sv").slice(0, 16) };
@@ -984,7 +984,7 @@ async function sayQ(p, id, text) { try { await fetch("https://alicia-link.videor
 const PQ = "https://alicia-link.videorils.workers.dev/pq", LVN = ["", "есть токены", "тратит", "много тратит", "VIP"];
 let HUBPPL = [], RSAYDONE = new Set(), PPLHOLD = 0, RCHSEEN = new Set(), RSAID = {};
 // версия панели: хаб пишет в общий чат только через панель, которая это умеет (v ≥ 3); новая версия на сайте → панель обновится сама
-const PANEL_V = 55;
+const PANEL_V = 56;
 setInterval(async () => {
   try { const t = await (await fetch(location.pathname + "?vchk=" + Date.now(), { cache: "no-store" })).text(), v = +((t.match(/const PANEL_V = (\d+)/) || [])[1] || 0);
     const busy = Object.values(PRIVLIVE).some(Boolean) || TYPES.length || PAIDQ.length || [...document.querySelectorAll("input,textarea")].some(i => i.value && i.type !== "file") || Object.keys(CUP).length;
@@ -1014,7 +1014,7 @@ function pplShow() {
 }
 let PPL = [];
 // 24.11 владелец: «у неё зрители так же, как у меня» — копия списка из его консоли (hub.html siteList)
-let PSITE = localStorage.psite || "sc", MHBM = {};   // MHBM: «p|ник» → {u30: $ за 30 дн всем моделям, n, all} (MHB)
+let PSITE = localStorage.psite || "sc", MHBM = {}, MVV = {};   // MHBM: «p|ник» → {u30: $ за 30 дн всем моделям, n, all} (MHB)
 const u30 = r => (MHBM[r.p + "|" + String(r.who).toLowerCase()] || {}).u30;
 function usdTag(r) { const v = u30(r), vd = (MHBM[r.p + "|" + String(r.who).toLowerCase()] || {}).vd || 0; if (v == null) return ""; const c = v >= 200 ? "#ffd700" : v >= 50 ? "#4cd964" : v >= 10 ? "#bdbdbd" : "#777";
   return `<span title="тратит за 30 дней всем моделям (MHB) · был у неё в эфире ${vd} дн." style="color:${c};font-weight:${v >= 50 ? 800 : 600};font-size:13px;margin-left:8px;white-space:nowrap">$${Math.round(v)}/мес</span>`; }
@@ -1030,7 +1030,7 @@ function pplSite(all) {
   const tabs = '<div style="display:flex;gap:4px;margin:2px 0 6px">' + ["sc", "cb", "bc", "mv"].map(p => `<button class="pf-${p}" style="flex:1;padding:5px 2px;border:0;border-radius:8px;color:#fff;font-weight:700;cursor:pointer;${p == PSITE ? "outline:2px solid #fff;" : "opacity:.55;"}" onclick="psite('${p}')">${PSN[p]} ${n[p] || 0}</button>`).join("") + "</div>";
   const l = all.filter(r => r.p == PSITE && u30(r) !== 0).sort(   /* 24.11 владелец: кто тратит $0/мес (по MHB) — убираем, ищем китов */(a, b) => (colRank(b) - colRank(a)) || ((u30(b) ?? -1) - (u30(a) ?? -1)) || ((b.bal ?? -1) - (a.bal ?? -1)));   // 24.11 владелец: по цвету ника от важных к мелким, внутри — кто больше тратит (MHB)
   const wb = l.filter(r => r.bal > 0), sum = wb.reduce((s, r) => s + r.bal, 0), hid = l.filter(r => r.hid).length;
-  const leg = '<div style="background:#1b1e28;border-radius:8px;padding:6px 8px;margin-bottom:6px;font-size:13px;color:#ffd76a">' + (PSITE == "sc" || PSITE == "bc" ? `💰 сейчас с токенами: <b>${wb.length}</b> из ${l.length}, всего у них <b>${sum}</b> tk${hid ? ` · баланс скрыт у ${hid}` : ""}` : `👥 с токенами: <b>${l.length}</b>`) + "</div>";
+  const leg = '<div style="background:#1b1e28;border-radius:8px;padding:6px 8px;margin-bottom:6px;font-size:13px;color:#ffd76a">' + (PSITE == "sc" || PSITE == "bc" ? `💰 сейчас с токенами: <b>${wb.length}</b> из ${l.length}, всего у них <b>${sum}</b> tk${hid ? ` · баланс скрыт у ${hid}` : ""}` : `👥 с токенами: <b>${l.length}</b>` + (PSITE == "mv" && MVV.at ? ` · в комнате ${(MVV.guest || 0) + (MVV.member || []).length}, из них гостей без аккаунта ${MVV.guest || 0} (они не платят)` : "")) + "</div>";
   const list = !l.length ? '<div class="chat" style="color:#667">тут сейчас никого с токенами</div>' : '<div style="background:#2b2b2b;border-radius:6px;padding:4px 0;border:1px solid #3a3a3a">' + l.map(r => {
     const col = r.p == "sc" ? scNick(r) : ((DKC[r.p] || {})[r.lvl] || (r.p == "mv" ? "#ff5aa0" : "#cfcfcf"));
     const dot = r.p == "sc" ? `<i style="display:inline-block;width:8px;height:8px;border-radius:50%;background:${NKL[r.lg || "grey"] || "#a0a0a0"};flex:none"></i>` : "";
