@@ -112,7 +112,7 @@
   // + разведка: раз в загрузку шлём, какой контейнер нашли (видно в журнале владельца) — чтобы донастроить по факту.
   // Разметка (22.11, видно зрителем): Bonga — div.js-chat_msg[data-author] (.author_area[data-name] = ник; класс mb_gold/mb_unlimited/… = платящий,
   // msg_model = она); ManyVids — ul[class*=public-chat] > li[class*=received-message] (ник = alt аватарки «ник avatar», класс __creator = она).
-  if ((P === "bc" && /^\/console/.test(location.pathname)) || (P === "mv" && /\/live/i.test(location.pathname))) {
+  if (P === "mv" && /\/live/i.test(location.pathname)) {                 // Bonga — свой блок ниже (24.11)
     const ROW = P === "bc" ? ".js-chat_msg" : "li[class*=received-message]", done = new WeakSet(), t1 = Date.now();
     const parse = n => {
       let who = "", me = false, lvl = 0;
@@ -131,6 +131,38 @@
       }
     }).observe(document.body, { childList: true, subtree: true });
     setTimeout(() => { const n = document.querySelectorAll(ROW).length; send({ type: "probe", p: P, text: "чат: строк " + n + (n ? "" : " — не нашла чат на странице") }); }, 15000);
+  }
+  // 24.11: в консоли Бонги чат не .js-chat_msg (разведка «строк 0», приват Lincoln41 — его сообщений в панели не было).
+  // Опрос раз в 1.5 с: строки чата по нескольким признакам, и в самой странице, и в iframe того же сайта. Первый проход = история, не шлём.
+  // Разведка: что за элементы появляются с текстом «ник: …» — в журнал владельца (до 3 раз), чтобы донастроить по факту.
+  if (P === "bc" && /^\/console/.test(location.pathname)) {
+    const R2 = ".js-chat_msg,.msg_row,[class*=chat_msg],[class*=chat-msg],[class*=chatMessage],[class*=chat-message],[class*=message_item],[class*=messageItem],[data-author]";
+    const seen = new WeakSet(); let first = true, sent = 0, probes = 0;
+    const docs = () => { const out = [document]; for (const f of document.querySelectorAll("iframe")) try { if (f.contentDocument && f.contentDocument.body) out.push(f.contentDocument); } catch (e) {} return out; };
+    const who2 = n => { const a = n.querySelector(".author_area[data-name],[data-name],[class*=author i],[class*=nick i],[class*=name i],[class*=login i]");
+      return ((a && (a.dataset.name || a.innerText)) || n.dataset.author || "").replace(/[:：]\s*$/, "").trim().slice(0, 40); };
+    const diag = why => { if (probes >= 3) return; probes++;
+      const d = docs(), fr = [...document.querySelectorAll("iframe")].map(f => (f.src || "about:blank").split("?")[0].slice(-60)).slice(0, 4);
+      const cls = {}; for (const x of d) for (const e of x.querySelectorAll("[class]")) { const c = typeof e.className === "string" ? e.className : ""; for (const k of c.split(/\s+/)) if (/msg|chat|message/i.test(k) && !/input|send|smile|emoji/i.test(k)) cls[k] = (cls[k] || 0) + 1; }
+      const top = Object.entries(cls).sort((a, b) => b[1] - a[1]).slice(0, 14).map(([k, v]) => k + "×" + v).join(" ");
+      send({ type: "probe", p: P, text: "консоль (" + why + "): строк " + d.reduce((s, x) => s + x.querySelectorAll(R2).length, 0) + " · фреймов " + fr.length + (fr.length ? " [" + fr.join(", ") + "]" : "") + " · классы: " + (top || "нет") }); };
+    setInterval(() => {
+      for (const x of docs()) for (const r of x.querySelectorAll(R2)) {
+        if (seen.has(r)) continue; seen.add(r); if (/input|send|smile|emoji/i.test(r.className || "")) continue;
+        if (r.parentElement && r.parentElement.closest(R2)) continue;               // вложенный кусок той же строки
+        if (first) continue;
+        const raw = (r.innerText || "").replace(/\s+/g, " ").trim(); if (!raw || raw.length > 400) continue;
+        let who = who2(r), text = raw;
+        if (who && text.toLowerCase().startsWith(who.toLowerCase())) text = text.slice(who.length).replace(/^[:：\s]+/, "");
+        else if (!who) { const m = raw.match(/^([\w.\-]{2,30})\s*[:：]\s*(.+)$/); if (m) { who = m[1]; text = m[2]; } }
+        if (!who || !text) continue;
+        const me = /msg_model|mb_model|model/i.test(r.className || ""), lvl = /unlim|ultim|vip|premium/i.test(r.className) ? 3 : /gold/i.test(r.className) ? 2 : 0;
+        send({ type: "chat", p: P, who, text, lvl, me }); sent++;
+      }
+      first = false;
+    }, 1500);
+    setTimeout(() => diag("через 20 с"), 20000);
+    let wasOn = false; setInterval(() => { const on = PRIVON.test((document.body && document.body.innerText || "").slice(0, 200000)); if (on && !wasOn) setTimeout(() => diag("приват, отправлено строк " + sent), 15000); wasOn = on; }, 3000);
   }
   // ── 24.11 владелец: зрители с токенами — прямо из её открытых вкладок (хабу не надо открывать комнату зрителем).
   // Раз в 45 сек: CB/SC — API сайта из её же вкладки эфира (её куки), Bonga — вкладка «Зрители» в консоли. Только кто с токенами.
