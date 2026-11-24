@@ -873,10 +873,12 @@ async function tr(text, to) {                                           // бе�
   try { return JSON.parse(r.text)[0].map(x => x[0]).join("") || text; } catch (e) { return text; }
 }
 function wallAdd(m) {
+  if (/\d\s*[ap]m\s*(Вы|You)\s*:/i.test(String(m.text || ""))) return;   // 24.11: превью лички Чатура («38 pmВы: …» — это её же сообщение ему), не чат эфира
   const x = { id: "w" + (++WID), p: m.p, who: m.who, uid: m.uid || "", lvl: +m.lvl || 0, text: String(m.text).slice(0, 300), ru: "", t: new Date().toTimeString().slice(0, 5), ft: nowT() };
   WALLMSG.push(x); WALLMSG.splice(0, WALLMSG.length - 200);
   if (FT !== "wall") { WALLNEW++; $("#walln").textContent = WALLNEW ? "(" + WALLNEW + ")" : ""; }
-  if (hasRu(x.text)) x.ru = x.text; else tr(x.text, "ru").then(r => { x.ru = r || x.text; wallShow(); });
+  const cyr = (x.text.match(/[а-яё]/gi) || []).length, lat = (x.text.match(/[a-z]/gi) || []).length;   // 24.11: «по-русски» — только если русских букв больше, чем английских
+  if (cyr >= lat) x.ru = x.text; else tr(x.text, "ru").then(r => { x.ru = r || x.text; wallShow(); });
   setTimeout(() => { if (!x.ru) { x.ru = x.text; wallShow(); } }, 8000);   // переводчик не ответил — показываем как есть
   wallShow();
 }
@@ -980,7 +982,7 @@ async function sayQ(p, id, text) { try { await fetch("https://alicia-link.videor
 const PQ = "https://alicia-link.videorils.workers.dev/pq", LVN = ["", "есть токены", "тратит", "много тратит", "VIP"];
 let HUBPPL = [], RSAYDONE = new Set(), PPLHOLD = 0, RCHSEEN = new Set(), RSAID = {};
 // версия панели: хаб пишет в общий чат только через панель, которая это умеет (v ≥ 3); новая версия на сайте → панель обновится сама
-const PANEL_V = 48;
+const PANEL_V = 49;
 setInterval(async () => {
   try { const t = await (await fetch(location.pathname + "?vchk=" + Date.now(), { cache: "no-store" })).text(), v = +((t.match(/const PANEL_V = (\d+)/) || [])[1] || 0);
     const busy = Object.values(PRIVLIVE).some(Boolean) || TYPES.length || PAIDQ.length || [...document.querySelectorAll("input,textarea")].some(i => i.value && i.type !== "file") || Object.keys(CUP).length;
