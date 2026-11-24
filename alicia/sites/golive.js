@@ -195,7 +195,8 @@
     if (P === "bc" && /^\/console/.test(location.pathname)) {
       const v = [...document.querySelectorAll(".user_item.member[username]")];
       if (!v.length) return null;                                       // вкладка «Зрители» не открыта — молчим, не путаем «никого нет»
-      return v.filter(e => !/member_free/.test(e.className)).map(e => ({ who: e.getAttribute("username"), lvl: /platin|diamond|vip|unlim|ultim/.test(e.className) ? 3 : 2 }));
+      return v.filter(e => !/member_free/.test(e.className)).map(e => { const b = ((e.innerText || "").match(/(\d[\d\s]{0,7})\s*(Tkn|Ток|tk)/i) || [])[1];   // 24.11: в списке «Люди» консоли виден баланс «796 Tkn»
+        return { who: e.getAttribute("username"), lvl: /platin|diamond|vip|unlim|ultim/.test(e.className) ? 3 : 2, ...(b ? { bal: +b.replace(/\s/g, "") } : {}) }; });
     }
     return null;
   };

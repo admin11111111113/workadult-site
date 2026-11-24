@@ -933,7 +933,7 @@ async function sayQ(p, id, text) { try { await fetch("https://alicia-link.videor
 const PQ = "https://alicia-link.videorils.workers.dev/pq", LVN = ["", "есть токены", "тратит", "много тратит", "VIP"];
 let HUBPPL = [], RSAYDONE = new Set(), PPLHOLD = 0, RCHSEEN = new Set(), RSAID = {};
 // версия панели: хаб пишет в общий чат только через панель, которая это умеет (v ≥ 3); новая версия на сайте → панель обновится сама
-const PANEL_V = 27;
+const PANEL_V = 28;
 setInterval(async () => {
   try { const t = await (await fetch(location.pathname + "?vchk=" + Date.now(), { cache: "no-store" })).text(), v = +((t.match(/const PANEL_V = (\d+)/) || [])[1] || 0);
     const busy = Object.values(PRIVLIVE).some(Boolean) || TYPES.length || PAIDQ.length || [...document.querySelectorAll("input,textarea")].some(i => i.value && i.type !== "file") || Object.keys(CUP).length;
@@ -949,6 +949,8 @@ function pplSum(l){const u={};l.forEach(r=>{const k=r.p+'|'+r.who.toLowerCase();
 function pplShow() {
   if (Date.now() - PPLHOLD < 20000) return;                          // она печатает — не перерисовываем
   const m = {}; for (const r of Object.values(ROOM)) if (Date.now() - r.t < 3600000) m[r.p + "|" + r.who.toLowerCase()] = { ...r };
+  for (const [p, u] of Object.entries(ROOMU2)) if (Date.now() - u.t < 180000) for (const x of u.list) { const k = p + "|" + x.who.toLowerCase();   // 24.11: из её вкладок + баланс (Бонга даёт «796 Tkn»)
+    m[k] = { ...(m[k] || { p, who: x.who, t: 0, text: "" }), lvl: Math.max(+x.lvl || 0, (m[k] || {}).lvl || 0), ...(x.bal != null ? { bal: +x.bal } : {}), ...(x.lg ? { lg: x.lg } : {}) }; }
   for (const h of HUBPPL) { const k = h.p + "|" + h.who.toLowerCase(); m[k] = { ...(m[k] || { p: h.p, who: h.who, t: 0, text: "" }), ...h, lvl: Math.max(h.lvl || 0, (m[k] || {}).lvl || 0), text: (m[k] || {}).text || h.said || "" }; }
   // сверху самые ценные: $ = (сколько дал + уровень токенов) × цена токена площадки — Stripchat/Chaturbate дороже Бонги
   const TV = { cb: .05, sc: .05, bc: .025, mv: .08 }, sc = r => ((r.spent || 0) + (r.lvl || 0) * 100) * (TV[r.p] || .05);
@@ -956,7 +958,7 @@ function pplShow() {
   PPL = l; $("#ppln").textContent = l.length ? "(" + l.length + ")" : ""; $("#pssum").innerHTML = l.length ? pplSum(l) : "";
   // 24.11 владелец: в строке только площадка, цветной ник и сколько tk — больше ничего (нажать на ник — переписка)
   $("#ppl").innerHTML = $("#ppl2").innerHTML = l.map((r, i) => `<div class="pp"><span class="pf pf-${esc(r.p)}" style="border-radius:6px;padding:1px 6px;font-size:11px;font-weight:700">${esc(PN4[r.p] || r.p)}</span>` +
-    `<span class="nm" data-p="${esc(r.p)}" data-who="${esc(r.who)}" data-uid="${esc(r.uid || "")}" style="flex:1;font-size:17px;${lvO(r.p, r.lvl, r)}">${esc(r.who)}</span></div>`   /* 24.11 владелец: подписи «лига/1000+ за 2 нед/дал ей» убраны — по цвету ника и так видно; точный баланс сайты не отдают */).join("")
+    `<span class="nm" data-p="${esc(r.p)}" data-who="${esc(r.who)}" data-uid="${esc(r.uid || "")}" style="flex:1;font-size:17px;${lvO(r.p, r.lvl, r)};background:transparent">${esc(r.who)}</span><span style="margin-left:8px;font-weight:700;color:#ffd76a;white-space:nowrap">${r.bal != null ? esc(r.bal) + " tk" : esc(nowTk(r))}</span></div>`   /* 24.11 владелец: подписи «лига/1000+ за 2 нед/дал ей» убраны — по цвету ника и так видно; точный баланс сайты не отдают */).join("")
     || '<div class="chat" style="color:#667">пока никого с токенами — появятся, когда напишут в чате эфира</div>';
 }
 let PPL = [];
