@@ -161,6 +161,19 @@
       }
       first = false;
     }, 1500);
+    // личка в консоли (окошко с ником, .bm_im_float_dialog → .bm_im_history_item, своё = __own, текст .imhi_text) → панель как "pm"
+    const pmSeen = new Set(); let pmFirst = true;
+    setInterval(() => {
+      for (const it of document.querySelectorAll(".bm_im_history_item")) {
+        const id = it.dataset.id || ""; if (!id || pmSeen.has(id)) continue; pmSeen.add(id);
+        if (pmFirst) continue;
+        const box = it.closest(".bm_im_float_dialog,[class*=im_dialog],[class*=float_window]") || document;
+        const who = ((box.querySelector(".imfd_title,[class*=title]") || {}).innerText || "").trim().slice(0, 40);
+        const text = ((it.querySelector(".imhi_text") || it).innerText || "").replace(/\s+/g, " ").trim().slice(0, 400);
+        if (text) send({ type: "pm", p: P, who, text, me: /__own/.test(it.className) });
+      }
+      pmFirst = false;
+    }, 1500);
     setTimeout(() => diag("через 20 с"), 20000);
     let wasOn = false; setInterval(() => { const on = PRIVON.test((document.body && document.body.innerText || "").slice(0, 200000)); if (on && !wasOn) setTimeout(() => diag("приват, отправлено строк " + sent), 15000); wasOn = on; }, 3000);
   }

@@ -494,6 +494,10 @@ function onExt(m) {
     const ks = Object.keys(ROOM); if (ks.length > 120) ks.sort((x, y) => ROOM[x].t - ROOM[y].t).slice(0, ks.length - 120).forEach(x => delete ROOM[x]);
   }
   if (m.type === "chat" && m.text && PRIVLIVE[m.p] && m.p !== PSEL) { PUNREAD[m.p] = (PUNREAD[m.p] || 0) + 1; ding(); }
+  // 24.11: Бонга — в привате он пишет в ЛИЧКУ (окошко в консоли), не в общий чат → golive шлёт type "pm"; в общий чат/бота НЕ идёт
+  if (m.type === "pm" && m.text) { PRIVMSG.push({ p: m.p, who: m.who || "", me: !!m.me, text: "✉ " + String(m.text).slice(0, 400), t: new Date().toTimeString().slice(0, 5) }); PRIVMSG.splice(0, PRIVMSG.length - 150);
+    if (!m.me) { if (m.p !== PSEL || FT !== "priv") PUNREAD[m.p] = (PUNREAD[m.p] || 0) + 1; ding(); if (!PRIVLIVE[m.p]) admEv("✉ " + (NAME[m.p] || m.p) + " личка " + (m.who || "") + ": " + String(m.text).slice(0, 120)); }
+    if (FT === "priv") privShowChat(); }
   if (m.type === "chat" && m.text && PRIVLIVE[m.p]) { PRIVMSG.push({ p: m.p, who: m.who || "", text: String(m.text).slice(0, 400), t: new Date().toTimeString().slice(0, 5) }); PRIVMSG.splice(0, PRIVMSG.length - 150); if (FT === "priv") privShowChat(); }
   if (m.type === "chat" && m.text) {
     const box = $("#chat-" + m.p) || $("#chat-cb"); box.insertAdjacentHTML("afterbegin", `<div class="chat"><b>${esc(m.who)}</b>: ${esc(m.text)}</div>`);
@@ -929,7 +933,7 @@ async function sayQ(p, id, text) { try { await fetch("https://alicia-link.videor
 const PQ = "https://alicia-link.videorils.workers.dev/pq", LVN = ["", "есть токены", "тратит", "много тратит", "VIP"];
 let HUBPPL = [], RSAYDONE = new Set(), PPLHOLD = 0, RCHSEEN = new Set(), RSAID = {};
 // версия панели: хаб пишет в общий чат только через панель, которая это умеет (v ≥ 3); новая версия на сайте → панель обновится сама
-const PANEL_V = 26;
+const PANEL_V = 27;
 setInterval(async () => {
   try { const t = await (await fetch(location.pathname + "?vchk=" + Date.now(), { cache: "no-store" })).text(), v = +((t.match(/const PANEL_V = (\d+)/) || [])[1] || 0);
     const busy = Object.values(PRIVLIVE).some(Boolean) || TYPES.length || PAIDQ.length || [...document.querySelectorAll("input,textarea")].some(i => i.value && i.type !== "file") || Object.keys(CUP).length;
