@@ -62,11 +62,11 @@
       if (found) break;
     }
     if (found) {
-      const t = (found.box.innerText || "").replace(/\s+/g, " ").trim().slice(0, 220);
+      const t = (found.box.innerText || "").replace(/\s+/g, " ").trim().slice(0, 220), tk = t.replace(/\d+/g, "#");   // 24.11: таймер в окне не = новый запрос
       found.dec = [...found.box.querySelectorAll("button,a,[role=button],[class*=btn i],[class*=button i]")].find(x => vis(x) && DEC.test(txt(x)));
-      if (!REQ || REQ.key !== t) send({ type: "privreq", p: P, text: t });
-      REQ = { ...found, key: t };
-      try { const c = await (await fetch(PCMD, { cache: "no-store" })).json();   // её ответ из панели
+      if (!REQ || REQ.key !== tk) send({ type: "privreq", p: P, text: t });
+      REQ = { ...found, key: tk };
+      try { const c = await (await fetch(PCMD + "&a=accept,decline", { cache: "no-store" })).json();   // её ответ из панели
         if (c && (c.act === "accept" || c.act === "decline")) { /* 24.11: c2c/lovstop не = «отклонить» */ const b = c.act === "accept" ? REQ.acc : REQ.dec; if (b) { b.click(); log((c.act === "accept" ? "приняла" : "отклонила") + " приват"); } else log("кнопки «Отклонить» нет — откажи на сайте"); } } catch (e) {}
     } else if (REQ) { REQ = null; send({ type: "privgone", p: P }); }
   }, 2000);
@@ -98,7 +98,7 @@
         toys: lines.filter(l => /lush|nora|max|domi|hush|edge|osci|ferri|dolce|gush|ambi|diamo|calor|machine|машин|gravity|solace|tenera|flexer|vulse|mission/i.test(l)).slice(0, 4) };
       const k = JSON.stringify(info); LC = box;
       if (k !== lcLast) { lcLast = k; send({ type: "lovctl", p: P, ...info }); }
-      if (!REQ) try { const c = await (await fetch(PCMD, { cache: "no-store" })).json();   // 24.11: пока висит запрос привата — команды забирает только он
+      if (!REQ) try { const c = await (await fetch(PCMD + "&a=lovstop", { cache: "no-store" })).json();   // 24.11: пока висит запрос привата — команды забирает только он
         if (c && c.act === "lovstop") { const b = deep(box, []).find(x => /закончить управление|end control|stop control/i.test(x.innerText || "") && x.children.length <= 2);
           if (b) { b.click(); log("закончила управление Lovense"); } } } catch (e) {}
     } else if (LC) { LC = null; lcLast = ""; send({ type: "lovctl", p: P, on: false, gone: true }); }
@@ -284,7 +284,7 @@
         return;
       }
       if (REQ || LC) return;                                             // команды привата/Lovense забирают свои циклы
-      try { const c = await (await fetch(PCMD, { cache: "no-store" })).json();
+      try { const c = await (await fetch(PCMD + "&a=c2c", { cache: "no-store" })).json();
         if (c && c.act === "c2c" && c.who) {
           C2C = { who: c.who, at: Date.now(), menu: 0, old: new Set(document.querySelectorAll("video")) };
           const n = findNick(c.who);
