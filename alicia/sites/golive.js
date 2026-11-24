@@ -132,6 +132,29 @@
     }).observe(document.body, { childList: true, subtree: true });
     setTimeout(() => { const n = document.querySelectorAll(ROW).length; send({ type: "probe", p: P, text: "чат: строк " + n + (n ? "" : " — не нашла чат на странице") }); }, 15000);
   }
+  // ── 24.11 владелец: зрители с токенами — прямо из её открытых вкладок (хабу не надо открывать комнату зрителем).
+  // Раз в 45 сек: CB/SC — API сайта из её же вкладки эфира (её куки), Bonga — вкладка «Зрители» в консоли. Только кто с токенами.
+  const usersOnce = async () => {
+    const ab = () => { const c = new AbortController(); setTimeout(() => c.abort(), 15000); return c.signal; };
+    if (P === "cb" && /^\/b\//.test(location.pathname)) {
+      const room = location.pathname.split("/")[2] || "_skitlstrynka_", LV = { l: 1, b: 2, p: 3, f: 3, t: 4 };
+      const t = await (await fetch("/api/getchatuserlist/?roomname=" + room + "&private=false&sort_by=a&exclude_staff=false", { signal: ab(), credentials: "include" })).text();
+      return t.split(",").slice(2).map(x => x.split("|")).filter(a => a.length >= 2 && LV[a[1]]).map(a => ({ who: a[0], lvl: LV[a[1]] }));
+    }
+    if (P === "sc" && /broadcast|skitlstrynka/i.test(location.pathname)) {
+      const d = await (await fetch("/api/front/v2/models/193919081/members", { signal: ab(), credentials: "include" })).json();
+      const lg = u => ((u.userRanking || {}).league || "grey").toLowerCase();
+      return (d.members || []).map(m => m.user).filter(u => u && !u.isModel).map(u => ({ who: u.username, uid: String(u.id), lg: lg(u),
+        lvl: Math.max(u.isUltimate ? 3 : 0, /royal|legend/.test(lg(u)) ? 4 : /diamond/.test(lg(u)) ? 3 : /gold/.test(lg(u)) ? 2 : /bronze|silver/.test(lg(u)) ? 1 : 0, u.isGreen ? 1 : 0) })).filter(u => u.lvl >= 1);
+    }
+    if (P === "bc" && /^\/console/.test(location.pathname)) {
+      const v = [...document.querySelectorAll(".user_item.member[username]")];
+      if (!v.length) return null;                                       // вкладка «Зрители» не открыта — молчим, не путаем «никого нет»
+      return v.filter(e => !/member_free/.test(e.className)).map(e => ({ who: e.getAttribute("username"), lvl: /platin|diamond|vip|unlim|ultim/.test(e.className) ? 3 : 2 }));
+    }
+    return null;
+  };
+  if (P !== "mv") setInterval(async () => { try { const l = await usersOnce(); if (l) send({ type: "users", p: P, list: l.slice(0, 300) }); } catch (e) {} }, 45000);
   // ManyVids: не вошла в аккаунт (страница входа / поле пароля / кнопка «Log in» в шапке) — говорим панели
   if (P === "mv") setTimeout(() => {
     const out = /login|signin|sign-in/i.test(location.pathname) || [...document.querySelectorAll("input[type=password]")].some(vis)

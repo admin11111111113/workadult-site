@@ -128,7 +128,8 @@ const day = new Date().toLocaleDateString("sv"), TOT = JSON.parse(localStorage["
 const LIVE = {};                                                    // p → {on, st} — видит ли сайт эфир (из sc.js / cb.js)
 // Bonga — токены за сегодня от хаба (он читает отчёт Бонги), ManyVids — «LIVE EARNINGS» с её страницы эфира
 const ETK = { bc: 0, mv: 0 };
-const ROOM = {};                                                   // "p|ник" → кто писал в чате комнаты за последний час
+const ROOMU2 = {};                                                  // 24.11: p → {t, list:[{who,lvl,uid,lg}]} — все зрители с токенами из её вкладок
+const ROOM = {};                                                 // "p|ник" → кто писал в чате комнаты за последний час
 function showTot() { const L = p => !LIVE[p] ? "" : LIVE[p].on ? "🟢 в эфире · " : "🔴 не в эфире · ";
   $("#t-cb").textContent = L("cb") + TOT.cb + " tk"; $("#t-sc").textContent = L("sc") + TOT.sc + " tk";
   $("#t-bc").textContent = "💰 " + (LIVE.bc && LIVE.bc.on && ETK.bcl != null ? ETK.bcl + " tk за эфир · " : "") + ETK.bc + " tk сегодня"; $("#t-mv").textContent = "💰 " + ETK.mv + " tk за эфир";
@@ -477,6 +478,7 @@ function onExt(m) {
   if (m.type === "saidres" && RSAYDONE.has(m.id)) { RSAID[m.id] = m.ok ? "ok" : (m.err || "не ушло"); }
   if (m.type === "saidres" && WSAY[m.id]) { WSAY[m.id].st = m.ok ? "✓ ушло" : "⚠ " + (m.err || "не ушло"); wallShow(true); }
   if (m.type === "chat" && m.text && m.who && !m.me && !/^notice$/i.test(m.who)) wallAdd(m);
+  if (m.type === "users" && Array.isArray(m.list)) { ROOMU2[m.p] = { t: Date.now(), list: m.list.filter(x => x && x.who).slice(0, 300) }; pplShow(); }   // 24.11: зрители с токенами из её вкладок → хабу
   if (m.type === "saidres" && RSAYDONE.has(m.id) && !WSAY[m.id]) admEv((m.ok ? "📣 бот написал в общий чат " : "⚠ не ушло в общий чат ") + (PN4[m.p] || m.p) + (m.err ? ": " + m.err : ""));
   if (m.type === "chat" && m.text && m.who && !m.me && !/^notice$/i.test(m.who)) {   // кто пишет в чате комнаты — хабу (бот знакомится с ними в личке)
     const k = m.p + "|" + m.who, o = ROOM[k] || {};
@@ -503,7 +505,7 @@ async function admSend() {
   const card = k => ({ on: ($("#d-" + k) || {}).className || "", t: (($("#t-" + k) || $("#s-" + k)) || {}).textContent || "" });
   const ev = ADM_EV.splice(0);
   const st = { w: "alicia-panel", obs: ok, obsTxt: $("#s-obs").textContent, stream: $("#st").textContent, ext: $("#s-ext").textContent, lov: $("#s-lov").textContent,
-    sites: { cb: card("cb"), sc: card("sc"), bc: card("bc"), mv: card("mv") }, room: Object.values(ROOM).filter(x => Date.now() - x.t < 3600000), tot: { ...TOT, ...ETK }, live: LIVE, priv: PRIVLIVE, privmsg: PRIVMSG.slice(-60).map(m => ({ me: !!m.me, by: m.by || "", p: m.p, who: m.who || "", text: m.text, out: m.out || "", t: m.t, st: m.st || "" })), hint: $("#hint").innerText, golog: GOLOG.slice(),
+    sites: { cb: card("cb"), sc: card("sc"), bc: card("bc"), mv: card("mv") }, room: Object.values(ROOM).filter(x => Date.now() - x.t < 3600000), roomu: Object.fromEntries(Object.entries(ROOMU2).filter(([k, v]) => Date.now() - v.t < 180000)), tot: { ...TOT, ...ETK }, live: LIVE, priv: PRIVLIVE, privmsg: PRIVMSG.slice(-60).map(m => ({ me: !!m.me, by: m.by || "", p: m.p, who: m.who || "", text: m.text, out: m.out || "", t: m.t, st: m.st || "" })), hint: $("#hint").innerText, golog: GOLOG.slice(),
     wall: [...document.querySelectorAll("#wall .tip")].slice(0, 15).map(e => e.innerText), chat: [...document.querySelectorAll("#rooms .chat")].slice(0, 25).map(e => e.innerText),
     shot: admShot(), events: ev, pv: PANEL_V, rsaid: RSAID, lovctl: LOVCTL, ua: navigator.userAgent.slice(0, 80) };
   try { const r = await fetch(ADM_URL, { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify(st) }); if (!r.ok) throw 0; }
