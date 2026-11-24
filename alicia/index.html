@@ -895,9 +895,9 @@ function pplShow() {
   const TV = { cb: .05, sc: .05, bc: .025, mv: .08 }, sc = r => ((r.spent || 0) + (r.lvl || 0) * 100) * (TV[r.p] || .05);
   const l = Object.values(m).filter(r => (r.lvl || 0) >= 1 || r.spent).sort((a, b) => sc(b) - sc(a) || b.t - a.t).slice(0, 120);
   PPL = l; $("#ppln").textContent = l.length ? "(" + l.length + ")" : ""; $("#pssum").innerHTML = l.length ? pplSum(l) : "";
-  $("#ppl").innerHTML = $("#ppl2").innerHTML = l.map((r, i) => `<div class="pp ${r.wrote ? "done" : ""}"><span class="pf" style="background:#000a;border-radius:6px;padding:1px 6px;font-size:11px">${esc(PN4[r.p] || r.p)}</span>` +
-    `<span class="nm" data-p="${esc(r.p)}" data-who="${esc(r.who)}" data-uid="${esc(r.uid || "")}" style="${lvO(r.p, r.lvl, r)}">${esc(r.who)}</span><span class="lv" style="${lvB(r.p, r.lvl)}">${r.spent ? "дал " + r.spent + " tk" : lvN(r.p, r.lvl) || LVN[r.lvl] || "токены"}</span>` +
-    `<span class="sd" title="${esc(r.text)}">${r.wrote ? "✉️ бот написал · " : ""}${esc(r.text || "")}</span><button onclick="dlgOpen(PPL[${i}].p,PPL[${i}].who,PPL[${i}].uid)">✍️ написать</button></div>`).join("")
+  // 24.11 владелец: в строке только площадка, цветной ник и сколько tk — больше ничего (нажать на ник — переписка)
+  $("#ppl").innerHTML = $("#ppl2").innerHTML = l.map((r, i) => `<div class="pp"><span class="pf" style="background:#000a;border-radius:6px;padding:1px 6px;font-size:11px">${esc(PN4[r.p] || r.p)}</span>` +
+    `<span class="nm" data-p="${esc(r.p)}" data-who="${esc(r.who)}" data-uid="${esc(r.uid || "")}" style="flex:1;font-size:17px;${lvO(r.p, r.lvl, r)}">${esc(r.who)}</span><span style="font-weight:800;color:#ffd76a;white-space:nowrap">${+r.spent || 0} tk</span></div>`).join("")
     || '<div class="chat" style="color:#667">пока никого с токенами — появятся, когда напишут в чате эфира</div>';
 }
 let PPL = [];
