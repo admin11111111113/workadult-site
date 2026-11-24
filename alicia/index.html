@@ -338,8 +338,8 @@ const SITES = [
   // значок 💋 на сайтах убран (21.11): всё управление Lovense — тут, в панели
 ];
 const LOV_PAGE = "https://rugextension.lovense.com/cam-model/pages/settings/";   // cam_model (с _) = 404
-function call(op, data = {}) { return new Promise(r => { if (!port) return r({ error: "нет связи" }); const rid = ++RID; WAIT[rid] = r;
-  port.postMessage({ op, rid, ...data }); setTimeout(() => { if (WAIT[rid]) { delete WAIT[rid]; r({ error: "timeout" }); } }, 15000); }); }
+function call(op, data = {}, tmo = 15000) { return new Promise(r => { if (!port) return r({ error: "нет связи" }); const rid = ++RID; WAIT[rid] = r;
+  port.postMessage({ op, rid, ...data }); setTimeout(() => { if (WAIT[rid]) { delete WAIT[rid]; r({ error: "timeout" }); } }, tmo); }); }
 async function hash(s) { return [...new Uint8Array(await crypto.subtle.digest("SHA-256", new TextEncoder().encode(s)))].slice(0, 8).map(b => b.toString(16).padStart(2, "0")).join(""); }
 const CODE = {};
 async function pushScripts(o = {}) {
@@ -502,6 +502,35 @@ function onExt(m) {
   }
 }
 if (window.chrome && chrome.runtime && chrome.runtime.connect) ext(); else dot("ext", false, "нужен Chrome с помощником");
+// 24.11: личка через её браузер (помощник 2.0). Хаб даёт задание «сходи в API сайта» → выполняем в её уже открытой вкладке
+// (Стрип/MV/Fansly/My.Club) тихо, без новых вкладок и кликов → итог обратно хабу. Нет 2.0 / нет вкладки — хаб всё делает по-старому.
+let RQ_H = null;
+const RQ_RE = [["sc", /^https:\/\/([^/]*\.)?(stripchat\.com|mywebcamroom\.com)\//], ["mv", /^https:\/\/www\.manyvids\.com\//], ["fs", /^https:\/\/fansly\.com\//], ["mc", /^https:\/\/my\.club\//], ["cb", /^https:\/\/chaturbate\.com\//], ["bc", /^https:\/\/([^/]*\.)?bongamodels\.com\//]];   // cb/bc — только оплаты (отчёты API)
+const rqSleep = ms => new Promise(r => setTimeout(r, ms));
+function rqPost(rq, d) { return fetch(rq.url + "/rq/res?k=" + rq.k, { method: "POST", body: JSON.stringify(d) }).catch(() => {}); }
+async function rqRun(job, have, rq) {
+  const tab = have[job.p];
+  if (!tab) return rqPost(rq, { id: job.id, ok: 0, err: "нет открытой вкладки " + job.p });
+  const code = "(async()=>{try{const __f=(" + job.code + ");const __r=typeof __f==='function'?await __f(" + JSON.stringify(job.arg ?? null) + "):await __f;return {ok:1,r:__r}}catch(e){return {ok:0,e:String(e&&e.message||e)}}})()";
+  const r = await call("exec", { tab, world: job.world === "USER_SCRIPT" ? "USER_SCRIPT" : "MAIN", code }, 35000);
+  const x = Array.isArray(r) ? r[0] : null, v = x && x.res ? x.res[0] : null;
+  if (!x || r.error || x.err || !v) return rqPost(rq, { id: job.id, ok: 0, err: (r && r.error) || (x && x.err) || "пустой ответ" });
+  return rqPost(rq, v.ok ? { id: job.id, ok: 1, res: v.r } : { id: job.id, ok: 0, err: v.e });
+}
+async function rqLoop() {
+  for (;;) {
+    const rq = RQ_H;
+    if (HV < 2 || !port || !rq) { await rqSleep(3000); continue; }
+    const tabs = await call("api", { fn: "tabs.query", args: [{}] }), have = {};
+    if (!Array.isArray(tabs)) { await rqSleep(5000); continue; }
+    for (const t of tabs) if (!t.discarded) for (const [p, re] of RQ_RE) if (!have[p] && re.test(t.url || "")) have[p] = t.id;
+    let j; try { j = await (await fetch(rq.url + "/rq/take?k=" + rq.k + "&hv=" + HV + "&tabs=" + Object.keys(have).join(","), { cache: "no-store" })).json(); }
+    catch (e) { await rqSleep(5000); continue; }
+    if (j.err) { await rqSleep(5000); continue; }
+    for (const job of j.jobs || []) rqRun(job, have, rq);                // параллельно, не ждём
+  }
+}
+rqLoop();
 
 // ── сводка для админки владельца: раз в 15 сек что видно на панели (статусы, подсказки, донаты, чат, маленький кадр)
 document.addEventListener("click", e => { const b = e.target.closest("button"); if (b) admEv("👆 нажала «" + b.textContent.trim() + "»"); }, true);
@@ -629,6 +658,7 @@ async function dmSend(i) {
 async function hubSync() {
   let j; try { j = await (await fetch(HUB_URL, { cache: "no-store" })).json(); } catch (e) { return; }
   const h = j.hub, alive = h && j.now - h.at < 60000;
+  RQ_H = alive && h.rq && h.rq.url ? h.rq : null;
   feedShow(alive ? h.feed || [] : null);
   if (alive) { if (h.tipmenu) { TIPMENU = h.tipmenu; try { localStorage.tipmenu = JSON.stringify(TIPMENU); } catch (e) {} } CUSTS = h.customs || []; custRender(); typeShow((h.typing || []).filter(t => !TYPEDONE.has(t.id))); hmShow(h.msgs || []); for (const x of h.psay || []) if (!PSAYDONE.has(x.id)) { PSAYDONE.add(x.id); privSay(x.text, x.p); } } else typeShow([]);
   if (alive && h.today) { ETK.bc = h.today.bc || 0; ETK.bcl = h.ltk ? h.ltk.bc || 0 : null; showTot(); }
@@ -814,7 +844,8 @@ function wallOne(x) {
 async function roomSay(p, who, ru, his, bot, out0) {
   const x = { id: "w" + (++WID), me: true, bot, p, to: who, ru, out: "", st: "⏳", t: new Date().toTimeString().slice(0, 5), ft: nowT() };
   WALLMSG.push(x); wallShow(true);
-    const body = out0 || (hasRu(his) || !hasRu(ru) ? ru : await tr(ru, "en"));
+    // 24.11 владелец: общий чат Стрипа/Чатура/MV — всегда по-английски; Бонга — по-русски
+    const body = out0 || (p === "bc" || !hasRu(ru) ? ru : await tr(ru, "en"));
   x.out = "@" + who + " " + body; RSAYDONE.add(x.id);
   await sayQ(p, x.id, x.out); WSAY[x.id] = x; wallShow(true);
   admEv((bot ? "🤖 бот ответил в чат " : "🧱 ответила в чат ") + who + ": " + ru);
@@ -887,7 +918,7 @@ async function sayQ(p, id, text) { try { await fetch("https://alicia-link.videor
 const PQ = "https://alicia-link.videorils.workers.dev/pq", LVN = ["", "есть токены", "тратит", "много тратит", "VIP"];
 let HUBPPL = [], RSAYDONE = new Set(), PPLHOLD = 0, RCHSEEN = new Set(), RSAID = {};
 // версия панели: хаб пишет в общий чат только через панель, которая это умеет (v ≥ 3); новая версия на сайте → панель обновится сама
-const PANEL_V = 20;
+const PANEL_V = 22;
 setInterval(async () => {
   try { const t = await (await fetch(location.pathname + "?vchk=" + Date.now(), { cache: "no-store" })).text(), v = +((t.match(/const PANEL_V = (\d+)/) || [])[1] || 0);
     const busy = Object.values(PRIVLIVE).some(Boolean) || TYPES.length || PAIDQ.length || [...document.querySelectorAll("input,textarea")].some(i => i.value && i.type !== "file") || Object.keys(CUP).length;
