@@ -933,7 +933,7 @@ async function sayQ(p, id, text) { try { await fetch("https://alicia-link.videor
 const PQ = "https://alicia-link.videorils.workers.dev/pq", LVN = ["", "есть токены", "тратит", "много тратит", "VIP"];
 let HUBPPL = [], RSAYDONE = new Set(), PPLHOLD = 0, RCHSEEN = new Set(), RSAID = {};
 // версия панели: хаб пишет в общий чат только через панель, которая это умеет (v ≥ 3); новая версия на сайте → панель обновится сама
-const PANEL_V = 28;
+const PANEL_V = 29;
 setInterval(async () => {
   try { const t = await (await fetch(location.pathname + "?vchk=" + Date.now(), { cache: "no-store" })).text(), v = +((t.match(/const PANEL_V = (\d+)/) || [])[1] || 0);
     const busy = Object.values(PRIVLIVE).some(Boolean) || TYPES.length || PAIDQ.length || [...document.querySelectorAll("input,textarea")].some(i => i.value && i.type !== "file") || Object.keys(CUP).length;
@@ -964,14 +964,11 @@ function pplShow() {
 let PPL = [];
 // 24.11 владелец: сколько у него токенов СЕЙЧАС. Точный баланс зрителя сайты не показывают никому — показываем то, что сайт даёт:
 // Чатур — цвет ника (сколько тратит за 2 недели), Стрип — лига/Ultimate/зелёный, Бонга — статус.
-function nowTk(r) {
-  const l = +r.lvl || 0;
-  if (r.p === "cb") return ["", "есть токены", "50+ tk за 2 нед", "250+ tk за 2 нед", "1000+ tk за 2 нед"][l] || "";
-  if (r.p === "sc") { const g = (r.lg || "").toLowerCase(), L = { bronze: "бронза", silver: "серебро", gold: "золото", diamond: "бриллиант", royal: "royal", legend: "legend" }[g];
-    return [l >= 3 && !L ? "Ultimate" : "", L ? "лига " + L : "", l === 2 && !L ? "есть токены" : ""].filter(Boolean).join(" · ") || (l ? "есть токены" : ""); }
-  if (r.p === "bc") return ["", "есть токены", "Gold", "Platinum+"][l] || "";
-  return l ? "есть токены" : "";
+function nowTk(r) {   // 24.11 владелец: «пиши сколько у него СЕЙЧАС токенов» — без лиг и «потратил». Число даёт только Бонга (r.bal); Стрип/Чатур баланс зрителя не отдают
+  if (r.bal != null) return r.bal + " tk";
+  return (+r.lvl || 0) >= 1 ? "есть tk" : "";
 }
+
 // ── переписка с человеком: нажала на ник (в ленте, донатах или списке) → весь диалог, «← Назад», можно написать самой
 let DLG = null;
 document.addEventListener("click", e => { const n = e.target.closest(".wh[data-p],.nm[data-p]"); if (n) dlgOpen(n.dataset.p, n.dataset.who, n.dataset.uid || ""); });
