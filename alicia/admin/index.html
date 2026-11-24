@@ -95,7 +95,7 @@ async function hubOpen() {
   $("#hubmsg").innerHTML = "";
 }
 // 24.11: хаб перезапустился → адрес туннеля новый, старое окно консоли мёртвое. Раз в 20 с сверяем адрес и сами переподключаемся.
-setInterval(async () => { if (!HUBURL || !localStorage.admk) return; let j = {};
+setInterval(async () => { if (!window.HUBURL || !localStorage.admk) return; let j = {};
   try { j = await (await fetch("https://alicia-link.videorils.workers.dev/url", { headers: { "x-k": localStorage.admk }, cache: "no-store" })).json(); } catch (e) { return; }
   if (j.url && j.url !== HUBURL) { $("#ctf").removeAttribute("src"); hubOpen(); } }, 20000);
 tab("hub"); hubOpen();   // вкладку «её панель» владелец попросил убрать (21.11) — только консоль
