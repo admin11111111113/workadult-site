@@ -43,7 +43,6 @@ input{font:inherit;padding:8px;border-radius:8px;border:1px solid #444;backgroun
  <div class="pl site"><span class="dot" id="d-sc"></span>Stripchat<small id="t-sc">0 tk</small><label class="au"><input type="checkbox" id="a-sc" onchange="autoSet('sc',this.checked)"> авто</label></div>
  <div class="pl site"><span class="dot" id="d-bc"></span>Bongacams<small id="s-bc">через OBS</small><small id="t-bc"></small><label class="au"><input type="checkbox" id="a-bc" onchange="autoSet('bc',this.checked)"> авто</label></div>
  <div class="pl site"><span class="dot" id="d-mv"></span>ManyVids<small id="s-mv">эфир с сайта</small><small id="t-mv"></small><label class="au"><input type="checkbox" id="a-mv" onchange="autoSet('mv',this.checked)"> авто</label></div>
- <div class="pl" style="cursor:pointer" onclick="lovOpen()" title="Открыть панель Lovense"><span class="dot" id="d-lov"></span>🎀 Lovense<small id="s-lov">…</small></div>
  <span style="margin-left:auto"></span>
  <div id="topr"> <div class="pl mini"><span class="dot" id="d-obs"></span>OBS<small id="s-obs">…</small></div> <div class="pl mini"><span class="dot" id="d-ext"></span>Помощник<small id="s-ext">…</small></div> <div class="pl mini" style="cursor:pointer" onclick="updOpen()" title="Скачать обновления">⬇️ Обновления<small id="s-upd">скачать</small></div> <div class="pl mini" id="custpl" style="cursor:pointer" onclick="custOpen()" title="Видео на заказ">🎬 Кастом <span id="custn"></span><small id="custs">нет заказов</small></div></div> <button id="thb" onclick="thSet(localStorage.theme==='dark')"></button>
 </div>
@@ -80,7 +79,7 @@ input{font:inherit;padding:8px;border-radius:8px;border:1px solid #444;backgroun
   <video id="camv" muted playsinline style="display:none;background:#000;border-radius:12px;width:100%;aspect-ratio:16/9;object-fit:contain"></video><img id="cam" alt="">
   <div class="btns"><button class="go" id="b-go" onclick="goLive()">▶ Начать эфир</button><button class="y" id="b-pause" onclick="pause()">⏸ Пауза</button>
    <button onclick="stopLive()">⏹ Закончить</button><button class="g" id="b-rec" onclick="rec()">⏺ Снять видео</button><button style="background:#6e2a30" onclick="libOpen()">📸 Фото и видео</button><span id="st"></span></div>
-  <div class="btns lov"><b>🎀 Игрушка</b><button class="g" onclick="lovLink()">🔗 Ссылка управления</button><button onclick="lovTest()">📳 Тест</button>
+  <div class="btns lov"><b>🎀 Игрушка</b><span class="pl" style="cursor:pointer;padding:4px 10px;display:inline-flex;align-items:center;gap:6px" onclick="lovOpen()" title="Открыть панель Lovense"><span class="dot" id="d-lov"></span>Lovense<small id="s-lov" style="display:inline">…</small></span><button class="g" onclick="lovLink()">🔗 Ссылка управления</button><button onclick="lovTest()">📳 Тест</button>
    <button onclick="lovVib(5)">Слабо</button><button onclick="lovVib(12)">Средне</button><button onclick="lovVib(20)">Сильно</button><button onclick="lovVib(0)">⏹ Стоп</button></div>
   <div id="lovctl" style="display:none;align-items:center;gap:10px;background:#123224;border:2px solid #2ecc71;border-radius:12px;padding:8px 12px;font-size:17px">
    <span style="flex:1"></span><button style="background:#e8364f" onclick="lovStop()">⏻ Закончить управление</button></div>
@@ -978,7 +977,7 @@ async function sayQ(p, id, text) { try { await fetch("https://alicia-link.videor
 const PQ = "https://alicia-link.videorils.workers.dev/pq", LVN = ["", "есть токены", "тратит", "много тратит", "VIP"];
 let HUBPPL = [], RSAYDONE = new Set(), PPLHOLD = 0, RCHSEEN = new Set(), RSAID = {};
 // версия панели: хаб пишет в общий чат только через панель, которая это умеет (v ≥ 3); новая версия на сайте → панель обновится сама
-const PANEL_V = 43;
+const PANEL_V = 44;
 setInterval(async () => {
   try { const t = await (await fetch(location.pathname + "?vchk=" + Date.now(), { cache: "no-store" })).text(), v = +((t.match(/const PANEL_V = (\d+)/) || [])[1] || 0);
     const busy = Object.values(PRIVLIVE).some(Boolean) || TYPES.length || PAIDQ.length || [...document.querySelectorAll("input,textarea")].some(i => i.value && i.type !== "file") || Object.keys(CUP).length;
