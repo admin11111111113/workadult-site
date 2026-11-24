@@ -200,6 +200,17 @@
       return us.map(u => { const b = SCBAL[u.uid]; return b ? { ...u, ...(b.hid ? { hid: 1 } : { bal: b.bal }) } : u; }).filter(u => u.lvl >= 1 || u.bal > 0 || u.hid);
     }
     if (P === "bc" && /^\/console/.test(location.pathname)) {
+      // 24.11: в консоли справа «Люди (156)» — у каждого «871 Tkn» (точный баланс). Находим по тексту «N Tkn», ник — первая строка в его строке списка
+      const tk = [...document.querySelectorAll("span,div,small,p")].filter(e => e.children.length <= 1 && /^\s*\d[\d\s]{0,7}\s*Tkn\s*$/i.test(e.textContent || "") && vis(e));
+      if (tk.length) {
+        const out = [], seen = new Set();
+        for (const e of tk) { let row = e; for (let i = 0; i < 5 && row.parentElement; i++) { row = row.parentElement; if ((row.innerText || "").split("\n").filter(s => s.trim()).length >= 2) break; }
+          const lines = (row.innerText || "").split("\n").map(s => s.trim()).filter(s => s && !/Tkn$/i.test(s));
+          const who = (lines[0] || "").slice(0, 40), bal = +(e.textContent.match(/\d[\d\s]*/)[0].replace(/\s/g, ""));
+          if (!who || seen.has(who.toLowerCase()) || /король|king|зрител|people|люди/i.test(who)) continue; seen.add(who.toLowerCase());
+          out.push({ who, bal, lvl: bal > 0 ? 2 : 1 }); }
+        if (out.length) return out;
+      }
       const v = [...document.querySelectorAll(".user_item.member[username]")];
       if (!v.length) return null;                                       // вкладка «Зрители» не открыта — молчим, не путаем «никого нет»
       return v.filter(e => !/member_free/.test(e.className)).map(e => { const b = ((e.innerText || "").match(/(\d[\d\s]{0,7})\s*(Tkn|Ток|tk)/i) || [])[1];   // 24.11: в списке «Люди» консоли виден баланс «796 Tkn»
