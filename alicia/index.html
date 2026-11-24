@@ -680,6 +680,8 @@ function feedShow(l, force) {
   l = [...LASTFEED, ...LOCALTIPS].sort((a, b) => (a.t || "").localeCompare(b.t || "")).slice(-150);
   // 24.11 владелец: видно всё — что бот делает, кому пишет, кто оплатил, кто что хочет (раньше переписку бота прятали)
   l = l.filter(x => ["cb", "sc", "bc", "mv"].includes(x.p) && !/^(⚠|💰 дал)/.test(x.text || "") && !/одобри/.test(x.text || ""));
+  { const q = s => ((s || "").match(/«([^»]+)»/) || [])[1] || "", hi = new Set(l.filter(x => /^👋/.test(x.text || "")).map(x => q(x.text)).filter(Boolean));   // 24.11: «✉️ написала ему» с тем же текстом, что «👋 познакомилась», — дубль
+    l = l.filter(x => !(/^(✉️|📨) написала ему/.test(x.text || "") && hi.has(q(x.text)))); }
   const seen = new Set(FEEDSEEN || []), fresh = FEEDSEEN && l.some(x => !seen.has(x.id));
   if (FEEDSEEN) { const ph = l.filter(x => !seen.has(x.id) && /^(💡|🔥|🚫)/.test(x.text || "")).pop(); if (ph) hint(`<b>${esc(ph.who)}</b> <small>(${esc(PNAME[ph.p] || ph.p)})</small><br>${esc(ph.text)}`); }   // 23.11: приват-подсказки — крупно в «Подсказки»
   const one = (x, n) => {
@@ -689,7 +691,7 @@ function feedShow(l, force) {
   if (FT === "pay") l = l.filter(x => x.kind === "tip" || x.kind === "pay");
   const hmOne = x => `<div class="nf" style="background:${x.kind === "rep" ? "#1d2a44" : "#4a1020"};border:2px solid ${x.kind === "rep" ? "#4a6fb3" : "#e8364f"}"><span class="wh" style="color:#fff;cursor:default">${x.kind === "rep" ? "💬 ты → Роману" : "✉️ Роман"}</span><span class="tx">${esc(x.text)}</span><span class="tm">${esc((x.ft || "").slice(11, 16))}</span></div>`;
   // 24.11 владелец: «Подарил 1 Токен!» из чата сайта — это донат, он и так есть строкой доната; одинаковые подряд — одной строкой «N×»
-  const SYS = /^\s*(подарил[аи]?|tipped|sent|отправил[аи]?)\s+\d+\s*(токен|token|tk|tkn)/i;
+  const SYS = /^\s*(notice:|(подписаться\s*)?(подарил[аи]?|tipped|sent|отправил[аи]?)\s+\d+\s*(токен|token|tk|tkn))/i;   // + «Подписаться Подарил 10 Токенов!», «Notice: …» — служебные строки Бонги
   const all0 = [...l.map(x => ({ k: x.t || "", s: x.p + "|" + x.who + "|" + (x.kind === "tip" ? "tip" + x.tk + (x.text || "") : x.text), h: n => one(x, n) })),
     ...WALLMSG.filter(x => x.me || !(SYS.test(x.text || "") || SYS.test(x.ru || ""))).map(x => ({ k: x.ft || "", s: x.me ? "" : "w|" + x.p + "|" + x.who + "|" + (x.ru || x.text), h: n => wallOne(x, n) })),
     ...HMLOG.map(x => ({ k: x.ft || "", s: "", h: () => hmOne(x) }))].sort((a, b) => a.k.localeCompare(b.k)).slice(-250);
@@ -979,7 +981,7 @@ async function sayQ(p, id, text) { try { await fetch("https://alicia-link.videor
 const PQ = "https://alicia-link.videorils.workers.dev/pq", LVN = ["", "есть токены", "тратит", "много тратит", "VIP"];
 let HUBPPL = [], RSAYDONE = new Set(), PPLHOLD = 0, RCHSEEN = new Set(), RSAID = {};
 // версия панели: хаб пишет в общий чат только через панель, которая это умеет (v ≥ 3); новая версия на сайте → панель обновится сама
-const PANEL_V = 38;
+const PANEL_V = 39;
 setInterval(async () => {
   try { const t = await (await fetch(location.pathname + "?vchk=" + Date.now(), { cache: "no-store" })).text(), v = +((t.match(/const PANEL_V = (\d+)/) || [])[1] || 0);
     const busy = Object.values(PRIVLIVE).some(Boolean) || TYPES.length || PAIDQ.length || [...document.querySelectorAll("input,textarea")].some(i => i.value && i.type !== "file") || Object.keys(CUP).length;
