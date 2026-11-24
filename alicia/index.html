@@ -332,7 +332,7 @@ async function rec() { const r = await req("GetRecordStatus");
 obs();
 
 // ── помощник (расширение Alicia Helper 1.x — исполнитель; вся логика тут, на сайте)
-let port = null, RID = 0, HV = 1; const WAIT = {};
+let port = null, RID = 0, HV = 0; const WAIT = {};   // 0 = ещё не знаем (первые секунды после открытия) — владельцу не пишем «помощник v1»
 const SITES = [
   { id: "sc", file: "sites/sc.js", matches: ["https://*.stripchat.com/*", "https://*.mywebcamroom.com/*"] },
   { id: "cb", file: "sites/cb.js", matches: ["https://chaturbate.com/b/*", "https://*.chaturbate.com/b/*"] },
@@ -980,7 +980,7 @@ async function sayQ(p, id, text) { try { await fetch("https://alicia-link.videor
 const PQ = "https://alicia-link.videorils.workers.dev/pq", LVN = ["", "есть токены", "тратит", "много тратит", "VIP"];
 let HUBPPL = [], RSAYDONE = new Set(), PPLHOLD = 0, RCHSEEN = new Set(), RSAID = {};
 // версия панели: хаб пишет в общий чат только через панель, которая это умеет (v ≥ 3); новая версия на сайте → панель обновится сама
-const PANEL_V = 45;
+const PANEL_V = 46;
 setInterval(async () => {
   try { const t = await (await fetch(location.pathname + "?vchk=" + Date.now(), { cache: "no-store" })).text(), v = +((t.match(/const PANEL_V = (\d+)/) || [])[1] || 0);
     const busy = Object.values(PRIVLIVE).some(Boolean) || TYPES.length || PAIDQ.length || [...document.querySelectorAll("input,textarea")].some(i => i.value && i.type !== "file") || Object.keys(CUP).length;
