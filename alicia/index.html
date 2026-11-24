@@ -461,7 +461,7 @@ function onExt(m) {
   if (m.type === "c2c") hint(m.ok ? "📷 Камера <b>" + esc(m.who) + "</b> открыта — окошко справа внизу на Бонге (тяни за верх, размер — за угол, ⧉ — поверх всех окон)" : "⚠ Камера " + esc(m.who) + " не открылась сама — на Бонге нажми его ник → «камера»");
   if (m.type === "tip") {
     if (!m.what && m.p === "sc" && +m.tk === 55) m.what = "секс-машина 1 мин (Lovense включает сама)";   // 23.11 владелец
-    if (!m.what && (TIPMENU[m.p] || {})[String(+m.tk)]) m.what = TIPMENU[m.p][String(+m.tk)];          // сумма = цена в меню → это оплата пункта меню
+    // 24.11 владелец: сумма = цена пункта ещё не значит, что он выбрал пункт (25 tk — может, просто чаевые). Пункт — только если сайт сам подписал.
     TOT[m.p] = (TOT[m.p] || 0) + m.tk; showTot(); const a = act(m.what);
     LOCALTIPS.push({ id: "l" + Date.now() + Math.random(), at: Date.now(), t: nowT(), p: m.p, who: m.who, tk: m.tk, text: (m.what || "") + (a ? " 👉 " + a : ""), kind: "tip" }); feedShow(null);
     $("#wall").insertAdjacentHTML("afterbegin", `<div class="tip"><b>${esc(m.who)}</b> ${m.tk} tk · ${({ cb: "Chaturbate", sc: "Stripchat", bc: "Bongacams", mv: "ManyVids" })[m.p] || m.p}${m.what ? " — " + esc(m.what) : ""}${a ? "<br>👉 " + esc(a) : ""}</div>`);
@@ -474,7 +474,9 @@ function onExt(m) {
   if (m.type === "privgone" && PRIVREQ === m.p) privHide();
   if (m.type === "private") privOn(m.p, m.on);
   if (m.type === "probe") admEv("🔎 " + (NAME[m.p] || m.p) + " " + m.text);   // разведка — только в журнал владельца
-  if (m.type === "menubuy" && m.who && m.what) {                      // CB Dream Bot: «ник tipped for → пункт» (сумма отдельной строкой)
+  // 24.11: Dream Bot пишет «tipped for → пункт» на ЛЮБЫЕ чаевые с такой суммой — это не выбор зрителя. Пункт засчитываем,
+  // только если в самих чаевых есть подпись (он выбрал пункт в окне чаевых) — это ловит обработчик "tip" выше.
+  if (false && m.type === "menubuy" && m.who && m.what) {               // отключено 24.11 (см. выше)
     const a = act(m.what), lt = LOCALTIPS.slice().reverse().find(x => x.p === m.p && x.who === m.who && Date.now() - x.at < 120000);
     if (lt) lt.text = m.what + (a ? " 👉 " + a : ""); else LOCALTIPS.push({ id: "l" + Date.now() + Math.random(), at: Date.now(), t: nowT(), p: m.p, who: m.who, tk: 0, text: m.what + (a ? " 👉 " + a : ""), kind: "tip" });
     feedShow(null);
@@ -881,7 +883,7 @@ async function sayQ(p, id, text) { try { await fetch("https://alicia-link.videor
 const PQ = "https://alicia-link.videorils.workers.dev/pq", LVN = ["", "есть токены", "тратит", "много тратит", "VIP"];
 let HUBPPL = [], RSAYDONE = new Set(), PPLHOLD = 0, RCHSEEN = new Set(), RSAID = {};
 // версия панели: хаб пишет в общий чат только через панель, которая это умеет (v ≥ 3); новая версия на сайте → панель обновится сама
-const PANEL_V = 15;
+const PANEL_V = 16;
 setInterval(async () => {
   try { const t = await (await fetch(location.pathname + "?vchk=" + Date.now(), { cache: "no-store" })).text(), v = +((t.match(/const PANEL_V = (\d+)/) || [])[1] || 0);
     const busy = Object.values(PRIVLIVE).some(Boolean) || TYPES.length || PAIDQ.length || [...document.querySelectorAll("input,textarea")].some(i => i.value && i.type !== "file") || Object.keys(CUP).length;
