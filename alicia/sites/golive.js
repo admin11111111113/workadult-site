@@ -367,4 +367,24 @@
       } catch (e) {}
     }, 1500);
   }
+  // 24.11 владелец: на Чатурбейте в эфире сверху кнопка «Оповестить, что вы в сети» (Notify followers) — жмём сами раз за эфир
+  if (P === "cb" && /^\/b\//.test(location.pathname)) {
+    let nfDone = false, nfTry = 0;
+    const vis = e => e && e.offsetParent && getComputedStyle(e).visibility !== "hidden";
+    setInterval(() => {
+      if (nfDone || nfTry > 40) return;
+      try {
+        const els = [...document.querySelectorAll("button,a,[role=button],div,span")].filter(e => vis(e) && e.children.length < 3 && /^\s*(оповестить.{0,30}в сети|notify (your )?followers.{0,30}online|notify followers)\s*$/i.test(e.innerText || ""));
+        if (!els.length) return;
+        nfTry++;
+        const b = els.sort((a, c) => (a.innerText || "").length - (c.innerText || "").length)[0];
+        b.click(); nfDone = true;
+        setTimeout(() => {   // если открылось окно подтверждения — жмём «отправить/да»
+          const ok = [...document.querySelectorAll("button,input[type=submit],[role=button]")].filter(e => vis(e) && !e.closest("form[id*=chat i],[class*=chat i]") && /^\s*(отправить|оповестить|да|send|notify|notify followers|yes|ok)\s*$/i.test((e.innerText || e.value || "").trim()) && e !== b)[0];
+          if (ok) ok.click();
+          send({ type: "golog", p: P, text: "📣 Чатурбейт: нажала «Оповестить, что вы в сети»" + (ok ? " + подтвердила" : "") });
+        }, 1500);
+      } catch (e) {}
+    }, 15000);
+  }
 })();
