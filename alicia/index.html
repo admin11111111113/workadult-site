@@ -499,6 +499,9 @@ function onExt(m) {
   if (m.type === "c2c") hint(m.ok ? "📷 Камера <b>" + esc(m.who) + "</b> открыта — окошко справа внизу на Бонге (тяни за верх, размер — за угол, ⧉ — поверх всех окон)" : "⚠ Камера " + esc(m.who) + " не открылась сама — на Бонге нажми его ник → «камера»");
   if (m.type === "tip") {
     if (!m.what && m.p === "sc" && +m.tk === 55) m.what = "секс-машина 1 мин (Lovense включает сама)";   // 23.11 владелец
+    // 24.11: спецкоманды её Lovense (из её настроек): ровно эта сумма без пункта меню — реакция игрушки, а не «просто чаевые»
+    const LOVTK = { 25: "Lovense: случайный уровень вибрации", 38: "Lovense: случайное время вибрации 10–50 сек", 100: "Lovense: землетрясение 20 сек", 120: "Lovense: фейерверк 22 сек", 160: "Lovense: волна 30 сек", 200: "Lovense: пульс 40 сек", 1000: "Lovense: очистить очередь", 5555: "Lovense: пауза игрушки 10 сек" };
+    if (!m.what && ["sc", "cb", "bc"].includes(m.p)) m.what = LOVTK[+m.tk] || (+m.tk >= 55 && +m.tk <= 75 ? "Lovense: полный контроль игрушки 60 сек" : "");
     // 24.11 владелец: сумма = цена пункта ещё не значит, что он выбрал пункт (25 tk — может, просто чаевые). Пункт — только если сайт сам подписал.
     TOT[m.p] = (TOT[m.p] || 0) + m.tk; showTot(); const a = act(m.what);
     LOCALTIPS.push({ id: "l" + Date.now() + Math.random(), at: Date.now(), t: nowT(), p: m.p, who: m.who, tk: m.tk, text: (m.what || "") + (a ? " 👉 " + a : ""), kind: "tip" }); feedShow(null);
@@ -977,7 +980,7 @@ async function sayQ(p, id, text) { try { await fetch("https://alicia-link.videor
 const PQ = "https://alicia-link.videorils.workers.dev/pq", LVN = ["", "есть токены", "тратит", "много тратит", "VIP"];
 let HUBPPL = [], RSAYDONE = new Set(), PPLHOLD = 0, RCHSEEN = new Set(), RSAID = {};
 // версия панели: хаб пишет в общий чат только через панель, которая это умеет (v ≥ 3); новая версия на сайте → панель обновится сама
-const PANEL_V = 44;
+const PANEL_V = 45;
 setInterval(async () => {
   try { const t = await (await fetch(location.pathname + "?vchk=" + Date.now(), { cache: "no-store" })).text(), v = +((t.match(/const PANEL_V = (\d+)/) || [])[1] || 0);
     const busy = Object.values(PRIVLIVE).some(Boolean) || TYPES.length || PAIDQ.length || [...document.querySelectorAll("input,textarea")].some(i => i.value && i.type !== "file") || Object.keys(CUP).length;
