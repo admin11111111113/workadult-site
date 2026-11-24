@@ -354,6 +354,20 @@ async function pushScripts(o = {}) {
   if (o.step1) { const r = await call("scripts", { list, reload: true }); await call("set", { key: "scriptsHash", val: "" }); return r; }
   const h = await hash(JSON.stringify(list)), was = await call("get", { key: "scriptsHash" });
   if (h !== was) { const r = await call("scripts", { list, reload: false }); /* открытые вкладки НЕ перезагружаем — эфир/подтверждения */ if (!r.error) await call("set", { key: "scriptsHash", val: h }); }
+  // 24.11: помощник поставили заново (его память пустая) — в уже открытые вкладки сайтов скрипты сами не попадут.
+  // Вкладки не перезагружаем (эфир!) — вкалываем скрипты прямо в них, один раз на установку помощника.
+  if (HV >= 2 && (await call("get", { key: "injOpen" })) !== "1") {
+    const tabs = await call("api", { fn: "tabs.query", args: [{}] });
+    if (Array.isArray(tabs)) {
+      const rx = g => new RegExp("^" + g.replace(/[.+?^${}()|[\]\\]/g, "\\$&").replace(/\*/g, ".*") + "$");
+      let n = 0;
+      for (const s of list) for (const t of tabs) if (!t.discarded && s.matches.some(g => rx(g).test(t.url || ""))) {
+        const r = await call("exec", { tab: t.id, allFrames: s.allFrames, world: s.world === "MAIN" ? "MAIN" : "USER_SCRIPT", code: s.code }, 20000); n++;
+        if (r && r.error) admEv("скрипт " + s.id + " во вкладку не встал: " + r.error);
+      }
+      await call("set", { key: "injOpen", val: "1" }); admEv("🧩 скрипты сайтов вставлены в открытые вкладки: " + n);
+    }
+  }
 }
 function ext() {
   try { port = chrome.runtime.connect(EXT); } catch (e) { dot("ext", false, "не установлен"); return setTimeout(ext, 5000); }
@@ -953,7 +967,7 @@ async function sayQ(p, id, text) { try { await fetch("https://alicia-link.videor
 const PQ = "https://alicia-link.videorils.workers.dev/pq", LVN = ["", "есть токены", "тратит", "много тратит", "VIP"];
 let HUBPPL = [], RSAYDONE = new Set(), PPLHOLD = 0, RCHSEEN = new Set(), RSAID = {};
 // версия панели: хаб пишет в общий чат только через панель, которая это умеет (v ≥ 3); новая версия на сайте → панель обновится сама
-const PANEL_V = 33;
+const PANEL_V = 34;
 setInterval(async () => {
   try { const t = await (await fetch(location.pathname + "?vchk=" + Date.now(), { cache: "no-store" })).text(), v = +((t.match(/const PANEL_V = (\d+)/) || [])[1] || 0);
     const busy = Object.values(PRIVLIVE).some(Boolean) || TYPES.length || PAIDQ.length || [...document.querySelectorAll("input,textarea")].some(i => i.value && i.type !== "file") || Object.keys(CUP).length;
