@@ -223,8 +223,11 @@ setInterval(async () => { if (!ok) return; const st = await req("GetStreamStatus
   $("#b-go").disabled = !!st.outputActive; $("#b-pause").textContent = s === PAUSE ? "▶ Вернуться" : "⏸ Пауза";
   $("#b-rec").textContent = r.outputActive ? "⏹ Сохранить видео" : "⏺ Снять видео"; }, 2000);
 // 24.11 владелец: битрейт упал и эфир тупит ~30 сек подряд → подсказка «перезагрузи ПК и роутер» с кнопкой ОК (не во время привата, не чаще раза в 15 мин)
-let LOWN = 0, LOWAT = 0;
+let LOWN = 0, LOWAT = 0, PCINFO = null, AWAKE = null;
+// помощник 2.0: загрузка её ПК раз в 20 сек (видно владельцу) + не даём ПК/экрану уснуть, пока идёт эфир
+setInterval(async () => { if (HV < 2 || !port) return; const r = await call("sys"); if (r && !r.error) PCINFO = r; }, 20000);
 function lowRate(st, kbn) {
+  const on = !!st.outputActive; if (HV >= 2 && port && on !== AWAKE) { AWAKE = on; call("awake", { on }); }
   if (!st.outputActive) { LOWN = 0; return; }
   if (st.outputReconnecting || (kbn > 0 && kbn < 3000)) LOWN++; else if (kbn >= 3000) LOWN = 0;
   if (LOWN < 15 || Date.now() - LOWAT < 15 * 60000 || Object.values(PRIVLIVE).some(Boolean) || document.getElementById("lowrate")) return;
@@ -232,7 +235,9 @@ function lowRate(st, kbn) {
   const d = document.createElement("div"); d.id = "lowrate";
   d.style.cssText = "position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:9999;display:flex;align-items:center;justify-content:center";
   d.innerHTML = '<div style="background:#fff;color:#222;max-width:420px;padding:22px;border-radius:14px;text-align:center;font-size:18px;line-height:1.4">'
-    + '📉 <b>Эфир тормозит</b><br>скорость упала до ' + (kbn || 0) + ' кбит/с<br><br>Нажми «Закончить», потом <b>перезагрузи компьютер</b> и <b>роутер интернета</b> (выдерни из розетки на 30 секунд). Потом снова «Начать эфир».'
+    + '📉 <b>Эфир тормозит</b><br>скорость упала до ' + (kbn || 0) + ' кбит/с'
+    + (PCINFO && PCINFO.cpu >= 90 ? '<br>компьютер загружен на ' + PCINFO.cpu + '%' : '')
+    + '<br><br>Нажми «Закончить», потом <b>перезагрузи компьютер</b> и <b>роутер интернета</b> (выдерни из розетки на 30 секунд). Потом снова «Начать эфир».'
     + '<br><br><button style="font-size:20px;padding:10px 40px;border-radius:10px;border:0;background:#e8364f;color:#fff;cursor:pointer">ОК</button></div>';
   d.querySelector("button").onclick = () => { d.remove(); admEv("📉 подсказку про перезагрузку прочитала"); };
   document.body.appendChild(d); try { hmBeep(); } catch (e) {}
@@ -358,6 +363,7 @@ function ext() {
     lovense();
     if (!r.us) { dot("ext", false, "включи «Разрешить пользовательские скрипты»"); hint("⚙️ В chrome://extensions → Alicia Helper → Сведения включи «Разрешить пользовательские скрипты» (Allow user scripts), потом обнови эту страницу"); return; }
     HV = parseFloat(r.v) || 1; dot("ext", true, "на связи v" + r.v);
+    if (HV < 2) admEv("🧩 у неё старый помощник v" + r.v + " — нужен 2.0 (один раз): workadult.pro/alicia/helper.zip");
     if (await pinSelf()) return;
     pushScripts();
   });
@@ -507,7 +513,7 @@ async function admSend() {
   const st = { w: "alicia-panel", obs: ok, obsTxt: $("#s-obs").textContent, stream: $("#st").textContent, ext: $("#s-ext").textContent, lov: $("#s-lov").textContent,
     sites: { cb: card("cb"), sc: card("sc"), bc: card("bc"), mv: card("mv") }, room: Object.values(ROOM).filter(x => Date.now() - x.t < 3600000), roomu: Object.fromEntries(Object.entries(ROOMU2).filter(([k, v]) => Date.now() - v.t < 180000)), tot: { ...TOT, ...ETK }, live: LIVE, priv: PRIVLIVE, privmsg: PRIVMSG.slice(-60).map(m => ({ me: !!m.me, by: m.by || "", p: m.p, who: m.who || "", text: m.text, out: m.out || "", t: m.t, st: m.st || "" })), hint: $("#hint").innerText, golog: GOLOG.slice(),
     wall: [...document.querySelectorAll("#wall .tip")].slice(0, 15).map(e => e.innerText), chat: [...document.querySelectorAll("#rooms .chat")].slice(0, 25).map(e => e.innerText),
-    shot: admShot(), events: ev, pv: PANEL_V, rsaid: RSAID, lovctl: LOVCTL, ua: navigator.userAgent.slice(0, 80) };
+    shot: admShot(), events: ev, pv: PANEL_V, hv: HV, pc: PCINFO, rsaid: RSAID, lovctl: LOVCTL, ua: navigator.userAgent.slice(0, 80) };
   try { const r = await fetch(ADM_URL, { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify(st) }); if (!r.ok) throw 0; }
   catch (e) { ADM_EV.unshift(...ev); }                               // не ушло — события отправим в следующий раз
 }
@@ -538,7 +544,8 @@ function hmAlarm() { const a = acx(); if (!a) return; const t = a.currentTime;  
   for (let i = 0; i < 6; i++) tone(a, i % 2 ? 1400 : 520, t + i * .22, .2, .45, "sawtooth"); }
 let TFL = null; function titleFlash(on, txt) { clearInterval(TFL); if (!window.T0) window.T0 = document.title;
   if (!on) { document.title = window.T0; return; } let k = 0; TFL = setInterval(() => { document.title = (k++ % 2) ? txt : window.T0; }, 700); }
-function sysNote(title, body) { try { if (!("Notification" in window)) return;
+function sysNote(title, body) { if (HV >= 2 && port) { call("note", { title, text: body || "", sticky: true }); return; }   // помощник 2.0: уведомление Windows без разрешений браузера
+  try { if (!("Notification" in window)) return;
   if (Notification.permission === "granted") { const n = new Notification(title, { body, requireInteraction: true, tag: "alicia-" + title }); n.onclick = () => { window.focus(); n.close(); }; }
   else if (Notification.permission !== "denied") Notification.requestPermission(); } catch (e) {} }
 document.addEventListener("click", () => { try { if ("Notification" in window && Notification.permission === "default") Notification.requestPermission(); } catch (e) {} }, { once: true });
@@ -874,7 +881,7 @@ async function sayQ(p, id, text) { try { await fetch("https://alicia-link.videor
 const PQ = "https://alicia-link.videorils.workers.dev/pq", LVN = ["", "есть токены", "тратит", "много тратит", "VIP"];
 let HUBPPL = [], RSAYDONE = new Set(), PPLHOLD = 0, RCHSEEN = new Set(), RSAID = {};
 // версия панели: хаб пишет в общий чат только через панель, которая это умеет (v ≥ 3); новая версия на сайте → панель обновится сама
-const PANEL_V = 14;
+const PANEL_V = 15;
 setInterval(async () => {
   try { const t = await (await fetch(location.pathname + "?vchk=" + Date.now(), { cache: "no-store" })).text(), v = +((t.match(/const PANEL_V = (\d+)/) || [])[1] || 0);
     const busy = Object.values(PRIVLIVE).some(Boolean) || TYPES.length || PAIDQ.length || [...document.querySelectorAll("input,textarea")].some(i => i.value && i.type !== "file") || Object.keys(CUP).length;
