@@ -110,4 +110,13 @@ setInterval(async () => { if (!window.HUBURL || !localStorage.admk) return; let 
   try { j = await (await fetch("https://alicia-link.videorils.workers.dev/url?m=" + MDL(), { headers: { "x-k": localStorage.admk }, cache: "no-store" })).json(); } catch (e) { return; }
   if (j.url && j.url !== HUBURL) { $("#ctf").removeAttribute("src"); hubOpen(); } }, 20000);
 mdlUi(); tab("hub"); hubOpen();   // вкладку «её панель» владелец попросил убрать (21.11) — только консоль
-</script><script>function thSet(l){document.documentElement.classList.toggle('light',l);localStorage.theme=l?'light':'dark';var b=document.getElementById('thb');if(b)b.textContent=l?'🌙 Тёмный':'☀️ Белый';document.querySelectorAll('iframe').forEach(f=>{try{f.contentWindow.postMessage({alicia_theme:l},'*')}catch(x){}})}addEventListener('message',e=>{if(e.data&&e.data.alicia_theme_ask)try{e.source.postMessage({alicia_theme:localStorage.theme!=='dark'},'*')}catch(x){}});thSet(false);</script></body></html>
+</script><script>function thSet(l){document.documentElement.classList.toggle('light',l);localStorage.theme=l?'light':'dark';var b=document.getElementById('thb');if(b)b.textContent=l?'🌙 Тёмный':'☀️ Белый';document.querySelectorAll('iframe').forEach(f=>{try{f.contentWindow.postMessage({alicia_theme:l},'*')}catch(x){}})}addEventListener('message',e=>{if(e.data&&e.data.alicia_theme_ask)try{e.source.postMessage({alicia_theme:localStorage.theme!=='dark'},'*')}catch(x){}});thSet(false);</script><script>
+// 25.11 владелец: «админка сама обновляется, как только что-то поменялось» — раз в 30 с сверяем страницу с сервером; изменилась и он сейчас ничего не пишет — перезагрузка
+(function(){let h0=null;const H=t=>{let x=0;for(let i=0;i<t.length;i++)x=(x*31+t.charCodeAt(i))|0;return x};
+ const busy=()=>{const a=document.activeElement;if(a&&/^(TEXTAREA|INPUT|SELECT|IFRAME)$/.test(a.tagName))return true;
+  if([...document.querySelectorAll('textarea')].some(t=>t.value.trim()))return true;
+  if([...document.querySelectorAll('[id$=m],.modal')].some(e=>e.offsetParent&&getComputedStyle(e).position==='fixed'))return true;return false};
+ async function chk(){try{const t=await (await fetch(location.pathname+'?v='+Date.now(),{cache:'no-store',credentials:'include'})).text();if(!/<\/html>|<script/i.test(t))return;const h=H(t);
+  if(h0===null){h0=h;return}if(h!==h0&&!busy())location.reload()}catch(e){}}
+ chk();setInterval(chk,30000)})();
+</script></body></html>
