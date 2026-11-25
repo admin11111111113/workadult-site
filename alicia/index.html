@@ -1098,6 +1098,12 @@ async function dlgBot() {
   $("#dlgst").textContent = j && j.ok ? ((j.ru || j.text) ? "🤖 бот пишет: «" + (j.ru || j.text) + "» — через ~10–30 сек появится тут" : "🤖 бот уже пишет ему — через ~30–60 сек сообщение появится тут") : "⚠ " + ((j && j.err) || "не вышло");
   admEv("🤖 попросила бота написать " + DLG.who); setTimeout(dlgLoad, 10000); setTimeout(dlgLoad, 30000);
 }
+// 25.11 владелец «сразу ставь»: новая версия панели на сайте → панель сама перезагружается (когда она ничего не печатает)
+let PVER = null;
+setInterval(async () => { try { const v = (await (await fetch("ver.txt?x=" + Date.now(), { cache: "no-store" })).text()).trim();
+  if (PVER === null) { PVER = v; return; }
+  const typing = Date.now() - DMHOLD < 30000 || [...document.querySelectorAll("input,textarea")].some(i => i.type !== "checkbox" && i.type !== "password" && (i.value || "").trim() && document.activeElement === i);
+  if (v && v !== PVER && !typing) location.reload(); } catch (e) {} }, 60000);
 async function hubLoop() { await hubSync(); setTimeout(hubLoop, TYPES.length ? 2000 : 5000); }
 hubLoop();
 admEv("📂 панель открыта"); setTimeout(admSend, 3000); setInterval(admSend, 15000);
