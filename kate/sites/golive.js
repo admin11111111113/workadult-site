@@ -56,6 +56,7 @@
     let found = null;
     for (const b of document.querySelectorAll("button,a,[role=button],[class*=btn i],[class*=button i]")) {
       if (!vis(b) || !ACC.test(txt(b))) continue;
+      if (b.closest("[class*=msg-list], [class*=message-list], .js-chat_msg, [class*=chat-message i], [class*=messages-list i]")) continue;   // 25.11: строка чата «X хочет приват (start private show)» висит и после отказа — это не запрос
       let c = b; for (let i = 0; i < 7 && c.parentElement; i++) { c = c.parentElement; const t = (c.innerText || ""); if (t.length > 700) break;
         if (/друз|friend|bạn bè|подписк|follow/i.test(t)) break;    // заявка в друзья / уведомления — не приват (SC 22.11)
         if (PRIV.test(t)) { found = { acc: b, box: c }; break; } }
