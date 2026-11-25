@@ -86,8 +86,8 @@ const MDL = () => location.pathname.startsWith("/kate/") ? "cherry" : "alicia";
 localStorage.mdl = MDL();
 function mdlUrl() {}
 const MDLRU = { alicia: "Алисии", cherry: "Кейт" };
-function mdlUi() { mdlUrl(); $("#mdl").value = MDL(); $("#tb-hub").textContent = "🖥 Консоль " + MDLRU[MDL()]; $("#tb-ct").style.display = MDL() === "alicia" ? "" : "none";
-  if (MDL() !== "alicia" && localStorage.admTab === "ct") tab("hub"); }
+function mdlUi() { mdlUrl(); $("#mdl").value = MDL(); $("#tb-hub").textContent = "🖥 Консоль " + MDLRU[MDL()]; $("#tb-ct").style.display = "";   // 25.11: у Кейт тоже ManyVids
+  }
 function mdlSet(k) { if (k !== MDL() && MPATH[k]) { location.href = MPATH[k]; return; } localStorage.mdl = k; HUBURL = ""; for (const i of ["#ctf", "#lbf"]) $(i).removeAttribute("src"); $("#hubf").src = "about:blank"; mdlUi(); tab("hub"); hubOpen(); }
 addEventListener("message", e => { if (e.data && e.data.hub_model && MDLRU[e.data.hub_model]) mdlSet(e.data.hub_model); });
 // цифра новых кастомов на кнопке вкладки — присылает консоль хаба из iframe
@@ -102,7 +102,7 @@ async function hubOpen() {
   const f = document.createElement("form"); f.method = "post"; f.action = j.url + "/login"; f.target = "hubf";
   const i = document.createElement("input"); i.type = "hidden"; i.name = "p"; i.value = localStorage.admk; f.appendChild(i);
   document.body.appendChild(f); f.submit(); f.remove(); HUBURL = j.url;
-  if (MDL() === "alicia") $("#hubf").addEventListener("load", () => { if (!$("#ctf").src) $("#ctf").src = HUBURL + "/full?set=content"; }, { once: true });   // грузим сразу — чтобы цифра кастомов была видна
+  $("#hubf").addEventListener("load", () => { if (!$("#ctf").src) $("#ctf").src = HUBURL + "/full?set=content"; }, { once: true });   // грузим сразу — чтобы цифра кастомов была видна
   $("#hubmsg").innerHTML = "";
 }
 // 24.11: хаб перезапустился → адрес туннеля новый, старое окно консоли мёртвое. Раз в 20 с сверяем адрес и сами переподключаемся.
