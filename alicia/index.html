@@ -1094,7 +1094,14 @@ async function dlgSay() {
 }
 async function dlgBot() {
   if (!DLG) return; $("#dlgst").textContent = "⏳ бот пишет ему в личку…";
-  const j = await pq({ op: "botdm", p: DLG.p, who: DLG.who, uid: DLG.uid });
+  let j = await pq({ op: "botdm", p: DLG.p, who: DLG.who, uid: DLG.uid });
+  if (j && !j.ok && /в личку/.test(j.err || "")) {                     // 25.11 владелец: лички нет — бот пишет ему на стене (в чат эфира)
+    $("#dlgst").textContent = "⏳ лички нет — бот пишет ему в чат эфира…";
+    const d = DLG, k = await pq({ op: "botreply", p: d.p, who: d.who, uid: d.uid, text: "(he is in her room, silent — she greets him first, warm and playful, light hook)" });
+    if (k && k.ok && k.text) { await roomSay(d.p, d.who, k.ru || k.text, "", true, k.text); $("#dlgst").textContent = "🤖 бот написал ему в чат эфира: «" + (k.ru || k.text) + "»"; }
+    else $("#dlgst").textContent = "⚠ " + ((k && k.err) || "бот не смог написать");
+    admEv("🤖 попросила бота написать " + d.who + " (в чат эфира)"); return;
+  }
   $("#dlgst").textContent = j && j.ok ? ((j.ru || j.text) ? "🤖 бот пишет: «" + (j.ru || j.text) + "» — через ~10–30 сек появится тут" : "🤖 бот уже пишет ему — через ~30–60 сек сообщение появится тут") : "⚠ " + ((j && j.err) || "не вышло");
   admEv("🤖 попросила бота написать " + DLG.who); setTimeout(dlgLoad, 10000); setTimeout(dlgLoad, 30000);
 }
