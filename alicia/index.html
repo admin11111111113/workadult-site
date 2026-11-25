@@ -986,6 +986,21 @@ async function wallBot(id) {
   roomSay(x.p, x.who, j.ru || j.text, x.text, true, j.text);
 }
 function privSel(p) { PSEL = p; PUNREAD[p] = 0; privShowChat(); }
+// 25.11 владелец «почему не по-русски»: его строки в привате — перевод на русский (оригинал мелко под ним)
+const PTRQ = new Set();
+async function privTr() {
+  const need = PRIVMSG.filter(m => !m.me && !m.ru && m.text && !/[а-яё]/i.test(m.text) && /[a-z]{2}/i.test(m.text) && !PTRQ.has(m.text)).slice(-15);
+  if (!need.length) return;
+  need.forEach(m => PTRQ.add(m.text));
+  let done = 0;
+  await Promise.all(need.map(async m => {
+    try { const r = await call("fetch", { url: "https://translate.googleapis.com/translate_a/single?client=gtx&sl=auto&tl=ru&dt=t&q=" + encodeURIComponent(m.text), timeout: 6000 });
+      const t = JSON.parse(r.text)[0].map(x => x[0]).join("");
+      if (t && t.trim().toLowerCase() !== m.text.trim().toLowerCase()) { for (const x of PRIVMSG) if (x.text === m.text && !x.me) x.ru = t; done++; }
+    } catch (e) {}
+  }));
+  if (done && FT === "priv") privShowChat();
+}
 function privShowChat() {
   const any = PORDER.filter(k => PRIVLIVE[k]), two = any.length > 1;
   if (any.length && !any.includes(PSEL)) PSEL = any[0];
@@ -996,7 +1011,8 @@ function privShowChat() {
   $("#privc").innerHTML = (any.length ? tabs + `<div style="color:#ff8b8b;font-weight:700;margin-bottom:6px">🔒 ${two ? "Сейчас открыт: Приват " + (any.indexOf(PSEL) + 1) + " — " + esc(PN4[PSEL] || PSEL) + ". Ответ уйдёт ТОЛЬКО сюда." : "Идёт приват — " + esc(PN4[any[0]] || any[0]) + "."} Бот молчит — отвечай внизу.</div>`
     : '<div style="color:#889;margin-bottom:6px">Привата сейчас нет. Когда начнётся — его сообщения будут тут, бот в это время не пишет.</div>') +
     (list.slice().reverse().map(m => m.me ? `<div class="pm me"><span class="tm">${esc(m.t)} ${m.st || ""}</span><b style="color:#9fbaff">${m.by ? "Админ" : "ты"}</b>: ${esc(m.text)}${m.out && m.out !== m.text ? `<br><small style="color:#99a">ушло: ${esc(m.out)}</small>` : ""}</div>`
-      : `<div class="pm"><span class="tm">${esc(m.t)}</span><span class="pf pf-${esc(m.p)}" style="font-size:11px;padding:1px 5px;border-radius:5px">${esc(PN4[m.p] || m.p)}</span> <b>${esc(m.who)}</b>: ${esc(m.text)}</div>`).join("") || "");
+      : `<div class="pm"><span class="tm">${esc(m.t)}</span><span class="pf pf-${esc(m.p)}" style="font-size:11px;padding:1px 5px;border-radius:5px">${esc(PN4[m.p] || m.p)}</span> <b>${esc(m.who)}</b>: ${m.ru ? esc(m.ru) + `<br><small style="color:#99a">${esc(m.text)}</small>` : esc(m.text)}</div>`).join("") || "");
+  privTr();
   const pin = $("#privin"); if (pin) pin.placeholder = any.length ? "ответ в " + (two ? "Приват " + (any.indexOf(PSEL) + 1) + " · " : "") + (PN4[PSEL] || PN4[any[0]] || "") + "…" : "привата нет";
 }
 // её сообщение в приват: перевод (если он пишет не по-русски) → помощник → поле чата на странице эфира сайта
@@ -1061,7 +1077,7 @@ function glow() { for (const k of ["cb", "sc", "bc", "mv"]) { const d = $("#d-" 
 setInterval(glow, 2000);
 let HUBPPL = [], RSAYDONE = new Set(), PPLHOLD = 0, RCHSEEN = new Set(), RSAID = {};
 // версия панели: хаб пишет в общий чат только через панель, которая это умеет (v ≥ 3); новая версия на сайте → панель обновится сама
-const PANEL_V = 74;
+const PANEL_V = 75;
 setInterval(async () => {
   try { const t = await (await fetch(location.pathname + "?vchk=" + Date.now(), { cache: "no-store" })).text(), v = +((t.match(/const PANEL_V = (\d+)/) || [])[1] || 0);
     const busy = Object.values(PRIVLIVE).some(Boolean) || TYPES.length || PAIDQ.length || [...document.querySelectorAll("input,textarea")].some(i => i.value && i.type !== "file") || Object.keys(CUP).length;
