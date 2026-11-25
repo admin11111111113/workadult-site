@@ -18,7 +18,7 @@ async (a) => {
   await new Promise(r => setTimeout(r, 300));
   let box = el, btn = null;
   for (let i = 0; i < 5 && box.parentElement && !btn; i++) { box = box.parentElement;
-    btn = [...box.querySelectorAll("button,[role=button]")].find(b => vis(b) && (/^(send|отправить|gửi|say|post)$/i.test(txt(b)) || /send|отправ|submit/i.test((b.getAttribute("aria-label") || "") + (b.title || "") + (b.className || "")))); }
+    btn = [...box.querySelectorAll("button[type=submit]")].find(vis) || [...box.querySelectorAll("button,[role=button]")].find(b => !/emoji|smile|gift/i.test(b.className || "") && vis(b) && (/^(send|отправить|gửi|say|post)$/i.test(txt(b)) || /send|отправ|submit/i.test((b.getAttribute("aria-label") || "") + (b.title || "") + (b.className || "")))); }
   if (btn) btn.click();
   else for (const t of ["keydown", "keypress", "keyup"]) el.dispatchEvent(new KeyboardEvent(t, { key: "Enter", code: "Enter", keyCode: 13, which: 13, bubbles: true }));
   await new Promise(r => setTimeout(r, 700));
