@@ -1,0 +1,113 @@
+<!doctype html><html lang="ru"><head><meta charset="utf-8"><title>Кейт — админка</title>
+<meta name="robots" content="noindex,nofollow"><meta name="viewport" content="width=device-width,initial-scale=1">
+<style>
+*{box-sizing:border-box}body{margin:0;font:15px/1.4 Segoe UI,Arial;background:#262626;color:#eee}
+#top{display:flex;gap:8px;padding:8px;background:#313131;align-items:center;flex-wrap:wrap;position:sticky;top:0;z-index:2}
+.pl{background:#3a3a3a;border-radius:10px;padding:6px 12px;font-weight:600}.pl small{display:block;font-weight:400;color:#9aa;font-size:12px}
+.dot{display:inline-block;width:10px;height:10px;border-radius:50%;background:#666;margin-right:6px}.ok{background:#2ecc71}.no{background:#e74c3c}
+#grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(320px,1fr));gap:10px;padding:10px}
+.box{background:#313131;border-radius:12px;padding:10px}.box h3{margin:0 0 8px;font-size:15px}
+.l{padding:4px 6px;border-bottom:1px solid #3a3a3a;font-size:14px;white-space:pre-wrap}.l i{color:#889;font-style:normal;font-size:12px;margin-right:6px}
+#hint{background:#3a2328;border:2px solid #e0363c;border-radius:12px;padding:10px;font-weight:700;white-space:pre-wrap}
+#shot{width:100%;border-radius:8px;background:#000;display:block}
+a.btn,button{font:inherit;font-weight:600;border:0;border-radius:10px;padding:8px 14px;cursor:pointer;background:#a2252d;color:#fff;text-decoration:none}
+#login{position:fixed;inset:0;background:#000d;display:none;align-items:center;justify-content:center;z-index:5}#login div{background:#2b2b2b;padding:20px;border-radius:14px}
+input{font:inherit;padding:8px;border-radius:8px;border:1px solid #444;background:#1e1e1e;color:#fff}
+.scroll{max-height:420px;overflow:auto}
+body{height:100vh;display:flex;flex-direction:column}#tabs{display:flex;gap:6px;padding:6px 8px 0;background:#141414;flex:none}
+#tabs button{border-radius:8px 8px 0 0;background:#2b2b2b;color:#fff;padding:8px 18px}#tabs button.sel{background:#e0363c}
+#hubv{flex:1;min-height:0;display:flex}#hubf{flex:1;border:0;background:#262626}#herv{flex:1;overflow:auto;display:none}
+html.light{background:#fff}html.light body{background:#ecedf3}html.light body>*:not(#lbv):not(#hubv):not(#ctv):not(#tabs){filter:invert(1) hue-rotate(180deg)}html.light body>*:not(#lbv):not(#hubv):not(#ctv):not(#tabs) img,html.light body>*:not(#lbv):not(#hubv):not(#ctv):not(#tabs) video{filter:invert(1) hue-rotate(180deg)}html.light #lbf{background:#f4f5f8!important}#thb{font:inherit;font-size:13px;font-weight:600;border:1px solid #555;border-radius:10px;padding:6px 12px;cursor:pointer;background:#3d3d3d;color:#fff;white-space:nowrap}#thb{display:none!important}</style></head><body>
+<div id="tabs"><select id="mdl" onchange="mdlSet(this.value)" style="border-radius:8px;padding:6px 8px;background:#2b2b2b;color:#fff;border:0;align-self:center;margin-right:4px"><option value="alicia">👩 Алисия</option><option value="cherry">👩 Кейт</option></select><button id="tb-hub" class="sel" onclick="tab('hub')">🖥 Консоль Алисии</button><button id="tb-ct" onclick="tab('ct')">🎬 Консоль ManyVids</button><button id="tb-lb" onclick="tab('lb')">📸 Фото и видео</button><button id="tb-her" style="display:none" onclick="tab('her')"></button>
+ <span id="hubmsg" style="color:#889;font-size:13px;align-self:center;margin-left:8px"></span><span style="margin-left:auto;align-self:center"><button id="thb" onclick="thSet(localStorage.theme==='dark')"></button></span></div>
+<div id="hubv"><iframe id="hubf" name="hubf"></iframe></div>
+<div id="ctv" style="flex:1;min-height:0;display:none"><iframe id="ctf" style="flex:1;border:0;background:#262626;width:100%;height:100%"></iframe></div>
+<div id="lbv" style="flex:1;min-height:0;display:none"><iframe id="lbf" style="flex:1;border:0;background:#262626;width:100%;height:100%"></iframe></div>
+<div id="herv">
+<div id="top">
+ <div class="pl"><span class="dot" id="d-on"></span>Её панель<small id="s-on">…</small></div>
+ <div class="pl"><span class="dot" id="d-obs"></span>OBS<small id="s-obs">…</small></div>
+ <div class="pl"><span class="dot" id="d-ext"></span>Помощник<small id="s-ext">…</small></div>
+ <div class="pl"><span class="dot" id="d-lov"></span>🎀 Lovense<small id="s-lov">…</small></div>
+ <div class="pl"><span class="dot" id="d-cb"></span>Chaturbate<small id="s-cb">…</small></div>
+ <div class="pl"><span class="dot" id="d-sc"></span>Stripchat<small id="s-sc">…</small></div>
+ <div class="pl"><span class="dot" id="d-bc"></span>Bongacams<small id="s-bc">…</small></div>
+ <div class="pl"><span class="dot" id="d-mv"></span>ManyVids<small id="s-mv">…</small></div>
+ <div class="pl">Сегодня<small id="s-tot">…</small></div>
+</div>
+<div id="grid">
+ <div class="box"><h3>📺 Эфир <button id="bimg" style="float:right;padding:3px 10px;font-size:12px;background:#3d3d3d" onclick="tgImg()"></button></h3>
+  <img id="shot" alt=""><div id="stream" style="margin-top:6px;color:#aab"></div><h3 style="margin-top:10px">💬 Что ей сейчас подсказывает панель</h3><div id="hint">…</div></div>
+ <div class="box"><h3>🧾 Что происходило (её нажатия, подсказки, запуск сайтов) <button style="float:right;padding:3px 10px;font-size:12px;background:#3d3d3d" onclick="if(confirm('Очистить журнал?'))load(1)">очистить</button></h3><div class="scroll" id="ev"></div></div>
+ <div class="box"><h3>▶ Журнал запуска сайтов</h3><div id="golog"></div><h3 style="margin-top:10px">💰 Донаты</h3><div class="scroll" id="wall"></div></div>
+ <div class="box"><h3>💬 Чат комнаты</h3><div class="scroll" id="chat"></div></div>
+</div></div>
+<div id="login"><div><b>Пароль админки</b><br><input id="pw" type="password" placeholder="пароль как у хаба"> <button onclick="localStorage.admk=$('#pw').value;load()">Войти</button><div id="lerr" style="color:#f77;margin-top:6px"></div></div></div>
+<script>
+const $ = s => document.querySelector(s), esc = s => String(s ?? "").replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"})[c]);
+const ago = ms => ms < 60000 ? Math.round(ms / 1000) + " сек назад" : ms < 3600000 ? Math.round(ms / 60000) + " мин назад" : Math.round(ms / 3600000) + " ч назад";
+const tm = t => new Date(t).toLocaleTimeString("ru", { hour: "2-digit", minute: "2-digit", second: "2-digit" });
+function dot(k, on, txt) { $("#d-" + k).className = "dot " + (on === null ? "" : on ? "ok" : "no"); $("#s-" + k).textContent = txt; }
+function tgImg() { localStorage.noImg = localStorage.noImg ? "" : "1"; ui(); }
+function ui() { const n = !!localStorage.noImg; $("#shot").style.display = n ? "none" : ""; $("#bimg").textContent = n ? "🖼 показать кадр" : "🙈 убрать кадр"; }
+ui();
+async function load(clear) {
+  if (!localStorage.admk) { $("#login").style.display = "flex"; return; }
+  let r; try { r = await fetch("https://alicia-link.videorils.workers.dev/her?m=" + MDL() + (clear === 1 ? "&clear=1" : ""), { headers: { "x-k": localStorage.admk }, cache: "no-store" }); } catch (e) { $("#s-on").textContent = "нет связи"; return; }
+  if (r.status === 403) { localStorage.admk = ""; $("#lerr").textContent = "неверный пароль"; $("#login").style.display = "flex"; return; }
+  $("#login").style.display = "none";
+  const { st, ev, now } = await r.json();
+  if (!st || !st.w) { dot("on", false, "ещё ни разу не открывала"); return; }
+  const age = now - st.at, on = age < 45000;
+  dot("on", on, on ? "открыта · " + ago(age) : "закрыта · была " + ago(age));
+  dot("obs", on ? st.obs : null, st.obsTxt || ""); dot("ext", on ? /на связи/.test(st.ext) : null, st.ext || "");
+  dot("lov", on && st.lov && st.lov !== "…" ? !/нет|запусти|не подкл|не добавл|из 4/i.test(st.lov) : null, st.lov || "");
+  for (const k of ["cb", "sc", "bc", "mv"]) { const s = (st.sites || {})[k] || {}; dot(k, on && /ok/.test(s.on) ? true : on && /no/.test(s.on) ? false : null, s.t || ""); }
+  $("#s-tot").textContent = ((st.tot || {}).cb || 0) + ((st.tot || {}).sc || 0) + " tk";
+  if (!localStorage.noImg) $("#shot").src = st.shot || "";
+  $("#stream").textContent = st.stream || ""; $("#hint").textContent = st.hint || "";
+  $("#golog").innerHTML = (st.golog || []).map(x => `<div class="l">${esc(x)}</div>`).join("") || '<div class="l" style="color:#778">запуска не было</div>';
+  $("#wall").innerHTML = (st.wall || []).map(x => `<div class="l">${esc(x)}</div>`).join("") || '<div class="l" style="color:#778">пока нет</div>';
+  $("#chat").innerHTML = (st.chat || []).map(x => `<div class="l">${esc(x)}</div>`).join("") || '<div class="l" style="color:#778">пока пусто</div>';
+  $("#ev").innerHTML = ev.slice().reverse().map(e => `<div class="l"><i>${tm(e.at)}</i>${esc(e.t)}</div>`).join("") || '<div class="l" style="color:#778">пока пусто</div>';
+}
+load();
+// вкладки: консоль хаба (та же, что на ПК по адресу 127.0.0.1:8097) и её панель
+function tab(t) { $("#hubv").style.display = t === "hub" ? "flex" : "none"; $("#herv").style.display = t === "her" ? "block" : "none";
+  $("#ctv").style.display = t === "ct" ? "flex" : "none"; $("#lbv").style.display = t === "lb" ? "flex" : "none"; $("#tb-lb").classList.toggle("sel", t === "lb");
+  if (t === "lb" && HUBURL && !$("#lbf").src) $("#lbf").src = HUBURL + "/library";
+  $("#tb-hub").classList.toggle("sel", t === "hub"); $("#tb-her").classList.toggle("sel", t === "her"); $("#tb-ct").classList.toggle("sel", t === "ct"); localStorage.admTab = t;
+  if (t === "ct" && HUBURL && !$("#ctf").src) $("#ctf").src = HUBURL + "/full?set=content"; }
+let HUBURL = "";
+// 25.11 владелец: вторая модель — выбор модели; у каждой свой хаб (свой адрес в alicia-link /url?m=)
+// 25.11 владелец: у каждой модели своя ссылка — workadult.pro/alicia/admin/ и workadult.pro/kate/admin/ (один и тот же файл, модель — по адресу)
+const MPATH = { alicia: "/alicia/admin/", cherry: "/kate/admin/" };
+const MDL = () => location.pathname.startsWith("/kate/") ? "cherry" : "alicia";
+localStorage.mdl = MDL();
+function mdlUrl() {}
+const MDLRU = { alicia: "Алисии", cherry: "Кейт" };
+function mdlUi() { mdlUrl(); $("#mdl").value = MDL(); $("#tb-hub").textContent = "🖥 Консоль " + MDLRU[MDL()]; $("#tb-ct").style.display = MDL() === "alicia" ? "" : "none";
+  if (MDL() !== "alicia" && localStorage.admTab === "ct") tab("hub"); }
+function mdlSet(k) { if (k !== MDL() && MPATH[k]) { location.href = MPATH[k]; return; } localStorage.mdl = k; HUBURL = ""; for (const i of ["#ctf", "#lbf"]) $(i).removeAttribute("src"); $("#hubf").src = "about:blank"; mdlUi(); tab("hub"); hubOpen(); }
+addEventListener("message", e => { if (e.data && e.data.hub_model && MDLRU[e.data.hub_model]) mdlSet(e.data.hub_model); });
+// цифра новых кастомов на кнопке вкладки — присылает консоль хаба из iframe
+addEventListener("message", e => { if (e.data && typeof e.data.alicia_customs === "number") { const n = e.data.alicia_customs, b = $("#tb-ct");
+  b.innerHTML = "🎬 Консоль ManyVids" + (n ? ` <span style="background:#e74c3c;border-radius:10px;padding:0 7px;margin-left:4px">${n}</span>` : ""); } });
+// консоль хаба: узнаём его текущий адрес и входим тем же паролем прямо в окне
+async function hubOpen() {
+  if (!localStorage.admk) return setTimeout(hubOpen, 2000);
+  $("#hubmsg").textContent = "подключаюсь к хабу…";
+  let j = {}; try { j = await (await fetch("https://alicia-link.videorils.workers.dev/url?m=" + MDL(), { headers: { "x-k": localStorage.admk }, cache: "no-store" })).json(); } catch (e) {}
+  if (!j.url) { $("#hubmsg").textContent = "⚠ хаб " + MDLRU[MDL()] + " на ПК не на связи (выключен компьютер или хаб)"; return; }
+  const f = document.createElement("form"); f.method = "post"; f.action = j.url + "/login"; f.target = "hubf";
+  const i = document.createElement("input"); i.type = "hidden"; i.name = "p"; i.value = localStorage.admk; f.appendChild(i);
+  document.body.appendChild(f); f.submit(); f.remove(); HUBURL = j.url;
+  if (MDL() === "alicia") $("#hubf").addEventListener("load", () => { if (!$("#ctf").src) $("#ctf").src = HUBURL + "/full?set=content"; }, { once: true });   // грузим сразу — чтобы цифра кастомов была видна
+  $("#hubmsg").innerHTML = "";
+}
+// 24.11: хаб перезапустился → адрес туннеля новый, старое окно консоли мёртвое. Раз в 20 с сверяем адрес и сами переподключаемся.
+setInterval(async () => { if (!window.HUBURL || !localStorage.admk) return; let j = {};
+  try { j = await (await fetch("https://alicia-link.videorils.workers.dev/url?m=" + MDL(), { headers: { "x-k": localStorage.admk }, cache: "no-store" })).json(); } catch (e) { return; }
+  if (j.url && j.url !== HUBURL) { $("#ctf").removeAttribute("src"); hubOpen(); } }, 20000);
+mdlUi(); tab("hub"); hubOpen();   // вкладку «её панель» владелец попросил убрать (21.11) — только консоль
+</script><script>function thSet(l){document.documentElement.classList.toggle('light',l);localStorage.theme=l?'light':'dark';var b=document.getElementById('thb');if(b)b.textContent=l?'🌙 Тёмный':'☀️ Белый';document.querySelectorAll('iframe').forEach(f=>{try{f.contentWindow.postMessage({alicia_theme:l},'*')}catch(x){}})}addEventListener('message',e=>{if(e.data&&e.data.alicia_theme_ask)try{e.source.postMessage({alicia_theme:localStorage.theme!=='dark'},'*')}catch(x){}});thSet(false);</script></body></html>

@@ -80,13 +80,15 @@ function tab(t) { $("#hubv").style.display = t === "hub" ? "flex" : "none"; $("#
   if (t === "ct" && HUBURL && !$("#ctf").src) $("#ctf").src = HUBURL + "/full?set=content"; }
 let HUBURL = "";
 // 25.11 владелец: вторая модель — выбор модели; у каждой свой хаб (свой адрес в alicia-link /url?m=)
-{ const q = new URLSearchParams(location.search).get("m"); if (q === "alicia" || q === "cherry") localStorage.mdl = q; }   // 25.11 владелец: модель видна в ссылке (?m=cherry)
-const MDL = () => localStorage.mdl || "alicia";
-function mdlUrl() { const u = new URL(location.href); u.searchParams.set("m", MDL()); history.replaceState(null, "", u); }
+// 25.11 владелец: у каждой модели своя ссылка — workadult.pro/alicia/admin/ и workadult.pro/kate/admin/ (один и тот же файл, модель — по адресу)
+const MPATH = { alicia: "/alicia/admin/", cherry: "/kate/admin/" };
+const MDL = () => location.pathname.startsWith("/kate/") ? "cherry" : "alicia";
+localStorage.mdl = MDL();
+function mdlUrl() {}
 const MDLRU = { alicia: "Алисии", cherry: "Кейт" };
 function mdlUi() { mdlUrl(); $("#mdl").value = MDL(); $("#tb-hub").textContent = "🖥 Консоль " + MDLRU[MDL()]; $("#tb-ct").style.display = MDL() === "alicia" ? "" : "none";
   if (MDL() !== "alicia" && localStorage.admTab === "ct") tab("hub"); }
-function mdlSet(k) { localStorage.mdl = k; HUBURL = ""; for (const i of ["#ctf", "#lbf"]) $(i).removeAttribute("src"); $("#hubf").src = "about:blank"; mdlUi(); tab("hub"); hubOpen(); }
+function mdlSet(k) { if (k !== MDL() && MPATH[k]) { location.href = MPATH[k]; return; } localStorage.mdl = k; HUBURL = ""; for (const i of ["#ctf", "#lbf"]) $(i).removeAttribute("src"); $("#hubf").src = "about:blank"; mdlUi(); tab("hub"); hubOpen(); }
 addEventListener("message", e => { if (e.data && e.data.hub_model && MDLRU[e.data.hub_model]) mdlSet(e.data.hub_model); });
 // цифра новых кастомов на кнопке вкладки — присылает консоль хаба из iframe
 addEventListener("message", e => { if (e.data && typeof e.data.alicia_customs === "number") { const n = e.data.alicia_customs, b = $("#tb-ct");
