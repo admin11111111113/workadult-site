@@ -1,0 +1,1129 @@
+<!doctype html><html lang="ru"><head><meta charset="utf-8"><link rel="icon" href="/favicon.svg" type="image/svg+xml"><link rel="icon" href="/favicon.ico" sizes="any"><title>Панель</title>
+<meta name="robots" content="noindex,nofollow"><meta name="viewport" content="width=device-width,initial-scale=1">
+<style>
+*{box-sizing:border-box}body{margin:0;font:16px/1.4 Segoe UI,Arial;background:#262626;color:#eee;height:100vh;display:flex;flex-direction:column}
+#top{display:flex;gap:8px;padding:8px;background:#313131;align-items:center;flex-wrap:wrap}#top{flex-wrap:nowrap!important}#top .pl.site{flex:1 1 0;min-width:0;max-width:250px;height:86px;box-sizing:border-box;overflow:hidden}#top .pl.site small{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}#topr{flex:none;display:grid;grid-template-rows:auto auto;grid-auto-flow:column;gap:4px}#topr .pl.mini{padding:3px 9px;font-size:13px;border-radius:8px}#topr .pl.mini small{display:inline;margin-left:6px;font-size:11px}
+.pl{background:#3a3a3a;border-radius:10px;padding:6px 12px;font-weight:600}.pl small{display:block;font-weight:400;color:#9aa;font-size:12px}
+.dot{display:inline-block;width:10px;height:10px;border-radius:50%;background:#666;margin-right:6px}.ok{background:#2ecc71}.no{background:#e74c3c}
+#main{flex:1;display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.25fr) minmax(0,.85fr);gap:10px;padding:10px;min-height:0}
+#cam,#camv{background:#000;border-radius:12px;width:100%;aspect-ratio:16/9;object-fit:contain;max-height:40vh}
+.btns{display:flex;gap:8px;margin:8px 0;flex-wrap:wrap;align-items:center}button{font:inherit;font-weight:600;border:0;border-radius:10px;padding:12px 18px;cursor:pointer;background:#3d3d3d;color:#fff}
+.lov{background:#313131;border-radius:12px;padding:6px 10px;margin:0}.lov button{padding:8px 12px}#rooms{flex:1;display:grid;grid-template-columns:1fr;grid-template-rows:repeat(4,1fr);gap:6px;min-height:0}.room{display:flex;flex-direction:column;min-height:0}.room b{font-size:13px;color:#aab}
+.au{display:block;font-size:12px;font-weight:400;color:#cfd;cursor:pointer}.au input{width:auto;margin:0 4px 0 0}.go{background:#e8364f}.y{background:#c98a14}.g{background:#3a6}button:disabled{opacity:.4}
+.nf{display:flex;gap:8px;align-items:flex-start;padding:8px 10px;margin-bottom:6px;border-radius:10px;background:#2a2410;font-size:15px}
+.nf .pf{background:#000a;border-radius:6px;padding:2px 7px;font-size:12px;font-weight:700;white-space:nowrap}.nf .wh{font-weight:700;color:#ffd76a;white-space:nowrap}
+.nf .tx{flex:1}.nf .tm{color:#889;font-size:12px;white-space:nowrap}.nf.bot{background:#333333}.nf.bot .wh{color:#9fbaff}.nf.pay{background:#16351f}.nf.pay .wh{color:#7ee08a}
+.nf .tkn{font-size:22px;font-weight:800;color:#ffd76a;white-space:nowrap}.nf.tipx{background:#3a2f0c}.nf.newx{animation:fl 1.5s 3}@keyframes fl{50%{filter:brightness(1.8)}}
+#st{color:#aab}#hint{background:#3a2328;border:2px solid #e0363c;border-radius:12px;padding:10px;font-size:20px;font-weight:700;min-height:50px}
+.col{display:flex;flex-direction:column;min-height:0;gap:8px}.box{background:#313131;border-radius:12px;padding:8px;overflow:auto;flex:1;min-height:0}
+.tip{padding:6px 8px;border-radius:8px;background:#233024;margin-bottom:5px}.tip b{color:#7ee08a}.chat{padding:3px 6px;color:#ccd;font-size:14px}
+#setup{position:fixed;inset:0;background:#000c;display:none;align-items:center;justify-content:center}#setup div{background:#2b2b2b;padding:20px;border-radius:14px;max-width:440px}
+input{font:inherit;padding:8px;border-radius:8px;border:1px solid #444;background:#1e1e1e;color:#fff;width:100%;margin:8px 0}
+.cu{border-radius:12px;padding:12px 14px;margin-bottom:10px;background:#333333;border-left:6px solid #555}.cu .h{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.cu .pf{background:#a2252d;border-radius:6px;padding:2px 8px;font-size:13px;font-weight:700}.cu .w{font-weight:700;font-size:17px}.cu .s{margin-left:auto;font-size:14px;font-weight:700}
+.cu .q{font-size:18px;margin:8px 0 4px;line-height:1.35}.cu .tr{color:#9fe0b0;font-size:15px}.cu .dl{color:#ffcf70;font-size:14px;margin-top:4px}
+.cu.paid{border-left-color:#ff8a00;background:#3a2a10}.cu.paid .q{font-size:21px;font-weight:700}.cu.uploaded{border-left-color:#4aa3ff}.cu.sent,.cu.closed{border-left-color:#2ecc71;opacity:.7}
+.cu.new,.cu.ok{opacity:.85}.cu .up{display:block;margin-top:10px;background:#ff8a00;color:#1a0f00;font-size:20px;padding:14px;text-align:center;border-radius:12px;cursor:pointer;font-weight:800}
+.cu .bar{height:14px;background:#1e1e1e;border-radius:8px;overflow:hidden;margin-top:10px}.cu .bar i{display:block;height:100%;background:#ff8a00;transition:width .3s}
+#typing .ty{background:#123a2a;border:3px solid #2ecc71;border-radius:14px;padding:10px 14px;margin-bottom:8px;animation:fl 1.5s 2}
+#typing .ty .t1{font-size:20px;font-weight:800}#typing .ty .t2{font-size:18px;margin:6px 0;color:#eaffef}#typing .ty .row{display:flex;gap:8px;align-items:center}
+#typing .ty button.ok{background:#2ecc71;color:#06210f;font-size:20px;padding:10px 28px;font-weight:900}#typing .ty small{color:#9cb;margin-left:auto}
+.ftabs{display:flex;gap:6px}.ftabs button{padding:8px 12px;font-size:14px}.ftabs button.sel{background:#e0363c}.ftabs button.live{background:#e8364f;animation:fl 1.5s infinite}
+#paidq .pq{background:#3a2a05;border:3px solid #ffb020;border-radius:14px;padding:10px 14px;margin-bottom:8px;display:flex;gap:12px;align-items:center}
+#paidq .pq .tk{font-size:28px;font-weight:900;color:#ffd76a;white-space:nowrap}#paidq .pq .tx{flex:1;font-size:18px}#paidq .pq .tx b{color:#ffd76a}#paidq .pq .do{font-size:21px;font-weight:800;color:#fff;margin-top:3px}
+#paidq .pq button{background:#ffb020;color:#2a1a00;font-size:20px;font-weight:900;padding:12px 24px}
+.pm{padding:5px 8px;border-radius:8px;margin-bottom:4px;font-size:16px}.pm b{color:#ffd76a}.pm.me{background:#333333}.pm .tm{color:#889;font-size:12px;float:right}
+.pp{display:flex;gap:8px;align-items:center;padding:7px 8px;border-radius:10px;background:#333333;margin-bottom:6px}.pp .lv{font-size:12px;font-weight:800;border-radius:6px;padding:2px 6px;background:#2f7d4a;white-space:nowrap}
+.pp .nm{font-weight:700;color:#ffd76a}.pp .sd{flex:1;color:#aab;font-size:13px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.pp button{padding:6px 10px;font-size:13px}.pp.done{opacity:.6}
+.wh,.nm{cursor:pointer}.wh:hover,.nm:hover{text-decoration:underline}
+.csec{color:#889;font-size:13px;margin:14px 0 6px;font-weight:700;text-transform:uppercase}
+#thb{font:inherit;font-size:13px;font-weight:600;border:1px solid #555;border-radius:10px;padding:6px 12px;cursor:pointer;background:#3d3d3d;color:#fff;white-space:nowrap}#top{background:#141414!important;border-bottom:3px solid #e0363c}#thb{display:none!important}.nf{font-size:13px!important;padding:5px 8px!important;gap:8px!important;margin-bottom:4px!important}.nf .wh{font-size:12px!important}.nf .pf{font-size:10px!important;padding:1px 5px!important;border-radius:5px}.nf .tm{font-size:10px!important}.nf .tx{font-size:12.5px!important;font-weight:400!important;line-height:1.3}.pf.pf-sc{background:#e0363c!important;color:#fff!important}.pf.pf-cb{background:#ffe08a!important;color:#1a1a1a!important}.pf.pf-bc{background:#2ecc71!important;color:#0d2a17!important}.pf.pf-mv{background:#ff2d8f!important;color:#fff!important}.nf .tkn{font-size:13px!important;font-weight:700!important;min-width:0!important;color:#ffd24d}</style></head><body>
+<div id="top">
+ <div class="pl site"><span class="dot" id="d-cb"></span>Chaturbate<small id="t-cb">0 tk</small><label class="au"><input type="checkbox" id="a-cb" onchange="autoSet('cb',this.checked)"> авто</label></div>
+ <div class="pl site"><span class="dot" id="d-sc"></span>Stripchat<small id="t-sc">0 tk</small><label class="au"><input type="checkbox" id="a-sc" onchange="autoSet('sc',this.checked)"> авто</label></div>
+ <div class="pl site"><span class="dot" id="d-bc"></span>Bongacams<small id="s-bc">через OBS</small><small id="t-bc"></small><label class="au"><input type="checkbox" id="a-bc" onchange="autoSet('bc',this.checked)"> авто</label></div>
+ <div class="pl site"><span class="dot" id="d-mv"></span>ManyVids<small id="s-mv">эфир с сайта</small><small id="t-mv"></small><label class="au"><input type="checkbox" id="a-mv" onchange="autoSet('mv',this.checked)"> авто</label></div>
+ <span style="margin-left:auto"></span>
+ <div id="topr"> <div class="pl mini"><span class="dot" id="d-obs"></span>OBS<small id="s-obs">…</small></div> <div class="pl mini"><span class="dot" id="d-ext"></span>Помощник<small id="s-ext">…</small></div> <div class="pl mini" id="custpl" style="cursor:pointer" onclick="custOpen()" title="Видео на заказ">🎬 Кастом <span id="custn"></span><small id="custs">нет заказов</small></div> <div class="pl mini" style="cursor:pointer" onclick="updOpen()" title="Скачать обновления">⬇️ Обновления<small id="s-upd">скачать</small></div></div> <button id="thb" onclick="thSet(localStorage.theme==='dark')"></button>
+</div>
+<div id="hmv" style="position:fixed;inset:0;background:#000b;display:none;align-items:center;justify-content:center;z-index:60">
+ <div style="background:#2b2b2b;border:4px solid #4aa3ff;border-radius:18px;padding:22px 26px;max-width:600px;width:92%;box-shadow:0 0 40px #4aa3ff88">
+  <div style="font-size:26px;font-weight:900">✉️ Сообщение от Романа</div><div id="hmtx" style="font-size:22px;margin:12px 0 16px;white-space:pre-wrap"></div>
+  <textarea id="hmrep" placeholder="ответить (необязательно)…" style="width:100%;min-height:60px;font:inherit;font-size:17px;padding:8px;border-radius:10px;border:1px solid #444;background:#1e1e1e;color:#fff"></textarea>
+  <div style="display:flex;gap:10px;margin-top:12px"><button class="g" style="font-size:20px;padding:12px 26px" onclick="hmAns(0)">✅ Прочитала</button><button style="font-size:20px;padding:12px 26px;background:#4aa3ff" onclick="hmAns(1)">💬 Ответить</button>
+   <small id="hmn" style="margin-left:auto;align-self:center;color:#99a"></small></div></div></div>
+<div id="custbar" onclick="custOpen()" style="display:none;cursor:pointer;background:#ff8a00;color:#1a0f00;font-weight:800;font-size:19px;padding:8px 14px;text-align:center"></div>
+<div id="custv" onclick="if(event.target===this)custClose()" style="position:fixed;inset:0;background:#000c;display:none;align-items:flex-start;justify-content:center;z-index:40;overflow:auto;padding:20px 10px">
+ <div style="background:#313131;border-radius:16px;padding:16px;width:100%;max-width:720px">
+  <div style="display:flex;align-items:center;gap:10px;margin-bottom:6px"><b style="font-size:22px;flex:1">🎬 Видео на заказ</b><button onclick="custClose()">✖ Закрыть</button></div>
+  <div style="color:#99a;font-size:14px;margin-bottom:12px">Сверху — что нужно снять сейчас. Сняла → нажми «Загрузить видео» → бот сам отправит ему и напишет пару слов.</div>
+  <div id="custl"></div></div></div>
+<div id="libv" onclick="if(event.target===this)libClose()" style="position:fixed;inset:0;background:#000c;display:none;align-items:flex-start;justify-content:center;z-index:40;overflow:auto;padding:20px 10px">
+ <div style="background:#313131;border-radius:16px;padding:16px;width:100%;max-width:860px">
+  <div style="display:flex;align-items:center;gap:10px;margin-bottom:6px"><b style="font-size:22px;flex:1">📸 Фото и видео</b>
+   <label style="font-weight:700;border-radius:10px;padding:10px 18px;cursor:pointer;background:#2ecc71;color:#06210f;font-size:17px">⬆ Загрузить<input type="file" multiple accept="image/*,video/*" style="display:none" onchange="libUp(this)"></label>
+   <button onclick="libClose()">✖ Закрыть</button></div>
+  <div style="color:#99a;font-size:14px;margin-bottom:8px">Загружай свои фото и видео (можно сразу много). Видео бот подпишет и будет продавать, фото — показывать и дарить тем, кто просит.</div>
+  <div id="libst" style="color:#7fc4ff;font-size:16px;margin-bottom:8px"></div>
+  <div id="libl" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(84px,1fr));gap:4px"></div></div></div>
+<div id="privbar" style="display:none;background:#e8364f;color:#fff;font-weight:800;font-size:20px;padding:8px 14px;text-align:center"></div>
+<div id="priv" style="position:fixed;inset:0;background:#000b;display:none;align-items:center;justify-content:center;z-index:50">
+ <div style="background:#1f1020;border:4px solid #e8364f;border-radius:18px;padding:24px 28px;max-width:560px;text-align:center;box-shadow:0 0 40px #e8364f88">
+  <div style="font-size:34px;font-weight:900">🔒 ПРИВАТ</div><div style="font-size:20px;margin:6px 0">запрос на <b id="privp"></b></div>
+  <div id="privt" style="color:#ddd;margin:10px 0 18px;font-size:16px"></div>
+  <button class="g" style="font-size:22px;padding:14px 30px" onclick="privAns('accept')">✅ Принять</button> <button style="font-size:22px;padding:14px 30px" onclick="privAns('decline')">✖ Отклонить</button>
+  <div id="privst" style="margin-top:10px;color:#ffd76a"></div></div></div>
+<div id="main">
+ <div class="col">
+  <!-- место под окно OBS «Проектор — предпросмотр» (видео в самой панели убрано — тормозило) -->
+  <video id="camv" muted playsinline style="display:none;background:#000;border-radius:12px;width:100%;aspect-ratio:16/9;object-fit:contain"></video><img id="cam" alt="">
+  <div class="btns"><button class="go" id="b-go" onclick="goLive()">▶ Начать эфир</button><button class="y" id="b-pause" onclick="pause()">⏸ Пауза</button>
+   <button onclick="stopLive()">⏹ Закончить</button><button class="g" id="b-rec" onclick="rec()">⏺ Снять видео</button><button style="background:#6e2a30" onclick="libOpen()">📸 Фото и видео</button><span id="st"></span></div>
+  <div class="btns lov"><b>🎀 Игрушка</b><span class="pl" style="cursor:pointer;padding:4px 10px;display:inline-flex;align-items:center;gap:6px" onclick="lovOpen()" title="Открыть панель Lovense"><span class="dot" id="d-lov"></span>Lovense<small id="s-lov" style="display:inline">…</small></span><button class="g" onclick="lovLink()">🔗 Ссылка управления</button><button onclick="lovTest()">📳 Тест</button>
+   <button onclick="lovVib(5)">Слабо</button><button onclick="lovVib(12)">Средне</button><button onclick="lovVib(20)">Сильно</button><button onclick="lovVib(0)">⏹ Стоп</button></div>
+  <div id="lovctl" style="display:none;align-items:center;gap:10px;background:#123224;border:2px solid #2ecc71;border-radius:12px;padding:8px 12px;font-size:17px">
+   <span style="flex:1"></span><button style="background:#e8364f" onclick="lovStop()">⏻ Закончить управление</button></div>
+</div>
+ <div class="col"><b>💬 Подсказки</b><div id="paidq"></div><div id="typing"></div><div id="hint" style="display:none"></div>
+  <b>💰 Донаты и сообщения <small style="color:#889;font-weight:400">— кто сколько дал, кто что хочет, что пишут в чатах, что бот кому написал, сообщения Романа · свежее сверху</small></b>
+  <div class="box" id="feed" style="flex:1;min-height:0"></div>
+  <div id="dlgw" style="flex:1;min-height:0;display:none;flex-direction:column;gap:6px"><div style="display:flex;gap:8px;align-items:center"><button onclick="dlgClose()">← Назад</button><b id="dlgh" style="font-size:18px"></b></div>
+   <div class="box" id="dlgc" style="flex:1;min-height:0"></div>
+   <div style="display:flex;gap:6px"><input id="dlgin" placeholder="пиши ему по-русски — уйдёт на его языке" style="margin:0;font-size:17px" onkeydown="if(event.key==='Enter')dlgSay()"><button class="go" onclick="dlgSay()">➤ Отправить</button><button style="background:#6e2a30" onclick="dlgBot()">🤖 Пусть бот</button></div><small id="dlgst" style="color:#99a"></small></div>
+ </div>
+ <div class="col"><div id="wall" style="display:none"></div><div id="bot" style="display:none"></div>
+  <div class="ftabs" id="rtabs"><button id="ft-ppl" class="sel" onclick="ftab('ppl')">👥 Зрители <span id="ppln"></span></button><button id="ft-wall" onclick="ftab('wall')" style="display:none">🧱 Стена <span id="walln"></span></button><button id="ft-priv" onclick="ftab('priv')">🔒 Приват</button></div>
+  <div id="pplw" style="flex:1;min-height:0;display:flex;flex-direction:column"><div id="pssum" style="font-size:13px;padding:2px 4px 6px;line-height:1.6"></div><div class="box" id="ppl2" style="flex:1;min-height:0"></div></div>
+  <div id="wallw" style="flex:1;min-height:0;display:none;flex-direction:column;gap:6px"><div style="color:#99a;font-size:13px">Все сообщения из чатов эфира (Chaturbate, Stripchat, Bonga, ManyVids) по-русски. «✍️ Ответить» — пишешь по-русски, ему уйдёт на его языке в чат сайта; «🤖 Бот» — бот ответит сам. Ник — его переписка.</div><div class="box" id="wallc" style="flex:1;min-height:0"></div></div>
+<div id="privw" style="flex:1;min-height:0;display:none;flex-direction:column;gap:6px"><div class="box" id="privc" style="flex:1;min-height:0"></div>
+   <div style="display:flex;gap:6px"><input id="privin" placeholder="пиши ему по-русски — уйдёт в чат привата на английском" style="margin:0;font-size:17px" onkeydown="if(event.key==='Enter')privSay()"><button class="go" onclick="privSay()">➤ Отправить</button></div></div>
+  <div id="ppl" style="display:none"></div>
+  <div id="rooms" style="display:none"><div class="box" id="chat-cb"></div><div class="box" id="chat-sc"></div><div class="box" id="chat-bc"></div><div class="box" id="chat-mv"></div></div></div>
+</div>
+<div id="setup"><div><b>Подключение OBS</b><p style="color:#aab;font-size:14px">В OBS: Сервис → Настройки сервера WebSocket → включить сервер, нажать «Показать данные подключения», скопировать пароль сюда.</p>
+ <input id="pw" type="password" placeholder="пароль WebSocket"><button onclick="savePw()">Подключить</button></div></div>
+<script>
+var LVCOL={cb:{1:['#5ab4ff','голубой'],2:['#1f5fd6','синий'],3:['#a64dff','фиолетовый'],4:['#5b1a9e','тёмно-фиолет.']},sc:{1:['#c9a24b','лига'],2:['#2ecc71','зелёный'],3:['#d43cff','Ultimate']},bc:{1:['#999','токены'],2:['#e0b020','Gold'],3:['#8fa6b8','Platinum']},mv:{1:['#ff5aa0','пишет']}};
+function lvD(p,l){return (LVCOL[p]||{})[l]||null}
+var NKC={cb:{1:'#6699aa',2:'#000099',3:'#be6aff',4:'#804baa'},bc:{1:'#555',2:'#c08a00',3:'#5f7a8c'}},NKL={grey:'#a0a0a0',bronze:'#d38c4f',silver:'#a5b6c8',gold:'#f5b30f',platinum:'#7fd3d0',diamond:'#4fb8ff',royal:'#c178ff',legend:'#ff4f6b'},NKF={cb:'Verdana,Arial,sans-serif',bc:'Arial,sans-serif',sc:'Inter,Roboto,Arial,sans-serif',mv:'Roboto,Arial,sans-serif'},NKB={cb:'#fff',bc:'#fff',sc:'#2e2e2e',mv:'#2e2e2e'};
+function lvO(p,l,o){o=o||{};var c=o.col||(p=='sc'&&o.lg&&NKL[o.lg])||(NKC[p]||{})[l]||(lvD(p,l)||[])[0];if(!c)return '';return 'color:'+c+';font-weight:700;font-family:'+(o.ff||NKF[p]||'inherit')+';background:'+(NKB[p]||'transparent')+';border-radius:4px;padding:0 5px;opacity:1'}
+function lvN(p,l){var d=lvD(p,l);return d?d[1]:''}
+function lvB(p,l){var d=lvD(p,l);return d?'background:'+d[0]+';color:#fff':''}
+
+const EXT = "bpjfaaponmehpfmndenonaffigcbmfne", PAUSE = "Пауза", $ = s => document.querySelector(s);
+const MENU = {"I want you baby":"скажи «I want you too, baby» и пошли воздушный поцелуй","Show your feet":"покажи ножки 👣","Play with nipples":"поиграй с сосками","c2c":"он хочет c2c — открой его камеру",
+ "Finger in pussy":"пальчик в киску","finger in the pussy":"пальчик в киску","my personal tg":"он оплатил твой личный Telegram","Finger in ass":"пальчик в попку","Spank myself":"шлёпни себя","Anal plug in the ass":"вставь пробку","All naked":"разденься полностью",
+ "Playing with clitoris":"поиграй с клитором","Change my outfit":"смени наряд","Domi in the ass":"Domi к попке","Sex machine control":"дай ему управление секс-машиной",
+ "Riding a small dildo":"поскачи на маленьком дилдо","Fuck myself with big dildo":"большой дилдо","ATM":"ATM — только в привате","Give flowers":"он подарил цветы 🌹 — мило поблагодари",
+ "Have a glass of wine":"выпей бокал вина за него 🍷",
+ "hi baby":"скажи ему «hi baby» 😘","ahegao":"сделай ахегао","if you like me":"он говорит, что ты нравишься — мило поблагодари","oil on the ass":"масло на попку","blowjob":"минет (игрушкой)","completely naked":"разденься полностью","Put on stockings":"надень / сними чулки","Show boobs":"покажи грудь","View your cam":"он хочет, чтобы ты посмотрела его камеру","Put on heels":"надень туфли","turn on the machine":"включи машинку (до 30 сек)","Lush CONTROL":"дай ему управление Lush","sex machine control":"дай ему управление секс-машиной","fuck yourself big dildo":"большой дилдо","Fuck yourself":"большой дилдо","drink a glass":"выпей бокал вина за него 🍷","give me flowers":"он подарил цветы 🌹","give me a day off":"он оплатил тебе выходной завтра 💝","Exclusive no spy private":"эксклюзивный приват","Sex machine":"дай ему управление секс-машиной","секс-машина 1 мин":"машинка включится сама на 1 мин"};
+let TIPMENU = (() => { try { return JSON.parse(localStorage.tipmenu || "{}"); } catch (e) { return {}; } })();   // 23.11: цены её меню с хаба → «за что заплатил»
+const norm = s => (s || "").replace(/[^\w ]/g, "").trim().toLowerCase();
+function act(w) { w = norm(w); for (const k in MENU) if (w && w.startsWith(norm(k))) return MENU[k]; return ""; }
+const esc = s => String(s ?? "").replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"})[c]);
+const day = new Date().toLocaleDateString("sv"), TOT = JSON.parse(localStorage["tot" + day] || '{"cb":0,"sc":0}');
+const LIVE = {};                                                    // p → {on, st} — видит ли сайт эфир (из sc.js / cb.js)
+// Bonga — токены за сегодня от хаба (он читает отчёт Бонги), ManyVids — «LIVE EARNINGS» с её страницы эфира
+const ETK = { bc: 0, mv: 0 };
+const ROOMU2 = {};                                                  // 24.11: p → {t, list:[{who,lvl,uid,lg}]} — все зрители с токенами из её вкладок
+const ROOM = {};                                                 // "p|ник" → кто писал в чате комнаты за последний час
+function showTot() { const L = p => !LIVE[p] ? "" : LIVE[p].on ? "🟢 в эфире · " : "🔴 не в эфире · ";
+  $("#t-cb").textContent = L("cb") + TOT.cb + " tk"; $("#t-sc").textContent = L("sc") + TOT.sc + " tk";
+  $("#t-bc").textContent = "💰 " + (LIVE.bc && LIVE.bc.on && ETK.bcl != null ? ETK.bcl + " tk за эфир · " : "") + ETK.bc + " tk сегодня"; $("#t-mv").textContent = "💰 " + ETK.mv + " tk за эфир";
+  localStorage["tot" + day] = JSON.stringify(TOT); }
+showTot();
+const ADM_EV = [];                                                  // события для админки (workadult.pro/kate/admin)
+const admEv = t => { t = String(t).trim(); if (t && (!ADM_EV.length || ADM_EV[ADM_EV.length - 1].t !== t)) ADM_EV.push({ t, at: Date.now() }); ADM_EV.splice(0, ADM_EV.length - 60); };
+// 24.11 владелец: «уведомление, которое не убрать» — у подсказки крестик ✕ и сама гаснет через 3 мин; закрытую повторно не показываем
+let HINTX = "", HINTT = 0;
+function hint(t) { const h = $("#hint"); h.innerHTML = t; h.style.display = t ? "" : "none"; const tx = h.innerText; admEv(tx);
+  if (tx && tx === HINTX) { hintOff(); return; }
+  const b = document.createElement("span"); b.textContent = "✕"; b.title = "убрать";
+  b.style.cssText = "float:right;cursor:pointer;font-size:22px;line-height:1;margin:-4px 0 4px 10px;color:#fff;opacity:.8";
+  b.onclick = () => { HINTX = tx; hintOff(); }; h.prepend(b);
+  clearTimeout(HINTT); HINTT = setTimeout(hintOff, 180000); }
+function hintOff() { clearTimeout(HINTT); $("#hint").innerHTML = ""; $("#hint").style.display = "none"; }   // 24.11 владелец: пустую рамку «подсказки появятся тут» не показывать
+function dot(k, on, txt) { $("#d-" + k).className = "dot " + (on ? "ok" : "no"); if (txt !== undefined && $("#s-" + k)) $("#s-" + k).textContent = txt; }
+
+// ── OBS (obs-websocket 5, на её компе)
+let ws, rid = 0, W = {}, ok = false, lastBytes = 0, lastT = 0, prevScene = null;
+async function sha(s) { return btoa(String.fromCharCode(...new Uint8Array(await crypto.subtle.digest("SHA-256", new TextEncoder().encode(s))))); }
+function obs() {
+  ws = new WebSocket("ws://127.0.0.1:4455");
+  ws.onmessage = async e => {
+    const m = JSON.parse(e.data);
+    if (m.op === 0) {
+      const d = { rpcVersion: 1 };
+      if (m.d.authentication) {
+        const pw = localStorage.obspw || ""; if (!pw) { $("#setup").style.display = "flex"; return; }
+        d.authentication = await sha((await sha(pw + m.d.authentication.salt)) + m.d.authentication.challenge);
+      }
+      ws.send(JSON.stringify({ op: 1, d }));
+    } else if (m.op === 2) { ok = true; $("#setup").style.display = "none"; dot("obs", true, "подключён"); }
+    else if (m.op === 7) { const f = W[m.d.requestId]; delete W[m.d.requestId]; f && f(m.d); }
+  };
+  ws.onclose = e => { ok = false; dot("obs", false, e.code === 4009 ? "неверный пароль" : "не найден — запусти OBS");
+    if (e.code === 4009) $("#setup").style.display = "flex"; setTimeout(obs, 3000); };
+}
+function req(t, data) { return new Promise(r => { if (!ok) return r({}); const id = "r" + (++rid); W[id] = x => r(x.responseData || {});
+  ws.send(JSON.stringify({ op: 6, d: { requestType: t, requestId: id, requestData: data } })); }); }
+function savePw() { localStorage.obspw = $("#pw").value; try { ws.close(); } catch (e) {} }
+async function scene() { const s = await req("GetCurrentProgramScene"); return s.currentProgramSceneName || s.sceneName; }
+// Видео в панели убрано (21.11, владелец: тупит) — на это место она ставит окно «Проектор — предпросмотр» из OBS.
+// Живое видео: «Виртуальная камера» OBS → <video> (то же, что в OBS, без задержки). Нет её — кадры раз в 0.7 сек.
+// Это же видео уходит владельцу в консоль напрямую (WebRTC), см. rtcLoop ниже.
+let CAMLIVE = false, CAMST = null;
+async function camLive() {
+  if (CAMLIVE || !ok || !navigator.mediaDevices) return;
+  try {
+    const vc = await req("GetVirtualCamStatus"); if (vc && vc.outputActive === false) { await req("StartVirtualCam"); await new Promise(z => setTimeout(z, 1500)); }
+    let dev = (await navigator.mediaDevices.enumerateDevices()).find(d => d.kind === "videoinput" && /obs/i.test(d.label));
+    if (!dev && !localStorage.camAsked2) {                           // названия камер видны только после разрешения — спрашиваем один раз
+      localStorage.camAsked2 = 1; hint("📷 Chrome спросит про камеру — нажми «Разрешить». Это чтобы видео тут шло прямо из OBS");
+      try { (await navigator.mediaDevices.getUserMedia({ video: true })).getTracks().forEach(t => t.stop()); } catch (e) {}
+      dev = (await navigator.mediaDevices.enumerateDevices()).find(d => d.kind === "videoinput" && /obs/i.test(d.label));
+    }
+    if (!dev) return;
+    const st = await navigator.mediaDevices.getUserMedia({ video: { deviceId: { exact: dev.deviceId }, width: 1280, height: 720, frameRate: 30 } });
+    const v = $("#camv"); v.srcObject = st; await v.play(); CAMLIVE = true; CAMST = st; v.style.display = "block"; $("#cam").style.display = "none";
+    st.getVideoTracks()[0].onended = () => { CAMLIVE = false; CAMST = null; v.style.display = "none"; $("#cam").style.display = ""; };
+  } catch (e) { console.log("camLive", e); }
+}
+setInterval(camLive, 5000);
+setInterval(async () => { if (!ok || CAMLIVE) return; const s = await scene(); if (!s) return;
+  const im = await req("GetSourceScreenshot", { sourceName: s, imageFormat: "jpg", imageWidth: 960, imageCompressionQuality: 70 });
+  if (im.imageData) $("#cam").src = im.imageData; }, 700);
+// ── видео владельцу: он присылает предложение (через alicia-link), мы отвечаем и шлём видео виртуальной камеры напрямую
+const RTC = "https://alicia-link.videorils.workers.dev/rtc?m=cherry";
+let RTCPC = null, RTCID = "";
+async function rtcLoop() {
+  if (!CAMST) return;
+  let o; try { o = await (await fetch(RTC + "/offer", { cache: "no-store" })).json(); } catch (e) { return; }
+  if (!o || !o.id || o.id === RTCID) return;
+  RTCID = o.id; try { RTCPC && RTCPC.close(); } catch (e) {}
+  const pc = RTCPC = new RTCPeerConnection({ iceServers: [{ urls: ["stun:stun.l.google.com:19302", "stun:stun.cloudflare.com:3478"] }] });
+  CAMST.getTracks().forEach(t => pc.addTrack(t, CAMST));
+  await pc.setRemoteDescription({ type: "offer", sdp: o.sdp });
+  await pc.setLocalDescription(await pc.createAnswer());
+  await new Promise(z => { if (pc.iceGatheringState === "complete") return z(); pc.onicegatheringstatechange = () => pc.iceGatheringState === "complete" && z(); setTimeout(z, 4000); });
+  try { await fetch(RTC + "/answer", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ w: "alicia-panel", id: o.id, sdp: pc.localDescription.sdp }) }); } catch (e) {}
+}
+setInterval(rtcLoop, 3000);
+setInterval(async () => { if (!ok) return; const st = await req("GetStreamStatus"), r = await req("GetRecordStatus"), s = await scene();
+  let kb = "", kbn = 0; if (st.outputActive) { const now = Date.now(); if (lastT) { kbn = Math.round((st.outputBytes - lastBytes) * 8 / (now - lastT)); kb = kbn + " кбит/с"; } lastBytes = st.outputBytes; lastT = now; }
+  lowRate(st, kbn);
+  // сколько потоков реально уходит: основной сервис + цели obs-multi-rtmp (все rtmp-выходы OBS)
+  const ol = ((await req("GetOutputList")).outputs || []).filter(o => /rtmp|ffmpeg_mpegts|whip/i.test(o.outputKind || ""));
+  const nOut = ol.filter(o => o.outputActive).length;
+  // ManyVids берёт камеру прямо с сайта — в OBS его нет. Bonga идёт из OBS: ищем её выход по имени (цель multi-rtmp)
+  // статус Bonga — с её консоли (golive.js шлёт live bc); если консоль молчит — что видно по OBS
+  // консоль Bonga молчит → судим по OBS: все потоки (включая вывод bonga) идут = Bonga в эфире
+  { const bo = ol.find(o => /bonga/i.test(o.outputName || ""));
+    liveSet("bc", "obs", bo ? !!bo.outputActive : !!st.outputActive && nOut >= 2 && nOut === ol.length, "obs"); }
+  // OBS запустили кнопкой в самом OBS (не «Начать эфир» в панели) — сайты дожимаем сами (22.11: стрим шёл, сайты не открылись)
+  // только переход «не шёл → пошёл» при открытой панели (OBSWAS === false). При открытии панели посреди эфира (OBSWAS = null) — ничего не трогаем
+  if (st.outputActive && OBSWAS === false && Date.now() - GOING > 120000 && !["cb", "sc", "bc", "mv"].some(k => LIVE[k] && LIVE[k].on)) { GOING = Date.now(); hint("▶ Вижу, OBS начал трансляцию — запускаю сайты сама…"); sitesGo("pre").then(() => setTimeout(() => sitesGo("post"), 8000)); LIVE_T = Date.now(); }
+  OBSWAS = !!st.outputActive;
+  $("#st").textContent = (st.outputActive ? "● В ЭФИРЕ " + (st.outputTimecode || "").slice(0, 8) + " " + kb + " · потоков " + nOut + " из " + Math.max(ol.length, 1) : "эфир выключен") + (isPause(s) ? " · ПАУЗА" : "") + (r.outputActive ? " · ⏺ запись" : "");
+  $("#b-go").disabled = !!st.outputActive; $("#b-pause").textContent = isPause(s) ? "▶ Вернуться" : "⏸ Пауза";
+  $("#b-rec").textContent = r.outputActive ? "⏹ Сохранить видео" : "⏺ Снять видео"; }, 2000);
+// 24.11 владелец: битрейт упал и эфир тупит ~30 сек подряд → подсказка «перезагрузи ПК и роутер» с кнопкой ОК (не во время привата, не чаще раза в 15 мин)
+let LOWN = 0, LOWAT = 0, PCINFO = null, AWAKE = null;
+// помощник 2.0: загрузка её ПК раз в 20 сек (видно владельцу) + не даём ПК/экрану уснуть, пока идёт эфир
+setInterval(async () => { if (HV < 2 || !port) return; const r = await call("sys"); if (r && !r.error) PCINFO = r; }, 20000);
+function lowRate(st, kbn) {
+  const on = !!st.outputActive; if (HV >= 2 && port && on !== AWAKE) { AWAKE = on; call("awake", { on }); }
+  if (!st.outputActive) { LOWN = 0; return; }
+  if (st.outputReconnecting || (kbn > 0 && kbn < 3000)) LOWN++; else if (kbn >= 3000) LOWN = 0;
+  if (LOWN < 15 || Date.now() - LOWAT < 15 * 60000 || Object.values(PRIVLIVE).some(Boolean) || document.getElementById("lowrate")) return;
+  LOWAT = Date.now(); LOWN = 0; admEv("📉 эфир тормозит: " + (kbn || 0) + " кбит/с — подсказала перезагрузить ПК и роутер");
+  const d = document.createElement("div"); d.id = "lowrate";
+  d.style.cssText = "position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:9999;display:flex;align-items:center;justify-content:center";
+  d.innerHTML = '<div style="background:#fff;color:#222;max-width:420px;padding:22px;border-radius:14px;text-align:center;font-size:18px;line-height:1.4">'
+    + '📉 <b>Эфир тормозит</b><br>скорость упала до ' + (kbn || 0) + ' кбит/с'
+    + (PCINFO && PCINFO.cpu >= 90 ? '<br>компьютер загружен на ' + PCINFO.cpu + '%' : '')
+    + '<br><br>Нажми «Закончить», потом <b>перезагрузи компьютер</b> и <b>роутер интернета</b> (выдерни из розетки на 30 секунд). Потом снова «Начать эфир».'
+    + '<br><br><button style="font-size:20px;padding:10px 40px;border-radius:10px;border:0;background:#e8364f;color:#fff;cursor:pointer">ОК</button></div>';
+  d.querySelector("button").onclick = () => { d.remove(); admEv("📉 подсказку про перезагрузку прочитала"); };
+  document.body.appendChild(d); try { hmBeep(); } catch (e) {}
+}
+// Вкладки эфира она открывает сама — новые не плодим (каждая новая просит камеру/подтверждения). Lovense — только если её нет совсем.
+// запрос с ответом-статусом (req() глотает ошибки OBS)
+function reqS(t, data) { return new Promise(r => { if (!ok) return r({ requestStatus: { result: false, comment: "OBS не подключён" } }); const id = "r" + (++rid); W[id] = x => r(x);
+  ws.send(JSON.stringify({ op: 6, d: { requestType: t, requestId: id, requestData: data } })); setTimeout(() => { if (W[id]) { delete W[id]; r({ requestStatus: { result: false, comment: "OBS не ответил" } }); } }, 8000); }); }
+// ── статус эфира по площадке: вкладка сайта + хаб (сам спрашивает сайты) + OBS (Bonga). В эфире, если ХОТЬ ОДИН свежий источник
+// говорит «да» — раньше источники перебивали друг друга и точка мигала зелёный/красный (22.11 «то так, то нормально»)
+let OBSWAS = null, GOING = 0; const LV = {};
+function liveSet(p, src, on, st) { (LV[p] = LV[p] || {})[src] = { on: !!on, st: st || "", t: Date.now() }; liveEval(p); }
+function liveEval(p) {
+  const fr = x => x && Date.now() - x.t < 45000, L = LV[p] || {}, srcs = ["tab", "obs", "hub"].filter(k => fr(L[k]));
+  const onS = srcs.find(k => L[k].on), on = !!onS, was = LIVE[p] && LIVE[p].on;
+  LIVE[p] = { on, st: (onS && L[onS].st) || (srcs[0] && L[srcs[0]].st) || "", src: onS || srcs[0] || "", t: srcs.length ? Date.now() : (LIVE[p] || {}).t || 0 };
+  if (!on && PRIVLIVE[p]) setTimeout(() => privOn(p, false), 0);       // эфир кончился — и приват тоже
+  dot(p, on); if (p === "mv" || p === "bc") $("#s-" + p).textContent = on ? "🟢 в эфире" : srcs.length ? "🔴 не в эфире" : "не видно";
+  if (was !== on) showTot();
+}
+setInterval(() => ["cb", "sc", "bc", "mv"].forEach(liveEval), 5000);
+async function goLive() {
+  GOING = Date.now();
+  call("openTab", { url: LOV_PAGE, prefix: "https://rugextension.lovense.com/", pinned: true });
+  if (!ok) return hint("⚠️ OBS не подключён — запусти OBS и подожди, пока вверху OBS станет зелёным");
+  // Порядок важен для Bonga: сначала на сайте «Начать трансляцию» (откроется консоль), ПОТОМ OBS (вывод bonga
+  // стартует вместе с ним — галочка синхр. запуска), и через ~35 сек второе «Начать трансляцию» в консоли.
+  GOLOG.length = 0;
+  await sitesGo("pre");
+  hint("⏳ Готовлю сайты (Bonga — «Начать трансляцию»)… через 12 сек запущу OBS");
+  await new Promise(z => setTimeout(z, 12000));
+  hint("⏳ Запускаю OBS…");
+  const r = await reqS("StartStream"), s = r.requestStatus || {};
+  if (!s.result && s.code !== 500) return hint("⚠️ OBS не запустил трансляцию: " + esc(s.comment || ("код " + s.code)) + "<br>Проверь в OBS: Настройки → Трансляция → сервис и ключ");
+  for (let i = 0; i < 10; i++) {                                   // ждём, что поток реально пошёл
+    await new Promise(z => setTimeout(z, 1000));
+    const st = await req("GetStreamStatus");
+    if (st.outputActive && !st.outputReconnecting) { LIVE_T = Date.now(); await new Promise(z => setTimeout(z, 3000)); sitesGo("post"); return hint("✅ OBS шлёт поток. Сайты дожимаю сами: Stripchat «Начать шоу» ~20 сек, Bonga второе «Начать трансляцию» ~35 сек<br>Улыбнись и скажи «Hi guys, welcome!» 💋"); }
+  }
+  hint("⚠️ OBS не смог подключиться к сайту (поток не пошёл). Проверь ключ трансляции в OBS и интернет");
+}
+// Сайты: CB/SC — перезагрузить страницу эфира и нажать «ОК»; Bonga — «Стримить» (и ещё раз на новой странице); ManyVids — «Go Live».
+// Сами кнопки жмёт sites/golive.js; тут — команды и перезагрузка.
+// Работает с ЛЮБЫМ помощником (и 1.0): срок «жми кнопки до …» вшиваем прямо в код скрипта (GO_UNTIL),
+// а перезагрузку страниц эфира делает старая операция scripts(reload) — на шаге 1 все скрипты регистрируем
+// только на адреса страниц эфира и просим перезагрузить, на шаге 2 — обычный набор без перезагрузки.
+// SC: её комната (/имя) — там «Начать шоу»; если комната уже открыта, перезагружаем её же, а не ищем другую страницу
+const SC_ROOM = localStorage.sc_room || "-Sweet-cherry";
+const GO_PAGES = { cb: ["https://chaturbate.com/b/*", "https://*.chaturbate.com/b/*"],
+  sc: ["https://*.stripchat.com/*broadcast*", "https://*.mywebcamroom.com/*broadcast*", "https://*.stripchat.com/" + SC_ROOM + "*", "https://*.mywebcamroom.com/" + SC_ROOM + "*"],
+  bc: ["https://*.bongamodels.com/*"], mv: ["https://www.manyvids.com/live/cam/*"] };
+const isLive = k => LIVE[k] && LIVE[k].on && Date.now() - LIVE[k].t < 30000;
+let GO_UNTIL = 0; const GOLOG = [];
+// which: "pre" — до OBS (Bonga, ManyVids), "post" — после старта OBS (Chaturbate, Stripchat: перезагрузить и «ОК»/«Начать шоу»)
+async function sitesGo(which) {
+  // сайт, который уже в эфире, не трогаем (не перезагружаем и не жмём)
+  const keys = (which === "pre" ? ["bc", "mv"] : ["cb", "sc"]).filter(k => !isLive(k));
+  if (which === "pre") GO_UNTIL = Date.now() + 240000;
+  if (keys.length) await pushScripts({ step1: keys.flatMap(k => GO_PAGES[k]) });    // перезагрузка нужных вкладок с включённым автозапуском
+  await pushScripts();                                               // обычный набор (уже с GO_UNTIL), без перезагрузки
+  if (which === "pre") {
+    if (keys.includes("bc")) call("openTab", { url: "https://rf.bongamodels.com/", prefix: "https://rf.bongamodels.com/", pinned: true });
+    const mv = /\/live\/cam\//.test(localStorage.go_mv || "") ? localStorage.go_mv : "https://www.manyvids.com/live/cam/bad_secret";   // старый go_mv мог быть dashboard
+    if (keys.includes("mv")) call("openTab", { url: mv, prefix: "https://www.manyvids.com/live", pinned: true });      // любая уже открытая страница live — новую не плодим
+  } else if (keys.includes("sc")) {
+    const sc = "https://ru.mywebcamroom.com/start-broadcasting";     // её Stripchat — зеркало mywebcamroom (если её вкладка уже открыта — новую не открываем)
+    call("openTab", { url: sc, prefix: "https://ru.mywebcamroom.com/", pinned: true });
+  }
+}
+let LIVE_T = 0;
+setInterval(() => {                                                 // через 60 сек после старта: какие сайты так и не увидели эфир
+  if (!LIVE_T || Date.now() - LIVE_T < 60000) return; LIVE_T = 0;
+  const off = ["cb", "sc"].filter(p => LIVE[p] && !LIVE[p].on).map(p => p === "cb" ? "Chaturbate" : "Stripchat");
+  if (off.length) hint("⚠️ OBS шлёт, но " + off.join(" и ") + " эфир не видит. Открой страницу эфира и проверь, что там выбран OBS / внешний кодировщик и ключ совпадает");
+}, 5000);
+async function stopLive() { if (confirm("Закончить эфир?")) { await req("StopStream"); hint("Эфир закончен. Отдыхай 💜"); } }
+const isPause = s => s === PAUSE || /^brb$/i.test(s || "");   // 25.11 владелец: «Пауза» = её сцена brb
+// 25.11 владелец: на паузе звук выключен (микрофон и звук ПК), «Вернуться» — включаем обратно только то, что выключили мы
+async function pauseMute(on) {
+  try {
+    if (on) { const l = await req("GetInputList"), done = [];
+      for (const i of l.inputs || []) { if (!/wasapi|pulse|coreaudio|dshow_input|audio/i.test(i.inputKind || "")) continue;
+        try { const m = await req("GetInputMute", { inputName: i.inputName }); if (!m.inputMuted) { await req("SetInputMute", { inputName: i.inputName, inputMuted: true }); done.push(i.inputName); } } catch (e) {} }
+      localStorage.pauseMuted = JSON.stringify(done); }
+    else { const done = JSON.parse(localStorage.pauseMuted || "[]");
+      for (const n of done) { try { await req("SetInputMute", { inputName: n, inputMuted: false }); } catch (e) {} } localStorage.pauseMuted = "[]"; }
+  } catch (e) {}
+}
+// лишняя сцена «Пауза» (её делала старая кнопка) — убираем, если есть brb и сейчас не на ней
+let pauseClean = setInterval(async () => { try { const l = await req("GetSceneList"); if (!l.scenes) return; const s = await scene();
+  if (!l.scenes.some(x => x.sceneName === PAUSE)) return clearInterval(pauseClean);
+  if (l.scenes.some(x => /^brb$/i.test(x.sceneName)) && s !== PAUSE) { await req("RemoveScene", { sceneName: PAUSE }); clearInterval(pauseClean); } } catch (e) {} }, 15000);
+async function pause() {
+  const s = await scene();
+  const l = await req("GetSceneList");
+  if (isPause(s)) { await req("SetCurrentProgramScene", { sceneName: (prevScene && !isPause(prevScene) ? prevScene : null) || l.scenes.find(x => !isPause(x.sceneName)).sceneName }); await pauseMute(false); return; }
+  const brb = l.scenes.find(x => /^brb$/i.test(x.sceneName));
+  if (brb) { prevScene = s; await req("SetCurrentProgramScene", { sceneName: brb.sceneName }); await pauseMute(true); return; }
+  if (!l.scenes.some(x => x.sceneName === PAUSE)) { await req("CreateScene", { sceneName: PAUSE });
+    await req("CreateInput", { sceneName: PAUSE, inputName: "Пауза — текст", inputKind: "text_gdiplus_v3", inputSettings: { text: "Скоро вернусь 💋", font: { face: "Arial", size: 96, style: "Bold" } } }); }
+  prevScene = s; await req("SetCurrentProgramScene", { sceneName: PAUSE });
+}
+async function rec() { const r = await req("GetRecordStatus");
+  if (r.outputActive) { const x = await req("StopRecord"); hint("Видео сохранено ✅ " + esc(x.outputPath || "")); } else await req("StartRecord"); }
+obs();
+
+// ── помощник (расширение Alicia Helper 1.x — исполнитель; вся логика тут, на сайте)
+let port = null, RID = 0, HV = 0; const WAIT = {};   // 0 = ещё не знаем (первые секунды после открытия) — владельцу не пишем «помощник v1»
+const SITES = [
+  { id: "sc", file: "sites/sc.js", matches: ["https://*.stripchat.com/*", "https://*.mywebcamroom.com/*"] },
+  { id: "cb", file: "sites/cb.js", matches: ["https://chaturbate.com/b/*", "https://*.chaturbate.com/b/*"] },
+  { id: "lovense", file: "sites/lovense.js", matches: ["https://*.lovense.com/*"] },
+  // автозапуск эфира на сайтах (любой помощник; GO_UNTIL вшивается в код)
+  { id: "golive", go: 1, file: "sites/golive.js", matches: ["https://chaturbate.com/b/*", "https://*.chaturbate.com/b/*", "https://*.stripchat.com/*", "https://*.mywebcamroom.com/*", "https://*.bongamodels.com/*", "https://www.manyvids.com/*"] },
+  { id: "golivem", minHV: 1.2, go: 1, file: "sites/golive_main.js", world: "MAIN", runAt: "document_start", matches: ["https://chaturbate.com/b/*", "https://*.chaturbate.com/b/*", "https://*.stripchat.com/*", "https://*.mywebcamroom.com/*"] },
+  // значок 💋 на сайтах убран (21.11): всё управление Lovense — тут, в панели
+];
+const LOV_PAGE = "https://rugextension.lovense.com/cam-model/pages/settings/";   // cam_model (с _) = 404
+function call(op, data = {}, tmo = 15000) { return new Promise(r => { if (!port) return r({ error: "нет связи" }); const rid = ++RID; WAIT[rid] = r;
+  port.postMessage({ op, rid, ...data }); setTimeout(() => { if (WAIT[rid]) { delete WAIT[rid]; r({ error: "timeout" }); } }, tmo); }); }
+async function hash(s) { return [...new Uint8Array(await crypto.subtle.digest("SHA-256", new TextEncoder().encode(s)))].slice(0, 8).map(b => b.toString(16).padStart(2, "0")).join(""); }
+const CODE = {};
+async function pushScripts(o = {}) {
+  // step1 = список адресов страниц эфира: все скрипты только на них + перезагрузка (только эти вкладки)
+  const dom = u => u.split("/")[2].split(".").slice(-2).join(".");          // "https://*.stripchat.com/*", "https://*.mywebcamroom.com/*" → "stripchat.com"
+  const list = (await Promise.all(SITES.filter(x => (x.minHV || 1) <= HV).map(async x => {
+    const code = CODE[x.file] || (CODE[x.file] = await (await fetch(x.file + "?v=" + Date.now(), { cache: "no-store" })).text());
+    const doms = x.matches.map(dom), m = o.step1 ? o.step1.filter(s => doms.includes(dom(s))) : x.matches;
+    return { id: x.id, matches: m, allFrames: !!x.allFrames, world: x.world, runAt: x.runAt, code: (x.go ? "var GO_UNTIL=" + GO_UNTIL + ";\n" : "") + code };
+  }))).filter(x => x.matches.length);
+  if (o.step1) { const r = await call("scripts", { list, reload: true }); await call("set", { key: "scriptsHash", val: "" }); return r; }
+  const h = await hash(JSON.stringify(list)), was = await call("get", { key: "scriptsHash" });
+  if (h !== was) { const r = await call("scripts", { list, reload: false }); /* открытые вкладки НЕ перезагружаем — эфир/подтверждения */ if (!r.error) await call("set", { key: "scriptsHash", val: h }); }
+  // 24.11: помощник поставили заново (его память пустая) — в уже открытые вкладки сайтов скрипты сами не попадут.
+  // Вкладки не перезагружаем (эфир!) — вкалываем скрипты прямо в них, один раз на установку помощника.
+  if (HV >= 2 && (await call("get", { key: "injOpen" })) !== "1") {
+    const tabs = await call("api", { fn: "tabs.query", args: [{}] });
+    if (Array.isArray(tabs)) {
+      const rx = g => new RegExp("^" + g.replace(/[.+?^${}()|[\]\\]/g, "\\$&").replace(/\*/g, ".*") + "$");
+      let n = 0;
+      for (const s of list) for (const t of tabs) if (!t.discarded && s.matches.some(g => rx(g).test(t.url || ""))) {
+        const r = await call("exec", { tab: t.id, allFrames: s.allFrames, world: s.world === "MAIN" ? "MAIN" : "USER_SCRIPT", code: s.code }, 20000); n++;
+        if (r && r.error) admEv("скрипт " + s.id + " во вкладку не встал: " + r.error);
+      }
+      await call("set", { key: "injOpen", val: "1" }); admEv("🧩 скрипты сайтов вставлены в открытые вкладки: " + n);
+    }
+  }
+}
+function ext() {
+  try { port = chrome.runtime.connect(EXT); } catch (e) { dot("ext", false, "не установлен"); return setTimeout(ext, 5000); }
+  port.onMessage.addListener(m => { if (m.type === "res") { const f = WAIT[m.rid]; delete WAIT[m.rid]; f && f(m.res); } else onExt(m); });
+  port.onDisconnect.addListener(() => { port = null; dot("ext", false, "нет связи"); setTimeout(ext, 3000); });
+  call("ping").then(async r => {
+    if (r.error) return;
+    lovense();
+    if (!r.us) { dot("ext", false, "включи «Разрешить пользовательские скрипты»"); hint("⚙️ В chrome://extensions → Alicia Helper → Сведения включи «Разрешить пользовательские скрипты» (Allow user scripts), потом обнови эту страницу"); return; }
+    HV = parseFloat(r.v) || 1; dot("ext", true, "на связи v" + r.v); updLoad();
+    if (HV < 2) admEv("🧩 у неё старый помощник v" + r.v + " — нужен 2.0 (один раз): workadult.pro/kate/helper.zip");
+    if (await pinSelf()) return;
+    pushScripts();
+  });
+}
+// 24.11 владелец: раздел «Обновления» — ссылки на скачивание (список в updates.json на сайте, панель не трогаем)
+let UPDS = [];
+async function updLoad() { try { UPDS = (await (await fetch("updates.json?x=" + Date.now(), { cache: "no-store" })).json()).items || []; } catch (e) {}
+  const h = UPDS.find(u => u.id === "helper"), need = h && HV && HV < parseFloat(h.ver);
+  const s = document.getElementById("s-upd"); if (s) { s.textContent = need ? "есть новый помощник" : "всё актуально"; s.style.color = need ? "#ffb347" : ""; } }
+function updOpen() {
+  let o = document.getElementById("updbox");
+  if (!o) { o = document.createElement("div"); o.id = "updbox"; o.style.cssText = "position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:9999;display:flex;align-items:center;justify-content:center";
+    o.onclick = e => { if (e.target === o) o.remove(); }; document.body.appendChild(o); }
+  const rows = UPDS.map(u => {
+    const cur = u.id === "helper" && HV ? `<div style="color:#9aa;font-size:13px">у тебя сейчас: v${HV}${HV >= parseFloat(u.ver) ? " ✅" : " — обнови"}</div>` : "";
+    return `<div style="background:#2a2a2a;border-radius:10px;padding:12px;margin:8px 0"><b>${u.name}</b> v${u.ver}${cur}
+      <div style="color:#bbb;font-size:13px;margin:6px 0">${u.note || ""}</div>
+      <a href="${u.url}" download style="display:inline-block;background:#2e9e4f;color:#fff;padding:8px 14px;border-radius:8px;text-decoration:none;font-weight:700">⬇️ Скачать</a>
+      ${u.help ? ` <a href="${u.help}" target="_blank" style="color:#8cf;margin-left:10px">как поставить</a>` : ""}</div>`; }).join("") || "<div>пока нечего скачивать</div>";
+  o.innerHTML = `<div style="background:#1b1b1b;color:#fff;border-radius:14px;padding:18px;width:min(520px,92vw);max-height:85vh;overflow:auto">
+    <div style="display:flex;justify-content:space-between;align-items:center"><b style="font-size:18px">⬇️ Обновления</b><button onclick="this.closest('#updbox').remove()">✕</button></div>
+    <div style="color:#9aa;font-size:13px;margin-top:6px">Файл скачается в папку «Загрузки». Архив распакуй в C:\\AliciaHelper (не прямо на рабочий стол).</div>${rows}</div>`;
+}
+updLoad(); setInterval(updLoad, 10 * 60 * 1000);// Панель живёт в ЗАКРЕПЛЁННОЙ вкладке (после её закреплённых), адрес …/alicia/?pin=1. Открыли обычную — переносимся туда, эту гасим.
+async function pinSelf() {
+  if (/[?&]pin=1/.test(location.search)) return false;
+  const r = await call("openTab", { url: "https://workadult.pro/kate/?pin=1", prefix: "https://workadult.pro/kate/?pin=1", pinned: true, focus: true });
+  if (!r || r.error) return false;
+  const last = setTimeout(() => {}, 0); for (let i = 0; i <= last; i++) { clearInterval(i); clearTimeout(i); }   // эта копия больше ничего не делает
+  try { ws.onclose = null; ws.close(); } catch (e) {} try { port.disconnect(); } catch (e) {}
+  document.body.innerHTML = '<div style="margin:auto;font-size:24px;text-align:center;padding:40px">📌 Панель открыта в закреплённой вкладке слева.<br><small style="color:#889">Эту вкладку можно закрыть.</small></div>';
+  setTimeout(() => window.close(), 1500); return true;
+}
+// Lovense: расширение Lovense Cam Extension (включаем, если выключено) + игрушки через Lovense Remote/Connect на ПК
+const LBASES = ["https://127-0-0-1.lovense.club:30010", "https://127.0.0.1:30010", "http://127.0.0.1:20010", "https://127-0-0-1.lovense.club:34568", "http://127.0.0.1:34567"];
+let LOV = { sites: null };
+async function lovense() {
+  if (!port) return;
+  const ex = await call("exts"); let le = Array.isArray(ex) ? ex.find(e => /lovense/i.test(e.name) && e.id !== EXT) : null;
+  if (le) LOV.ext = le.id;
+  if (le && !le.enabled) { await call("enableExt", { id: le.id }); le.enabled = true; }
+  let toys = null;
+  for (const b of LBASES) {
+    const r = await call("fetch", { url: b + "/command", method: "POST", headers: { "content-type": "application/json", "X-platform": "Alicia" }, body: JSON.stringify({ command: "GetToys" }), timeout: 2500 });
+    if (r.error || !r.text) continue;
+    try { const j = JSON.parse(r.text); let t = (j.data || {}).toys || {}; if (typeof t === "string") t = JSON.parse(t || "{}");
+      toys = Object.values(t).map(x => ({ name: x.nickName || x.name, on: String(x.status) === "1", battery: x.battery })); LOV.base = b; break; } catch (e) {}
+  }
+  if ((!toys || !toys.length) && LOV.toys && LOV.toys.length) toys = LOV.toys;
+  const on = (toys || []).filter(x => x.on), have = (LOV.have || []).length;
+  const txt = !le ? "нет расширения Lovense" : LOV.sites === 0 ? "в Lovense не добавлены сайты" : (LOV.sites != null && have < 4) ? "в Lovense сайтов " + have + " из 4" :
+    on.length ? on.map(x => x.name + (x.battery != null ? " " + x.battery + "%" : "")).join(", ") : toys ? "игрушка не подключена" : "запусти Lovense Connect на ПК";
+  dot("lov", !!le && on.length > 0 && (LOV.sites == null || have >= 4), txt + (have ? " · сайтов " + have + "/4" : ""));
+}
+setInterval(lovense, 15000);
+function lovOpen() { call("openTab", { url: LOV_PAGE, prefix: "https://rugextension.lovense.com/", focus: true }); }
+// Тест игрушки: короткая вибрация (+ толчки машины) через Lovense Connect на ПК, 3 сек.
+async function lovCmd(action, timeSec, okMsg) {
+  const bases = LOV.base ? [LOV.base, ...LBASES.filter(b => b !== LOV.base)] : LBASES;
+  for (const b of bases) {
+    const r = await call("fetch", { url: b + "/command", method: "POST", headers: { "content-type": "application/json", "X-platform": "Alicia" },
+      body: JSON.stringify({ command: "Function", action, timeSec, apiVer: 1 }), timeout: 3000 });
+    if (r.error || !r.text) continue;
+    let j = {}; try { j = JSON.parse(r.text); } catch (e) {}
+    LOV.base = b; return hint(String(j.code) === "200" || j.type === "OK" ? okMsg : "📳 Lovense ответил: " + esc(r.text.slice(0, 120)));
+  }
+  hint("📳 Не достучалась до Lovense Connect на ПК — он запущен?");
+}
+const lovTest = () => lovCmd("Vibrate:12,Thrusting:12", 3, "📳 Игрушка: тест отправлен ✅");
+// ручная вибрация с панели: сила 0–20, держится 30 сек (или до «Стоп»)
+const lovVib = n => n ? lovCmd("Vibrate:" + n + ",Thrusting:" + n, 30, "📳 Вибрация " + (n < 8 ? "слабо" : n < 16 ? "средне" : "сильно") + " — 30 сек (⏹ Стоп — выключить)")
+  : lovCmd("Stop", 0, "⏹ Игрушка остановлена");
+// Ссылка управления: Lovense делает её только внутри своего окна, а Chrome не пускает скрипты внутрь окна
+// чужого расширения (проверено 20.11) и создание идёт через их фон, не через сайт. Поэтому просто открываем окно Lovense.
+async function lovLink() {
+  const url = LOV.ext ? `chrome-extension://${LOV.ext}/pages/chrome_popup.html` : "";
+  const r = url ? await call("openTab", { url, prefix: url, focus: true }) : { error: 1 }; if (r.error) lovOpen();
+  hint("🔗 Открыла Lovense — «Ссылка управления» → время → «Создать новую ссылку» → «Копировать» и отправь мемберу");
+}
+function onExt(m) {
+  if (m.type === "clinkres") {
+    call("push", { ch: "badge", cmd: { type: "clink", url: m.url, err: m.err, min: m.min } });
+    hint(m.url ? `🔗 Ссылка на ${m.min} мин: <b>${esc(m.url)}</b> — отправь мемберу` : "🔗 " + esc(m.err || "не вышло"));
+  }
+  if (m.type === "lovprobe") {
+    const ifr = (m.iframes || []).length, info = `Lovense на ${esc(m.site)}: на странице ${m.dom}, в тени ${m.shadow}, во фреймах ${ifr}` +
+      (m.sample && m.sample.length ? " · " + esc(m.sample.join(" ")) : "") + (ifr ? " · " + esc(m.iframes.join(" ")) : "");
+    LOV.probe = info; setTimeout(() => hint("🔗 Открыла Lovense — «Ссылка управления» → «Создать новую ссылку» → «Копировать»<br><small style='font-size:13px;color:#aab'>🔎 " + info + "</small>"
+      + (m.linkTxt ? "<br>Текущая ссылка: <b>" + esc(m.linkTxt) + "</b>" : "")), 300);
+  }
+  if (m.type === "badge") {
+    if (m.act === "test") lovTest();
+    else if (m.act === "link") lovLink();
+    else if (m.act === "panel") call("openTab", { url: location.href, prefix: location.origin + location.pathname, focus: true });
+  }
+  if (m.type === "login") { dot(m.p, m.ok);
+    if (m.p === "mv" && !m.ok) { $("#s-mv").textContent = "не вошла в аккаунт"; hint("🔑 ManyVids: ты не вошла в аккаунт — войди на вкладке ManyVids (логин Bad_Secret), потом снова «Начать эфир»"); } }
+  const NAME = { cb: "Chaturbate", sc: "Stripchat", bc: "Bonga", mv: "ManyVids" };
+  if (m.type === "golog") {                                         // журнал запуска: последние 8 строк, не затираем
+    GOLOG.push(new Date().toTimeString().slice(0, 8) + " " + NAME[m.p] + ": " + m.text); GOLOG.splice(0, GOLOG.length - 8);
+    hint("▶ Запуск сайтов:<br><small style='font-size:15px'>" + GOLOG.map(esc).join("<br>") + "</small>");
+  }
+  // запоминаем только ManyVids (у Bonga 2-й шаг в консоли — её открывать напрямую нельзя)
+  if (m.type === "golearn" && m.p === "mv" && /\/live\/cam\//.test(m.url || "")) localStorage.go_mv = m.url;
+  if (m.type === "live") liveSet(m.p, "tab", m.on, m.st);
+  if (m.type === "earn" && m.p === "mv") { ETK.mv = m.tk; showTot(); }
+  if (m.type === "lovlog") hint("🎀 " + esc(m.text.replace(/^Lovense: /, "Lovense: ")));
+  if (m.type === "lovsites") {
+    LOV.sites = m.n; LOV.have = m.have || []; LOV.toys = m.toys || [];
+    const miss = (m.need || []).filter(x => !LOV.have.includes(x));
+    if (m.done) if (miss.length) hint("🎀 Lovense: не добавились " + miss.join(", ") + " — добавь вручную на странице Lovense"); else admEv("🎀 Lovense подключён ко всем 4 сайтам");   // 24.11 владелец: «всё ок» в подсказки не писать
+    lovense();
+  }
+  if (m.type === "c2c") hint(m.ok ? "📷 Камера <b>" + esc(m.who) + "</b> открыта — окошко справа внизу на Бонге (тяни за верх, размер — за угол, ⧉ — поверх всех окон)" : "⚠ Камера " + esc(m.who) + " не открылась сама — на Бонге нажми его ник → «камера»");
+  if (m.type === "tip") {
+    if (!m.what && m.p === "sc" && +m.tk === 55) m.what = "секс-машина 1 мин (Lovense включает сама)";   // 23.11 владелец
+    // 24.11: спецкоманды её Lovense (из её настроек): ровно эта сумма без пункта меню — реакция игрушки, а не «просто чаевые»
+    const LOVTK = { 25: "Lovense: случайный уровень вибрации", 38: "Lovense: случайное время вибрации 10–50 сек", 100: "Lovense: землетрясение 20 сек", 120: "Lovense: фейерверк 22 сек", 160: "Lovense: волна 30 сек", 200: "Lovense: пульс 40 сек", 1000: "Lovense: очистить очередь", 5555: "Lovense: пауза игрушки 10 сек" };
+    if (!m.what && ["sc", "cb", "bc"].includes(m.p)) m.what = LOVTK[+m.tk] || (+m.tk >= 55 && +m.tk <= 75 ? "Lovense: полный контроль игрушки 60 сек" : "");
+    // 24.11 владелец: сумма = цена пункта ещё не значит, что он выбрал пункт (25 tk — может, просто чаевые). Пункт — только если сайт сам подписал.
+    TOT[m.p] = (TOT[m.p] || 0) + m.tk; showTot(); const a = act(m.what);
+    LOCALTIPS.push({ id: "l" + Date.now() + Math.random(), at: Date.now(), t: nowT(), p: m.p, who: m.who, tk: m.tk, text: (m.what || "") + (a ? " 👉 " + a : ""), kind: "tip" }); feedShow(null);
+    $("#wall").insertAdjacentHTML("afterbegin", `<div class="tip"><b>${esc(m.who)}</b> ${m.tk} tk · ${({ cb: "Chaturbate", sc: "Stripchat", bc: "Bongacams", mv: "ManyVids" })[m.p] || m.p}${m.what ? " — " + esc(m.what) : ""}${a ? "<br>👉 " + esc(a) : ""}</div>`);
+    hint(`💰 <b>${esc(m.who)}</b> дал ${m.tk} tk <small>(${esc(PN4[m.p] || m.p)})</small><br>${m.what ? `<b style="color:#ffd24d">ЗА: ${esc(m.what)}</b>` : `<span style="color:#aaa">просто чаевые (не по меню)</span>`}${a ? "<br>👉 СДЕЛАЙ: " + esc(a) : ""}<br>Скажи: «Thank you ${esc(m.who)} 😘»`);
+    if (a) { PAIDQ.push({ p: m.p, who: m.who, tk: m.tk, what: m.what, act: a }); PAIDQ.splice(0, PAIDQ.length - 5); paidShow(); ding(); PAIDBEEP = Date.now(); admEv("💰 оплатили по меню: " + m.who + " — " + m.what); }
+  }
+  if (m.type === "lovctl") lovCtl(m);
+  if (m.type === "saidres") { const x = PRIVMSG.find(y => y.id === m.id); if (x) { x.st = m.ok ? "✓ ушло" : "⚠ " + (m.err || "не ушло"); privShowChat(); } }
+  if (m.type === "privreq") privShow(m.p, m.text);
+  if (m.type === "privgone" && PRIVREQ === m.p) privHide();
+  if (m.type === "private") { if (!m.on) delete PRIVIGN[m.p]; if (!(m.on && PRIVIGN[m.p])) privOn(m.p, m.on); }   // PRIVIGN: она сама нажала «приват закончился» — старый сигнал «идёт» не слушаем, пока сайт не скажет «кончился»
+  if (m.type === "probe") admEv("🔎 " + (NAME[m.p] || m.p) + " " + m.text);   // разведка — только в журнал владельца
+  // 24.11: Dream Bot пишет «tipped for → пункт» на ЛЮБЫЕ чаевые с такой суммой — это не выбор зрителя. Пункт засчитываем,
+  // только если в самих чаевых есть подпись (он выбрал пункт в окне чаевых) — это ловит обработчик "tip" выше.
+  if (false && m.type === "menubuy" && m.who && m.what) {               // отключено 24.11 (см. выше)
+    const a = act(m.what), lt = LOCALTIPS.slice().reverse().find(x => x.p === m.p && x.who === m.who && Date.now() - x.at < 120000);
+    if (lt) lt.text = m.what + (a ? " 👉 " + a : ""); else LOCALTIPS.push({ id: "l" + Date.now() + Math.random(), at: Date.now(), t: nowT(), p: m.p, who: m.who, tk: 0, text: m.what + (a ? " 👉 " + a : ""), kind: "tip" });
+    feedShow(null);
+    PAIDQ.push({ p: m.p, who: m.who, tk: lt ? lt.tk : "", what: m.what, act: a || m.what }); PAIDQ.splice(0, PAIDQ.length - 5); paidShow(); ding(); PAIDBEEP = Date.now();
+    hint(`💰 <b>${esc(m.who)}</b> оплатил «${esc(m.what)}»${a ? "<br>👉 " + esc(a) : ""}`); admEv("💰 оплатили по меню: " + m.who + " — " + m.what);
+  }
+  if (m.type === "saidres" && RSAYDONE.has(m.id)) { RSAID[m.id] = m.ok ? "ok" : (m.err || "не ушло"); }
+  if (m.type === "saidres" && WSAY[m.id]) { WSAY[m.id].st = m.ok ? "✓ ушло" : "⚠ " + (m.err || "не ушло"); wallShow(true); }
+  if (m.type === "chat" && m.text && m.who && !m.me && !/^notice$/i.test(m.who)) wallAdd(m);
+  if (m.type === "users" && Array.isArray(m.list)) { ROOMU2[m.p] = { t: Date.now(), list: m.list.filter(x => x && x.who && !/\s/.test(String(x.who).trim()) && !/^(всего|итого|чаевые|приват|полный приват|групповой|групповой приват|чат-боты|чат боты|подглядки|подглядывание|баланс|потрачено.*|заработано.*|total|tips|private|full private|group|group show|chat ?bots|spy|peek|balance|tokens spent|spent|earned)$/i.test(String(x.who).trim())).slice(0, 300) };   /* 24.11: не строки статистики Бонги */ pplShow(); }   // 24.11: зрители с токенами из её вкладок → хабу
+  if (m.type === "saidres" && RSAYDONE.has(m.id) && !WSAY[m.id]) admEv((m.ok ? "📣 бот написал в общий чат " : "⚠ не ушло в общий чат ") + (PN4[m.p] || m.p) + (m.err ? ": " + m.err : ""));
+  if (m.type === "chat" && m.text && m.who && !m.me && !/^notice$/i.test(m.who)) {   // кто пишет в чате комнаты — хабу (бот знакомится с ними в личке)
+    const k = m.p + "|" + m.who, o = ROOM[k] || {};
+    ROOM[k] = { p: m.p, who: m.who, uid: m.uid || o.uid || "", lvl: Math.max(+m.lvl || 0, o.lvl || 0), text: String(m.text).slice(0, 200), t: Date.now(), n: (o.n || 0) + 1 }; pplShow();
+    const ks = Object.keys(ROOM); if (ks.length > 120) ks.sort((x, y) => ROOM[x].t - ROOM[y].t).slice(0, ks.length - 120).forEach(x => delete ROOM[x]);
+  }
+  if (m.type === "chat" && m.text && PRIVLIVE[m.p] && m.p !== PSEL) { PUNREAD[m.p] = (PUNREAD[m.p] || 0) + 1; ding(); }
+  // 24.11: Бонга — в привате он пишет в ЛИЧКУ (окошко в консоли), не в общий чат → golive шлёт type "pm"; в общий чат/бота НЕ идёт
+  if (m.type === "pm" && m.text) { PRIVMSG.push({ p: m.p, who: m.who || "", me: !!m.me, text: "✉ " + String(m.text).slice(0, 400), t: new Date().toTimeString().slice(0, 5) }); PRIVMSG.splice(0, PRIVMSG.length - 150);
+    if (!m.me) { if (m.p !== PSEL || FT !== "priv") PUNREAD[m.p] = (PUNREAD[m.p] || 0) + 1; ding(); if (!PRIVLIVE[m.p]) admEv("✉ " + (NAME[m.p] || m.p) + " личка " + (m.who || "") + ": " + String(m.text).slice(0, 120)); }
+    if (FT === "priv") privShowChat(); }
+  if (m.type === "chat" && m.text && PRIVLIVE[m.p]) { PRIVMSG.push({ p: m.p, who: m.who || "", text: String(m.text).slice(0, 400), t: new Date().toTimeString().slice(0, 5) }); PRIVMSG.splice(0, PRIVMSG.length - 150); if (FT === "priv") privShowChat(); }
+  if (m.type === "chat" && m.text) {
+    const box = $("#chat-" + m.p) || $("#chat-cb"); box.insertAdjacentHTML("afterbegin", `<div class="chat"><b>${esc(m.who)}</b>: ${esc(m.text)}</div>`);
+    while (box.children.length > 80) box.lastChild.remove();
+    if (/\b(hi|hello|hey)\b|привет/i.test(m.text) && !/kittenmeow|sweet-cherry|kitten-meow/i.test(m.who || "")) hint(`👋 Скажи: «Hello ${esc(m.who)}!» и улыбнись`);
+  }
+}
+if (window.chrome && chrome.runtime && chrome.runtime.connect) ext(); else dot("ext", false, "нужен Chrome с помощником");
+// 24.11: личка через её браузер (помощник 2.0). Хаб даёт задание «сходи в API сайта» → выполняем в её уже открытой вкладке
+// (Стрип/MV/Fansly/My.Club) тихо, без новых вкладок и кликов → итог обратно хабу. Нет 2.0 / нет вкладки — хаб всё делает по-старому.
+let RQ_H = null;
+const RQ_RE = [["sc", /^https:\/\/([^/]*\.)?(stripchat\.com|mywebcamroom\.com)\//], ["mv", /^https:\/\/www\.manyvids\.com\//], ["fs", /^https:\/\/fansly\.com\//], ["mc", /^https:\/\/my\.club\//], ["cb", /^https:\/\/([^/]*\.)?chaturbate\.com\//], ["bc", /^https:\/\/([^/]*\.)?bongamodels\.com\//], ["mhb", /^https:\/\/d\.modelshelperbot\.com\//]];   /* 24.11: mhb — проверка трат зрителя по нику (её вход в MHB) */   // cb/bc — только оплаты (отчёты API)
+const rqSleep = ms => new Promise(r => setTimeout(r, ms));
+function rqPost(rq, d) { return fetch(rq.url + "/rq/res?k=" + rq.k, { method: "POST", body: JSON.stringify(d) }).catch(() => {}); }
+async function rqRun(job, have, rq) {
+  const tab = have[job.p];
+  if (!tab) return rqPost(rq, { id: job.id, ok: 0, err: "нет открытой вкладки " + job.p });
+  const FX = "async([u,h])=>{const c=new AbortController(),t=setTimeout(()=>c.abort(),25000);try{const r=await fetch(u,{credentials:'include',headers:h||{},signal:c.signal});return [r.status,await r.text()]}finally{clearTimeout(t)}}";
+  if (job.fx) { job.code = FX; job.arg = [job.fx.url, job.fx.headers || {}]; }      // простой запрос к сайту (хаб: fetch)
+  const code = "(async()=>{try{const __f=(" + job.code + ");const __r=typeof __f==='function'?await __f(" + JSON.stringify(job.arg ?? null) + "):await __f;return {ok:1,r:__r}}catch(e){return {ok:0,e:String(e&&e.message||e)}}})()";
+  const r = await call("exec", { tab, world: job.world === "USER_SCRIPT" ? "USER_SCRIPT" : "MAIN", code }, 35000);
+  const x = Array.isArray(r) ? r[0] : null, v = x && x.res ? x.res[0] : null;
+  if (!x || r.error || x.err || !v) return rqPost(rq, { id: job.id, ok: 0, err: (r && r.error) || (x && x.err) || "пустой ответ" });
+  return rqPost(rq, v.ok ? { id: job.id, ok: 1, res: v.r } : { id: job.id, ok: 0, err: v.e });
+}
+async function rqLoop() {
+  for (;;) {
+    const rq = RQ_H;
+    if (HV < 2 || !port || !rq) { await rqSleep(3000); continue; }
+    const tabs = await call("api", { fn: "tabs.query", args: [{}] }), have = {};
+    if (!Array.isArray(tabs)) { await rqSleep(5000); continue; }
+    for (const t of tabs) if (!t.discarded) for (const [p, re] of RQ_RE) if (!have[p] && re.test(t.url || "")) have[p] = t.id;
+    for (const t of tabs) if (!t.discarded) for (const [p, re] of SAY_RE) if (re.test(t.url || "")) have[p] = t.id;   // 25.11: страница эфира важнее (общий чат); личке всё равно какая вкладка
+    let j; try { j = await (await fetch(rq.url + "/rq/take?k=" + rq.k + "&hv=" + HV + "&tabs=" + Object.keys(have).join(","), { cache: "no-store" })).json(); }
+    catch (e) { await rqSleep(5000); continue; }
+    if (j.err) { await rqSleep(5000); continue; }
+    for (const job of j.jobs || []) rqRun(job, have, rq);                // параллельно, не ждём
+  }
+}
+rqLoop();
+
+// ── сводка для админки владельца: раз в 15 сек что видно на панели (статусы, подсказки, донаты, чат, маленький кадр)
+document.addEventListener("click", e => { const b = e.target.closest("button"); if (b) admEv("👆 нажала «" + b.textContent.trim() + "»"); }, true);
+const ADM_URL = "https://alicia-link.videorils.workers.dev/her?m=cherry";
+function admShot() { const im = CAMLIVE ? $("#camv") : $("#cam"), w = im.videoWidth || im.naturalWidth, h = im.videoHeight || im.naturalHeight; if (!w) return "";
+  try { const c = document.createElement("canvas"); c.width = 320; c.height = Math.round(320 * h / w);
+    c.getContext("2d").drawImage(im, 0, 0, c.width, c.height); return c.toDataURL("image/jpeg", 0.5); } catch (e) { return ""; } }
+async function admSend() {
+  const card = k => ({ on: ($("#d-" + k) || {}).className || "", t: (($("#t-" + k) || $("#s-" + k)) || {}).textContent || "" });
+  const ev = ADM_EV.splice(0);
+  const st = { w: "alicia-panel", obs: ok, obsTxt: $("#s-obs").textContent, stream: $("#st").textContent, ext: $("#s-ext").textContent, lov: $("#s-lov").textContent,
+    sites: { cb: card("cb"), sc: card("sc"), bc: card("bc"), mv: card("mv") }, room: Object.values(ROOM).filter(x => Date.now() - x.t < 3600000), roomu: Object.fromEntries(Object.entries(ROOMU2).filter(([k, v]) => Date.now() - v.t < 180000)), tot: { ...TOT, ...ETK }, live: LIVE, priv: PRIVLIVE, privmsg: PRIVMSG.slice(-60).map(m => ({ me: !!m.me, by: m.by || "", p: m.p, who: m.who || "", text: m.text, out: m.out || "", t: m.t, st: m.st || "" })), hint: $("#hint").innerText, golog: GOLOG.slice(),
+    wall: [...document.querySelectorAll("#wall .tip")].slice(0, 15).map(e => e.innerText), chat: [...document.querySelectorAll("#rooms .chat")].slice(0, 25).map(e => e.innerText),
+    shot: admShot(), events: ev, pv: PANEL_V, hv: HV, pc: PCINFO, rsaid: RSAID, lovctl: LOVCTL, ua: navigator.userAgent.slice(0, 80) };
+  try { const r = await fetch(ADM_URL, { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify(st) }); if (!r.ok) throw 0; }
+  catch (e) { ADM_EV.unshift(...ev); }                               // не ушло — события отправим в следующий раз
+}
+// ── Lovense «Ссылка управления» идёт (окно Lovense на странице сайта) → полоска тут + в консоль владельца
+let LOVCTL = null;
+function lovCtl(m) {
+  const el = $("#lovctl");
+  if (m.gone || (!m.on && !m.code)) { if (LOVCTL) admEv("🎮 управление Lovense закончилось"); LOVCTL = null; el.style.display = "none"; return; }
+  if (!LOVCTL && m.on) admEv("🎮 мембер управляет игрушкой (код " + (m.code || "?") + ")");
+  LOVCTL = m; el.style.display = "flex";
+  el.querySelector("span").innerHTML = (m.on ? "🎮 <b>Мембер управляет игрушкой</b>" : "🎮 Ссылка управления создана, ждём мембера") + (m.code ? " · код <b>" + esc(m.code) + "</b>" : "") +
+    (m.timer ? " · ⏱ <b>" + esc(m.timer) + "</b>" : "") + (m.limit ? " · " + esc(m.limit) : "") + ((m.toys || []).length ? "<br><small>" + esc(m.toys.join(" · ")) + "</small>" : "");
+}
+async function lovStop() { if (!LOVCTL || !confirm("Закончить управление игрушкой?")) return;
+  try { await fetch("https://alicia-link.videorils.workers.dev/pcmd?m=cherry&p=" + LOVCTL.p, { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ w: "alicia-panel", act: "lovstop" }) }); hint("⏳ Заканчиваю управление…"); } catch (e) {} }
+// ── ПРИВАТ: запрос с сайта → большое окно тут; «Принять/Отклонить» уходит на сайт (golive.js нажмёт кнопку сам)
+let PRIVREQ = null, PRIVLIVE = {}, PORDER = [], PSEL = "", PUNREAD = {};
+const PN4 = { cb: "Chaturbate", sc: "Stripchat", bc: "Bongacams", mv: "ManyVids" };
+// 24.11 владелец: разные звуки — приват = «звонок телефона», сообщение от Романа = противная сирена (слышно и с другой вкладки)
+let ACX = null;
+function acx() { try { if (!ACX) ACX = new AudioContext(); if (ACX.state === "suspended") ACX.resume(); } catch (e) {} return ACX; }
+document.addEventListener("click", acx, true); document.addEventListener("keydown", acx, true);
+function tone(a, f, t0, dur, vol, type) { const o = a.createOscillator(), g = a.createGain(); o.type = type || "sine"; o.frequency.value = f; o.connect(g); g.connect(a.destination);
+  g.gain.setValueAtTime(vol, t0); g.gain.setValueAtTime(vol, t0 + dur * .8); g.gain.exponentialRampToValueAtTime(.001, t0 + dur); o.start(t0); o.stop(t0 + dur + .02); }
+function privRing() { const a = acx(); if (!a) return; const t = a.currentTime;                    // «дзынь-дзынь» как телефон: 2 трели
+  [0, 1.1].forEach(b => { for (let i = 0; i < 10; i++) { tone(a, 1000, t + b + i * .08, .07, .3); tone(a, 1250, t + b + i * .08 + .04, .04, .2); } }); }
+function hmAlarm() { const a = acx(); if (!a) return; const t = a.currentTime;                      // противная сирена: низко-высоко, «пила», громко
+  for (let i = 0; i < 6; i++) tone(a, i % 2 ? 1400 : 520, t + i * .22, .2, .45, "sawtooth"); }
+let TFL = null; function titleFlash(on, txt) { clearInterval(TFL); if (!window.T0) window.T0 = document.title;
+  if (!on) { document.title = window.T0; return; } let k = 0; TFL = setInterval(() => { document.title = (k++ % 2) ? txt : window.T0; }, 700); }
+function sysNote(title, body) { if (HV >= 2 && port) { call("note", { title, text: body || "", sticky: true }); return; }   // помощник 2.0: уведомление Windows без разрешений браузера
+  try { if (!("Notification" in window)) return;
+  if (Notification.permission === "granted") { const n = new Notification(title, { body, requireInteraction: true, tag: "alicia-" + title }); n.onclick = () => { window.focus(); n.close(); }; }
+  else if (Notification.permission !== "denied") Notification.requestPermission(); } catch (e) {} }
+document.addEventListener("click", () => { try { if ("Notification" in window && Notification.permission === "default") Notification.requestPermission(); } catch (e) {} }, { once: true });
+function ding() { try { const a = new AudioContext(); [880, 1175, 1568, 1175, 1568].forEach((f, i) => { const o = a.createOscillator(), g = a.createGain(); o.frequency.value = f; o.connect(g); g.connect(a.destination);
+  g.gain.setValueAtTime(.2, a.currentTime + i * .15); g.gain.exponentialRampToValueAtTime(.001, a.currentTime + i * .15 + .14); o.start(a.currentTime + i * .15); o.stop(a.currentTime + i * .15 + .15); }); } catch (e) {} }
+function privShow(p, text) {
+  PRIVREQ = p; $("#privp").textContent = PN4[p] || p; $("#privt").textContent = text || ""; $("#privst").textContent = ""; $("#priv").style.display = "flex"; privRing(); titleFlash(true, "🔒 ПРИВАТ!"); sysNote("🔒 Запрос привата", (PN4[p] || p) + " — зайди в панель");
+  clearInterval(window.PRING); let n = 0; window.PRING = setInterval(() => { if (!PRIVREQ || ++n > 15) { titleFlash(false); return clearInterval(window.PRING); } privRing(); }, 2500);   // 23.11: звенит, пока не ответит (до ~40 сек)
+  admEv("🔒 запрос привата на " + (PN4[p] || p) + ": " + (text || ""));
+}
+function privHide() { PRIVREQ = null; $("#priv").style.display = "none"; }
+async function privAns(act) {
+  if (!PRIVREQ) return; $("#privst").textContent = act === "accept" ? "⏳ принимаю на сайте…" : "⏳ отклоняю…";
+  try { await fetch("https://alicia-link.videorils.workers.dev/pcmd?m=cherry&p=" + PRIVREQ, { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ w: "alicia-panel", act }) }); }
+  catch (e) { $("#privst").textContent = "⚠ нет связи — нажми на сайте"; return; }
+  admEv(act === "accept" ? "🔒 приняла приват" : "🔒 отклонила приват"); setTimeout(privHide, 6000);
+}
+const PRIVIGN = {};
+function privEnd() { for (const k of Object.keys(PRIVLIVE)) if (PRIVLIVE[k]) { PRIVIGN[k] = 1; privOn(k, false); } admEv("🔓 сама закрыла приват кнопкой"); }   // 24.11 владелец: приват кончился, а панель не закрыла
+function privOn(p, on) {
+  if (on && !(LIVE[p] && LIVE[p].on)) on = false;                    // 23.11: не в эфире на этой площадке — привата быть не может
+  PRIVLIVE[p] = on;
+  PORDER = PORDER.filter(k => k !== p && PRIVLIVE[k]); if (on) { PORDER.push(p); if (!PSEL || !PRIVLIVE[PSEL]) PSEL = p; } else if (PSEL === p) PSEL = PORDER[0] || "";   // 23.11: два привата сразу — «Приват 1/2»
+  const any = Object.keys(PRIVLIVE).filter(k => PRIVLIVE[k]);
+  $("#privbar").style.display = any.length ? "block" : "none"; $("#privbar").innerHTML = "🔒 ИДЁТ ПРИВАТ — " + PORDER.map((k, i) => (PORDER.length > 1 ? (i + 1) + ") " : "") + PN4[k]).join(", ") + " · его сообщения и ответ — во вкладке «🔒 Приват» " + '<button onclick="privEnd()" style="margin-left:10px;padding:3px 10px;font-size:13px;background:#2e7d32">✓ приват закончился</button>';
+  for (const k in PN4) { const b = $("#chat-" + k); if (b) b.style.outline = PRIVLIVE[k] ? "3px solid #e8364f" : ""; }
+  $("#ft-priv").classList.toggle("live", any.length > 0); $("#ft-priv").textContent = any.length ? "🔒 Приват — идёт!" : "🔒 Приват";
+  if (on && FT !== "priv") ftab("priv"); if (!any.length && FT === "priv") ftab("ppl"); if (FT === "priv") privShowChat();
+  setTimeout(admSend, 300);                                         // хабу сразу: в привате бот молчит
+  if (on) { ding(); admEv("🔒 приват идёт на " + (PN4[p] || p)); hint("🔒 Приват на " + (PN4[p] || p) + " — смотри его сообщения в комнате " + (PN4[p] || p)); }
+}
+// ── бот (работает на ПК владельца): галочки «авто» по площадкам + что он написал людям
+const HUB_URL = "https://alicia-link.videorils.workers.dev/hub?m=cherry", PNAME = { cb: "Chaturbate", sc: "Stripchat", bc: "Bongacams", mv: "ManyVids" };
+let AUTO_T = 0;
+async function autoSet(p, on) { AUTO_T = Date.now(); admEv((on ? "🤖 включила" : "🤖 выключила") + " авто на " + PNAME[p]);
+  try { await fetch(HUB_URL, { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ w: "alicia-panel", p, on }) }); } catch (e) {} }
+// лента уведомлений (как у владельца в консоли): свежие сверху, новые мигают + короткий звук
+const TIPW = { offlineTip: "чаевые вне эфира", videoUnlock: "купил видео", photoUnlock: "купил фото", privateTip: "чаевые в привате", private: "приват", spy: "подглядывал в привате", groupShow: "групповое шоу", ticketShow: "билет на шоу", subscription: "подписка", fanClub: "фан-клуб", tip: "" };
+function tipWhat(w) { w = (w || "").trim(); if (!w) return "просто так"; if (w.includes("👉")) return w; if (w in TIPW) return TIPW[w] || "просто так"; const a = act(w); return a ? w + " → " + a : w; }
+let FEEDSEEN = null, LASTFEED = [], LOCALTIPS = [];
+const nowT = () => new Date().toLocaleString("sv").slice(0, 16);
+// 24.11 владелец: сообщения Романа после «ОК» не теряются — остаются в ленте (храним на её ПК, переживают F5)
+let HMLOG = []; try { HMLOG = JSON.parse(localStorage.hmlog || "[]"); } catch (e) {}
+function hmLog(id, text, kind) {
+  if (HMLOG.some(x => x.id === id)) return;
+  HMLOG.push({ id, text: String(text || "").slice(0, 500), kind, ft: nowT() }); HMLOG = HMLOG.slice(-40);
+  try { localStorage.hmlog = JSON.stringify(HMLOG); } catch (e) {}
+}
+function feedShow(l, force) {
+  const el = $("#feed");
+  if (!force && [...el.querySelectorAll("input")].some(i => i === document.activeElement || i.value)) { if (l) LASTFEED = l; return; }   // она пишет ответ — не перерисовываем
+  if (l) LASTFEED = l; else if (!LOCALTIPS.length && !WALLMSG.length && !HMLOG.length) { el.innerHTML = '<div class="chat" style="color:#889">нет связи с компьютером бота</div>'; return; }
+  // донаты с её страниц приходят сразу (LOCALTIPS); когда тот же донат придёт от бота — локальный убираем
+  LOCALTIPS = LOCALTIPS.filter(x => Date.now() - x.at < 600000 && !LASTFEED.some(y => y.kind === "tip" && y.p === x.p && y.who === x.who && +y.tk === +x.tk));
+  l = [...LASTFEED, ...LOCALTIPS].sort((a, b) => (a.t || "").localeCompare(b.t || "")).slice(-150);
+  // 24.11 владелец: видно всё — что бот делает, кому пишет, кто оплатил, кто что хочет (раньше переписку бота прятали)
+  l = l.filter(x => ["cb", "sc", "bc", "mv"].includes(x.p) && !/^(⚠|💰 дал)/.test(x.text || "") && !/одобри/.test(x.text || ""));
+  { const q = s => ((s || "").match(/«([^»]+)»/) || [])[1] || "", hi = new Set(l.filter(x => /^👋/.test(x.text || "")).map(x => q(x.text)).filter(Boolean));   // 24.11: «✉️ написала ему» с тем же текстом, что «👋 познакомилась», — дубль
+    l = l.filter(x => !(/^(✉️|📨) написала ему/.test(x.text || "") && hi.has(q(x.text)))); }
+  const seen = new Set(FEEDSEEN || []), fresh = FEEDSEEN && l.some(x => !seen.has(x.id));
+  if (FEEDSEEN) { const ph = l.filter(x => !seen.has(x.id) && /^(💡|🔥|🚫)/.test(x.text || "")).pop(); if (ph) hint(`<b>${esc(ph.who)}</b> <small>(${esc(PNAME[ph.p] || ph.p)})</small><br>${esc(ph.text)}`); }   // 23.11: приват-подсказки — крупно в «Подсказки»
+  const one = (x, n) => {
+    const cls = /^(🤖|📨|✍️|✉️)/.test(x.text) ? "bot" : x.kind === "pay" ? "pay" : x.kind === "tip" ? "tipx" : "";
+    return `<div class="nf ${cls} ${FEEDSEEN && !seen.has(x.id) ? "newx" : ""}">${x.kind === "tip" ? `<span class="tkn">${n > 1 ? n + "× " : ""}${+x.tk || 0} tk</span>` : ""}<span class="pf pf-${esc(x.p)}">${esc(PNAME[x.p] || x.p)}</span><span class="wh" data-p="${esc(x.p)}" data-who="${esc(x.who)}" title="открыть переписку / написать">${esc(x.who)}</span>` +
+      `<span class="tx" title="${esc(x.text)}">${esc(x.kind === "tip" ? tipWhat(x.text) : feedRu(x.text))}</span><span class="tm">${esc((x.t || "").slice(11, 16))}</span></div>`; };
+  if (FT === "pay") l = l.filter(x => x.kind === "tip" || x.kind === "pay");
+  const hmOne = x => `<div class="nf" style="background:${x.kind === "rep" ? "#1d2a44" : "#4a1020"};border:2px solid ${x.kind === "rep" ? "#4a6fb3" : "#e8364f"}"><span class="wh" style="color:#fff;cursor:default">${x.kind === "rep" ? "💬 ты → Роману" : "✉️ Роман"}</span><span class="tx">${esc(x.text)}</span><span class="tm">${esc((x.ft || "").slice(11, 16))}</span></div>`;
+  // 24.11 владелец: «Подарил 1 Токен!» из чата сайта — это донат, он и так есть строкой доната; одинаковые подряд — одной строкой «N×»
+  const SYS = /^\s*(notice:|(подписаться\s*)?(подарил[аи]?|tipped|sent|отправил[аи]?)\s+\d+\s*(токен|token|tk|tkn))/i;   // + «Подписаться Подарил 10 Токенов!», «Notice: …» — служебные строки Бонги
+  const all0 = [...l.map(x => ({ k: x.t || "", s: x.p + "|" + x.who + "|" + (x.kind === "tip" ? "tip" + x.tk + (x.text || "") : x.text), h: n => one(x, n) })),
+    ...WALLMSG.filter(x => x.me || !(SYS.test(x.text || "") || SYS.test(x.ru || ""))).map(x => ({ k: x.ft || "", s: x.me ? "" : "w|" + x.p + "|" + x.who + "|" + (x.ru || x.text), h: n => wallOne(x, n) })),
+    ...HMLOG.map(x => ({ k: x.ft || "", s: "", h: () => hmOne(x) }))].sort((a, b) => a.k.localeCompare(b.k)).slice(-250);
+  const all = []; for (const y of all0) { const z = all[all.length - 1]; if (z && y.s && z.s === y.s && (y.k || "").slice(0, 15) === (z.k || "").slice(0, 15)) { z.n = (z.n || 1) + 1; z.k = y.k; continue; } all.push(y); }
+  el.innerHTML = all.slice(-200).reverse().map(x => x.h(x.n || 1)).join("") || '<div class="chat" style="color:#667">пока тихо — тут будут донаты, сообщения из чатов, что бот написал и сообщения Романа</div>';
+  if (fresh) { try { const a = new AudioContext(), o = a.createOscillator(), g = a.createGain(); o.frequency.value = 880; o.connect(g); g.connect(a.destination);
+    g.gain.setValueAtTime(.15, a.currentTime); g.gain.exponentialRampToValueAtTime(.001, a.currentTime + .25); o.start(); o.stop(a.currentTime + .25); } catch (e) {} }
+  FEEDSEEN = l.map(x => x.id);
+}
+let DMHOLD = 0, DMS = [];
+async function dmSend(i) {
+  const c = DMS[i], inp = $("#dmi" + i), text = (inp && inp.value || "").trim(); if (!c || !text) return;
+  inp.disabled = true;
+  try { await fetch(HUB_URL, { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ w: "alicia-panel", send: { p: c.p, cid: c.cid, who: c.who, text } }) });
+    inp.value = ""; inp.placeholder = "✅ отправлено — уйдёт через ~10 сек"; admEv("✍️ ответила " + c.who + ": " + text); } catch (e) { inp.placeholder = "⚠ нет связи"; }
+  inp.disabled = false; DMHOLD = 0;
+}
+async function hubSync() {
+  let j; try { j = await (await fetch(HUB_URL, { cache: "no-store" })).json(); } catch (e) { return; }
+  const h = j.hub, alive = h && j.now - h.at < 60000;
+  RQ_H = alive && h.rq && h.rq.url ? h.rq : null;
+  feedShow(alive ? h.feed || [] : null);
+  if (alive) { if (h.tipmenu) { TIPMENU = h.tipmenu; try { localStorage.tipmenu = JSON.stringify(TIPMENU); } catch (e) {} } CUSTS = h.customs || []; custRender(); typeShow((h.typing || []).filter(t => !TYPEDONE.has(t.id))); hmShow(h.msgs || []); for (const x of h.psay || []) if (!PSAYDONE.has(x.id)) { PSAYDONE.add(x.id); privSay(x.text, x.p); } } else typeShow([]);
+  if (alive && h.today) { ETK.bc = h.today.bc || 0; ETK.bcl = h.ltk ? h.ltk.bc || 0 : null; showTot(); }
+  // её вкладка сайта молчит (закрыта / скрипт не подцепился) → статус эфира от хаба (он сам спрашивает сайты)
+  if (alive) for (const k of ["mv", "sc", "cb", "bc"]) liveSet(k, "hub", !!(h.live_on || {})[k], "hub");
+  if (alive) for (const c of h.rchat || []) if (!RCHSEEN.has(c.id)) { RCHSEEN.add(c.id);    // чат её комнат, который хаб видит сам (как зритель)
+    if (!WALLMSG.some(x => !x.me && x.p === c.p && x.who === c.who && x.text === c.text)) wallAdd(c); }
+  if (alive) { HUBPPL = h.ppl || []; MHBM = h.mhb || {}; MVV = h.mvv || {}; pplShow(); for (const x of h.rsay || []) if (!RSAYDONE.has(x.id)) { RSAYDONE.add(x.id); /* хаб сам кладёт текст на сервер (/say), страница эфира забирает */
+      // 24.11: что бот (или Роман) написал в общий чат — тоже в ленту
+      const d = x.at ? new Date(x.at * 1000) : new Date();
+      const w = { id: "r" + x.id, me: true, bot: !/^🙋/.test(x.ru || ""), p: x.p, to: "чат", ru: x.ru || x.text, out: x.text, st: "", t: d.toTimeString().slice(0, 5), ft: d.toLocaleString("sv").slice(0, 16) };
+      WALLMSG.push(w); ruOf(w); wallShow(); } }
+  if (Date.now() - DMHOLD < 30000) return;                           // она печатает ответ — не перерисовываем
+  DMS = (h && h.dm) || [];
+  for (const p in PNAME) { const c = $("#a-" + p); c.disabled = !alive; if (h && Date.now() - AUTO_T > 15000) c.checked = !!(h.auto || {})[p]; }
+  $("#bot").innerHTML = !alive ? '<div class="chat" style="color:#889">бот выключен (не на связи компьютер с ботом)</div>'
+    : (h.dm || []).length ? h.dm.map((c, i) => `<div class="chat" style="border-left:3px solid #e0363c;margin-bottom:6px"><b>${esc(PNAME[c.p] || c.p)} · ${esc(c.who)}</b>` +
+        c.msgs.map(x => `<br><span style="color:${x.me ? "#9fbaff" : "#ffd76a"}">${x.me ? "мы" : "он"}:</span> ${esc(x.ru || x.text)}` +
+          (x.ru && x.ru !== x.text ? ` <small style="color:#778">(${esc(x.text)})</small>` : "")).join("") +
+        `<div style="display:flex;gap:4px;margin-top:4px"><input id="dmi${i}" placeholder="ответить по-русски — уйдёт ему на его языке" style="margin:0;padding:5px;font-size:13px"
+          onfocus="DMHOLD=Date.now()" oninput="DMHOLD=Date.now()" onkeydown="if(event.key==='Enter')dmSend(${i})"><button style="padding:4px 10px;font-size:13px" onclick="dmSend(${i})">➤</button></div></div>`).join("")
+    : (h.bot || []).slice().reverse().map(b => `<div class="chat"><b>${esc(PNAME[b.p] || b.p)} · ${esc(b.who)}</b> <small style="color:#889">${esc((b.t || "").slice(11, 16))}</small><br>${esc(b.text)}</div>`).join("")
+      || '<div class="chat" style="color:#889">пока ничего не писал</div>';
+}
+// ── кастомы: она видит, что просят (решает Роман — кнопок «да/нет» тут нет); оплачено → «сними и загрузи» → бот сам отправит ему
+const UP_URL = "https://alicia-link.videorils.workers.dev/up?m=cherry", CUP = {};      // id → % загрузки / "err:…"
+let CUSTS = [], CUSTPAID = null;
+const CST = { new: ["💬 обсуждают", "#aab"], ok: ["🤝 договорились — ждём оплату", "#9fe0b0"], paid: ["💰 ОПЛАЧЕНО — сними и загрузи", "#ffb347"],
+  uploaded: ["📤 загружено — бот отправляет", "#7fc4ff"], sent: ["✅ отправлено ему", "#7ee08a"], closed: ["✅ готово", "#7ee08a"] };
+const dd = s => s ? new Date(s.replace(" ", "T")).toLocaleDateString("ru", { day: "numeric", month: "long" }) : "";
+function custOpen() { $("#custv").style.display = "flex"; custRender(); }
+function custClose() { $("#custv").style.display = "none"; }
+function custCard(c) {
+  const [st, col] = CST[c.st] || [c.st, "#aab"], up = CUP[c.id];
+  let s = `<div class="cu ${c.st}"><div class="h"><span class="pf">${esc(PNAME[c.p] || ({ fs: "Fansly", mc: "My.Club", x: "X" })[c.p] || c.p)}</span><span class="w">${esc(c.who)}</span><span class="s" style="color:${col}">${st}</span></div>` +
+    `<div class="q">${esc(c.ru || c.what)}</div>` + (c.terms || c.price ? `<div class="tr">💵 ${esc(c.terms || c.price)}</div>` : "");
+  if (c.st === "paid") { const due = c.paid_at ? new Date(new Date(c.paid_at.replace(" ", "T")).getTime() + 7 * 864e5).toISOString() : "";
+    s += due ? `<div class="dl">⏰ отдать до ${dd(due.slice(0, 10))}</div>` : ""; }
+  if (c.st === "uploaded" && c.manual) s += `<div class="dl">видео у Романа — он отправит сам</div>`;
+  if (c.st === "sent") s += `<div class="dl" style="color:#7ee08a">бот отправил ${esc((c.sent_at || "").slice(11, 16))} ${dd(c.sent_at)}</div>`;
+  if (c.st === "paid" || (c.st === "uploaded" && c.manual)) {
+    if (typeof up === "number") s += `<div class="bar"><i style="width:${up}%"></i></div><div class="dl">загружаю… ${up}% — не закрывай панель</div>`;
+    else s += (typeof up === "string" ? `<div class="dl" style="color:#ff7b7b">⚠ ${esc(up)}</div>` : "") +
+      `<label class="up">📤 Загрузить видео<input type="file" accept="video/*" style="display:none" onchange="custUp('${esc(c.id)}',this)"></label>`;
+  }
+  return s + "</div>";
+}
+function custRender() {
+  const paid = CUSTS.filter(c => c.st === "paid"), busy = CUSTS.filter(c => c.st === "uploaded"), talk = [], done = CUSTS.filter(c => c.st === "sent" || c.st === "closed");
+  $("#custn").innerHTML = paid.length ? `<span style="background:#ff8a00;color:#1a0f00;border-radius:10px;padding:0 8px">${paid.length}</span>` : talk.length ? `<span style="background:#3a3f52;border-radius:10px;padding:0 8px">${talk.length}</span>` : "";
+  $("#custs").textContent = paid.length ? "надо снять: " + paid.length : talk.length ? "обсуждают: " + talk.length : busy.length ? "бот отправляет" : "нет заказов";
+  $("#custpl").style.background = paid.length ? "#5a3a0c" : "";
+  $("#custbar").style.display = paid.length ? "block" : "none";
+  $("#custbar").textContent = paid.length ? `🎬 Оплачен кастом — ${paid.map(c => c.who).join(", ")}: надо снять и загрузить → нажми сюда` : "";
+  const ids = paid.map(c => c.id).join();
+  if (CUSTPAID !== null && ids && ids !== CUSTPAID && paid.some(c => !CUSTPAID.includes(c.id))) { admEv("🎬 у неё появился оплаченный кастом"); try { const a = new AudioContext(), o = a.createOscillator(), g = a.createGain(); o.frequency.value = 660; o.connect(g); g.connect(a.destination); g.gain.setValueAtTime(.2, a.currentTime); g.gain.exponentialRampToValueAtTime(.001, a.currentTime + .6); o.start(); o.stop(a.currentTime + .6); } catch (e) {} }
+  CUSTPAID = ids;
+  if ($("#custv").style.display !== "flex") return;
+  const sec = (t, l) => l.length ? `<div class="csec">${t}</div>` + l.map(custCard).join("") : "";
+  $("#custl").innerHTML = (sec("🔥 Снять сейчас", paid) + sec("📤 Отправляется", busy) + sec("💬 Просят — пока обсуждают (решать не нужно)", talk) + sec("✅ Сделано", done))
+    || '<div style="color:#889;font-size:16px;padding:20px 0">Заказов пока нет. Когда кто-то оплатит видео на заказ — тут появится оранжевая карточка.</div>';
+}
+async function custUp(id, inp) {
+  const f = inp.files && inp.files[0]; if (!f) return;
+  const c = CUSTS.find(x => x.id === id) || {};
+  if (!confirm(`Отправить это видео (${Math.round(f.size / 1048576)} МБ) для ${c.who}?`)) return;
+  const CH = 20 * 1048576, n = Math.max(1, Math.ceil(f.size / CH)), ext = ((f.name.split(".").pop() || "mp4").toLowerCase().match(/^(mp4|mov|m4v|webm)$/) || ["mp4"])[0];
+  CUP[id] = 0; custRender(); admEv("📤 загружает кастом для " + c.who + " (" + Math.round(f.size / 1048576) + " МБ)");
+  for (let i = 0; i < n; i++) {
+    let j = null;
+    for (let t = 0; t < 4 && !(j && j.ok); t++) {
+      try { j = await (await fetch(`${UP_URL}?id=${encodeURIComponent(id)}&i=${i}&n=${n}&ext=${ext}`, { method: "POST", headers: { "x-w": "alicia-panel" }, body: f.slice(i * CH, (i + 1) * CH) })).json(); }
+      catch (e) { j = { ok: false, err: "нет связи — пробую ещё" }; }
+      if (j && !j.ok && /не ждёт|уже загружено|mp4/.test(j.err || "")) break;
+      if (!(j && j.ok)) await new Promise(r => setTimeout(r, 3000));
+    }
+    if (!(j && j.ok)) { CUP[id] = (j && j.err) || "не загрузилось — попробуй ещё раз"; custRender(); admEv("⚠ кастом не загрузился: " + CUP[id]); return; }
+    CUP[id] = Math.round((i + 1) / n * 100); custRender();
+  }
+  delete CUP[id]; c.st = "uploaded"; custRender(); admEv("✅ загрузила кастом для " + c.who); setTimeout(hubSync, 2000);
+}
+// ── «Фото и видео»: её загрузки → alicia-link /up?lib=1 → хаб; список с подписями ИИ — /lls
+const LLS = "https://alicia-link.videorils.workers.dev/lls?m=cherry&w=alicia-panel";
+function libOpen() { document.documentElement.classList.remove("light"); $("#libv").style.display = "flex"; libLoad(); }   // в светлой теме фото блёклые (двойная инверсия) — галерея всегда в тёмной
+function libClose() { $("#libv").style.display = "none"; thSet(localStorage.theme !== "dark"); }
+async function libLoad() {
+  let l = []; try { l = await (await fetch(LLS, { cache: "no-store" })).json(); } catch (e) { $("#libst").textContent = "нет связи с ботом"; return; }
+  if (!Array.isArray(l)) { $("#libst").textContent = l.err || "нет связи с ботом"; return; }
+  const mm = d => d ? Math.floor(d / 60) + ":" + String(d % 60).padStart(2, "0") : "";
+  $("#libl").innerHTML = l.map(x => `<div style="position:relative;background:#3a3a3a;border-radius:6px;overflow:hidden;aspect-ratio:1/1">${x.th ? `<img src="${x.th}" loading="lazy" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:block">` : '<div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;color:#889">⏳</div>'}
+    ${x.kind === "video" ? `<span style="position:absolute;left:3px;bottom:3px;background:#000a;color:#fff;border-radius:5px;padding:0 4px;font-size:11px">🎬 ${mm(x.dur)}</span>` : ""}</div>`).join("")
+    || '<div style="color:#889;font-size:16px;padding:20px 0">Пока пусто — нажми «⬆ Загрузить».</div>';
+  if (l.some(x => x.st === "new") && $("#libv").style.display === "flex") setTimeout(libLoad, 10000);
+}
+async function libUp(inp) {
+  const fs = [...inp.files]; inp.value = "";
+  for (let k = 0; k < fs.length; k++) {
+    const f = fs[k], CH = 20 * 1048576, n = Math.max(1, Math.ceil(f.size / CH)), id = Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
+    admEv("📸 загружает в «Фото и видео»: " + f.name + " (" + Math.round(f.size / 1048576) + " МБ)");
+    for (let i = 0; i < n; i++) {
+      let j = null;
+      for (let t = 0; t < 4 && !(j && j.ok); t++) {
+        $("#libst").textContent = `⬆ ${k + 1} из ${fs.length}: ${Math.round(i / n * 100)}%`;
+        try { j = await (await fetch(`${UP_URL}?lib=1&id=${id}&i=${i}&n=${n}&name=${encodeURIComponent(f.name)}`, { method: "POST", headers: { "x-w": "alicia-panel" }, body: f.slice(i * CH, (i + 1) * CH) })).json(); }
+        catch (e) { j = { ok: false, err: "нет связи — пробую ещё" }; }
+        if (!(j && j.ok)) await new Promise(r => setTimeout(r, 3000));
+      }
+      if (!(j && j.ok)) { $("#libst").textContent = "⚠ " + f.name + ": " + ((j && j.err) || "не загрузилось, попробуй ещё раз"); return; }
+    }
+  }
+  const np = fs.filter(f => !/\.(mp4|mov|m4v|webm)$/i.test(f.name)).length, nv = fs.length - np;
+  $("#libst").textContent = "✅ Всё отлично! Загружено" + (np ? " фото: " + np : "") + (nv ? (np ? ", видео: " : " видео: ") + nv : "") + ". Можно закрывать и выходить 💋"; libLoad();
+}
+// ── «руки на клавиатуру»: бот хочет написать мемберу в эфире → она кладёт руки на клаву и жмёт OK → бот печатает и шлёт (как будто она)
+let TYPESEEN = new Set(), TYPES = [], TYPEDONE = new Set();
+function typeShow(l) {
+  TYPES = l || []; const fresh = TYPES.some(t => !TYPESEEN.has(t.id)); TYPES.forEach(t => TYPESEEN.add(t.id));
+  $("#typing").innerHTML = TYPES.map(t => `<div class="ty"><div class="t1">⌨️ Руки на клавиатуру — пишешь <span style="color:#ffd76a">${esc(t.who)}</span> (${esc(PNAME[t.p] || t.p)})</div>` +
+    `<div class="t2">«${esc(t.ru)}»</div><div class="row"><button class="ok" onclick="typeGo('${esc(t.id)}',1)">✅ OK</button><button onclick="typeGo('${esc(t.id)}',0)">✖ не надо</button>` +
+    `<small>сам уйдёт через ${t.left} сек</small></div></div>`).join("");
+  if (fresh) { admEv("⌨️ подсказка: пишешь " + TYPES.map(t => t.who).join(", ")); try { const a = new AudioContext(), o = a.createOscillator(), g = a.createGain(); o.frequency.value = 990; o.connect(g); g.connect(a.destination); g.gain.setValueAtTime(.15, a.currentTime); g.gain.exponentialRampToValueAtTime(.001, a.currentTime + .3); o.start(); o.stop(a.currentTime + .3); } catch (e) {} }
+}
+async function typeGo(id, ok) {
+  TYPEDONE.add(id); TYPES = TYPES.filter(t => t.id !== id); typeShow(TYPES); admEv(ok ? "✅ нажала OK — бот печатает" : "✖ отказалась от сообщения");
+  try { await fetch(HUB_URL, { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ w: "alicia-panel", go: { id, ok: !!ok } }) }); } catch (e) {}
+}
+// ── сообщения от владельца: всплывают с пиком-пиликом, пока не нажмёт «прочитала» или не ответит
+let HMQ = [], HMDONE = new Set(), HMSEEN = new Set(), HMBEEP = 0;
+function hmBeep() { try { const a = new AudioContext(); [880, 1320, 880, 1320].forEach((f, i) => { const o = a.createOscillator(), g = a.createGain(); o.frequency.value = f; o.connect(g); g.connect(a.destination); const t = a.currentTime + i * .16; g.gain.setValueAtTime(.25, t); g.gain.exponentialRampToValueAtTime(.001, t + .14); o.start(t); o.stop(t + .15); }); } catch (e) {} }
+function hmShow(l) {
+  HMQ = (l || []).filter(m => m.st === "sent" && !HMDONE.has(m.id));
+  if (!HMQ.length) { if ($("#hmv").style.display !== "none" && !PRIVREQ) titleFlash(false); $("#hmv").style.display = "none"; return; }
+  const m = HMQ[0], neu = !HMSEEN.has(m.id);
+  if ($("#hmv").style.display !== "flex" || neu) { $("#hmtx").textContent = m.text; if (neu) $("#hmrep").value = ""; }
+  $("#hmn").textContent = HMQ.length > 1 ? "ещё " + (HMQ.length - 1) : ""; $("#hmv").style.display = "flex";
+  if (neu || Date.now() - HMBEEP > 10000) { hmAlarm(); HMBEEP = Date.now(); titleFlash(true, "✉️ СООБЩЕНИЕ!"); }
+  if (neu) sysNote("✉️ Сообщение от Романа", m.text.slice(0, 120));            // новое — пик сразу, потом напоминание раз в 30 сек
+  if (neu) { HMSEEN.add(m.id); admEv("✉️ пришло сообщение от Романа"); hmLog("hm" + m.id, m.text, "msg"); wallShow(); }
+}
+async function hmAns(rep) {
+  const m = HMQ[0]; if (!m) return; const reply = rep ? $("#hmrep").value.trim() : "";
+  if (rep && !reply) { $("#hmrep").focus(); $("#hmrep").placeholder = "напиши ответ тут ↑"; return; }
+  HMDONE.add(m.id); hmLog("hm" + m.id, m.text, "msg"); if (reply) hmLog("hr" + m.id, reply, "rep"); hmShow(HMQ); wallShow(true); admEv(reply ? "💬 ответила Роману: " + reply : "✅ прочитала сообщение Романа");
+  try { await fetch(HUB_URL, { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ w: "alicia-panel", msg: { id: m.id, reply } }) }); } catch (e) {}
+}
+// ── вкладки над лентой: все / кто что оплатил / приватный чат
+let FT = "ppl", PRIVMSG = [], PSAYDONE = new Set(JSON.parse(sessionStorage.psay || "[]"));
+setInterval(() => { sessionStorage.psay = JSON.stringify([...PSAYDONE].slice(-50)); }, 5000);
+function ftab(t) { if (!["priv", "ppl"].includes(t)) t = "ppl";              // 24.11: стены справа нет — её сообщения в ленте слева FT = t; ["priv", "wall", "ppl"].forEach(k => $("#ft-" + k).classList.toggle("sel", k === t));
+  $("#privw").style.display = t === "priv" ? "flex" : "none"; $("#wallw").style.display = t === "wall" ? "flex" : "none"; $("#pplw").style.display = t === "ppl" ? "flex" : "none";
+  if (!DLG) $("#feed").style.display = "";
+  if (t === "priv") privShowChat(); else if (t === "wall") { WALLNEW = 0; $("#walln").textContent = ""; wallShow(true); } else pplShow(); }
+// ── СТЕНА: все сообщения чатов эфира со всех сайтов, по-русски; ответ сама (перевод на его язык → чат сайта) или ботом
+let WALLMSG = [], WALLNEW = 0, WID = 0;
+const hasRu = s => /[а-яё]/i.test(s || "");
+async function tr(text, to) {                                           // бесплатный переводчик Google через помощник
+  if (!port || !text) return text;
+  const r = await call("fetch", { url: "https://translate.googleapis.com/translate_a/single?client=gtx&sl=auto&tl=" + to + "&dt=t&q=" + encodeURIComponent(text), timeout: 6000 });
+  try { return JSON.parse(r.text)[0].map(x => x[0]).join("") || text; } catch (e) { return text; }
+}
+function wallAdd(m) {
+  if (/\d\s*[ap]m\s*(Вы|You)\s*:/i.test(String(m.text || ""))) return;   // 24.11: превью лички Чатура («38 pmВы: …» — это её же сообщение ему), не чат эфира
+  const x = { id: "w" + (++WID), p: m.p, who: m.who, uid: m.uid || "", lvl: +m.lvl || 0, text: String(m.text).slice(0, 300), ru: "", t: new Date().toTimeString().slice(0, 5), ft: nowT() };
+  WALLMSG.push(x); WALLMSG.splice(0, WALLMSG.length - 200);
+  if (FT !== "wall") { WALLNEW++; $("#walln").textContent = WALLNEW ? "(" + WALLNEW + ")" : ""; }
+  const cyr = (x.text.match(/[а-яё]/gi) || []).length, lat = (x.text.match(/[a-z]/gi) || []).length;   // 24.11: «по-русски» — только если русских букв больше, чем английских
+  if (cyr >= lat) x.ru = x.text; else tr(x.text, "ru").then(r => { x.ru = r || x.text; wallShow(); });
+  setTimeout(() => { if (!x.ru) { x.ru = x.text; wallShow(); } }, 8000);   // переводчик не ответил — показываем как есть
+  wallShow();
+}
+// 24.11 владелец: в ленте всё по-русски — английские куски от бота («hey, saw you…», «бот → чат: Thanks…») переводим, кэш
+const FRU = {};
+function feedRu(t) {
+  t = String(t || "");
+  return t.replace(/«([^«»]+)»|(:\s)([^«»]*[a-z]{3}[^«»]*)$/gi, (all, q, pre, tail) => {
+    const s = q != null ? q : tail; if (!s || hasRu(s) || !/[a-z]{3}/i.test(s)) return all;
+    if (FRU[s] === undefined) { FRU[s] = null; tr(s, "ru").then(r => { FRU[s] = r && r !== s ? r : s; feedShow(LASTFEED); }); }
+    const r = FRU[s] || s; return q != null ? "«" + r + "»" : pre + r; });
+}
+function ruOf(x) { if (!x.ru || hasRu(x.ru)) return; const o = x.ru; tr(o, "ru").then(r => { if (r && r !== o) { x.ru = r; wallShow(); } }); }   // сообщения бота в чат — тоже по-русски
+// 24.11 владелец: стены справа нет — её сообщения идут в общую ленту слева (feedShow), тут только вёрстка одной строки
+function wallShow(force) { if (!DLG) feedShow(LASTFEED, force); }
+function wallOne(x, n) {
+  return (x.me
+    ? `<div class="pm me"><span class="tm">${esc(x.t)} ${esc(x.st || "")}</span><b style="color:#9fbaff">${x.bot ? "🤖 бот" : "ты"} → ${esc(x.to)}</b> <small style="color:#889">${esc(PN4[x.p] || x.p)}</small>: ${esc(x.ru)}</div>`   // 24.11 владелец: только по-русски, без английского дубля
+    : `<div class="pm"><span class="tm">${esc(x.t)}</span><span style="font-size:11px;background:#000a;border-radius:5px;padding:1px 5px">${esc(PN4[x.p] || x.p)}</span> ` +
+      `<b class="nm" data-p="${esc(x.p)}" data-who="${esc(x.who)}" data-uid="${esc(x.uid)}" style="${lvO(x.p, x.lvl, x)}">${esc(x.who)}</b>${n > 1 ? ` <b style="color:#ffd76a">${n}×</b>` : ""}: ` +           // 24.11: цвет ника и так виден — подпись «зелёный» убрана
+      `${x.ru ? esc(x.ru) : '<span style="color:#889">⏳ перевожу…</span>'}` +                    // только по-русски, английский не показываем
+
+      `<div style="display:flex;gap:5px;margin-top:4px"><input id="wi-${x.id}" placeholder="ответить ему по-русски… (Esc — закрыть)" style="margin:0;padding:5px 8px;font-size:14px;display:${WOPEN === x.id ? '' : 'none'}" onkeydown="if(event.key==='Enter')wallSay('${x.id}');if(event.key==='Escape'){this.style.display='none';WOPEN=''}">` +
+      `<button style="padding:5px 10px;font-size:13px" onclick="wallSay('${x.id}')">✍️ Ответить</button><button style="padding:5px 10px;font-size:13px;background:#6e2a30" onclick="wallBot('${x.id}')">🤖 Бот</button></div></div>`);
+}
+// в чат сайта: «@ник текст» на его языке (пишет по-русски — уходит по-русски)
+async function roomSay(p, who, ru, his, bot, out0) {
+  const x = { id: "w" + (++WID), me: true, bot, p, to: who, ru, out: "", st: "⏳", t: new Date().toTimeString().slice(0, 5), ft: nowT() };
+  WALLMSG.push(x); wallShow(true);
+    // 24.11 владелец: общий чат Стрипа/Чатура/MV — всегда по-английски; Бонга — по-русски
+    const body = out0 || (p === "bc" || !hasRu(ru) ? ru : await tr(ru, "en"));
+  x.out = "@" + who + " " + body; RSAYDONE.add(x.id);
+  await sayQ(p, x.id, x.out); WSAY[x.id] = x; wallShow(true);
+  admEv((bot ? "🤖 бот ответил в чат " : "🧱 ответила в чат ") + who + ": " + ru);
+  setTimeout(() => { if (x.st === "⏳") { x.st = "⚠ страница сайта не ответила"; wallShow(true); } }, 8000);
+}
+const WSAY = {};
+var WOPEN = "";
+async function wallSay(id) {
+  const x = WALLMSG.find(y => y.id === id), inp = $("#wi-" + id), t = (inp && inp.value || "").trim();
+  if (inp && inp.style.display === "none") { WOPEN = id; inp.style.display = ""; inp.focus(); return; }
+  if (!x || !t) return;
+  inp.value = ""; WOPEN = ""; roomSay(x.p, x.who, t, x.text, false);
+}
+async function wallBot(id) {
+  const x = WALLMSG.find(y => y.id === id); if (!x) return;
+  const j = await pq({ op: "botreply", p: x.p, who: x.who, uid: x.uid, text: x.text });
+  if (!j || !j.text) { admEv("⚠ бот не смог ответить: " + ((j && j.err) || "")); return; }
+  roomSay(x.p, x.who, j.ru || j.text, x.text, true, j.text);
+}
+function privSel(p) { PSEL = p; PUNREAD[p] = 0; privShowChat(); }
+function privShowChat() {
+  const any = PORDER.filter(k => PRIVLIVE[k]), two = any.length > 1;
+  if (any.length && !any.includes(PSEL)) PSEL = any[0];
+  if (PSEL) PUNREAD[PSEL] = 0;
+  const whoOf = k => ((PRIVMSG.filter(m => !m.me && m.p === k).pop() || {}).who || "");
+  const tabs = two ? `<div style="display:flex;gap:6px;margin-bottom:6px">${any.map((k, i) => `<button class="pf pf-${k}" onclick="privSel('${k}')" style="flex:1;font-size:14px;padding:6px 8px;border-radius:8px;border:3px solid ${k === PSEL ? "#fff" : "transparent"};opacity:${k === PSEL ? 1 : .6};cursor:pointer">🔒 Приват ${i + 1} · ${esc(PN4[k] || k)}${whoOf(k) ? " · " + esc(whoOf(k)) : ""}${PUNREAD[k] ? ` <b style="background:#fff;color:#e0363c;border-radius:8px;padding:0 6px">${PUNREAD[k]}</b>` : ""}</button>`).join("")}</div>` : "";
+  const list = two ? PRIVMSG.filter(m => m.p === PSEL) : PRIVMSG;
+  $("#privc").innerHTML = (any.length ? tabs + `<div style="color:#ff8b8b;font-weight:700;margin-bottom:6px">🔒 ${two ? "Сейчас открыт: Приват " + (any.indexOf(PSEL) + 1) + " — " + esc(PN4[PSEL] || PSEL) + ". Ответ уйдёт ТОЛЬКО сюда." : "Идёт приват — " + esc(PN4[any[0]] || any[0]) + "."} Бот молчит — отвечай внизу.</div>`
+    : '<div style="color:#889;margin-bottom:6px">Привата сейчас нет. Когда начнётся — его сообщения будут тут, бот в это время не пишет.</div>') +
+    (list.slice().reverse().map(m => m.me ? `<div class="pm me"><span class="tm">${esc(m.t)} ${m.st || ""}</span><b style="color:#9fbaff">${m.by ? "Роман" : "ты"}</b>: ${esc(m.text)}${m.out && m.out !== m.text ? `<br><small style="color:#99a">ушло: ${esc(m.out)}</small>` : ""}</div>`
+      : `<div class="pm"><span class="tm">${esc(m.t)}</span><span class="pf pf-${esc(m.p)}" style="font-size:11px;padding:1px 5px;border-radius:5px">${esc(PN4[m.p] || m.p)}</span> <b>${esc(m.who)}</b>: ${esc(m.text)}</div>`).join("") || "");
+  const pin = $("#privin"); if (pin) pin.placeholder = any.length ? "ответ в " + (two ? "Приват " + (any.indexOf(PSEL) + 1) + " · " : "") + (PN4[PSEL] || PN4[any[0]] || "") + "…" : "привата нет";
+}
+// её сообщение в приват: перевод (если он пишет не по-русски) → помощник → поле чата на странице эфира сайта
+async function privSay(ownerText, op) {
+  const inp = $("#privin"), text = (ownerText || inp.value).trim(); if (!text) return;
+  const p = (op && PRIVLIVE[op] ? op : "") || (PRIVLIVE[PSEL] ? PSEL : "") || Object.keys(PRIVLIVE).find(k => PRIVLIVE[k]) || (PRIVMSG.length ? PRIVMSG[PRIVMSG.length - 1].p : "");
+  if (!p) { inp.placeholder = "привата сейчас нет — писать некуда"; return; }
+  
+  if (!ownerText) inp.value = ""; const his = PRIVMSG.filter(m => !m.me && m.p === p).slice(-3).map(m => m.text).join(" ");
+  let out = text;
+  if (/[а-яё]/i.test(text) && !/[а-яё]/i.test(his)) {
+    const r = await call("fetch", { url: "https://translate.googleapis.com/translate_a/single?client=gtx&sl=ru&tl=en&dt=t&q=" + encodeURIComponent(text), timeout: 6000 });
+    try { out = JSON.parse(r.text)[0].map(x => x[0]).join("") || text; } catch (e) {}
+  }
+  const m = { me: true, by: ownerText ? "Роман" : "", p, text, out, t: new Date().toTimeString().slice(0, 5), st: "⏳", id: "s" + Date.now() }; PRIVMSG.push(m); privShowChat();
+  await sayQ(p, m.id, out); admEv((ownerText ? "🔒 Роман написал в приват: " : "🔒 написала в приват: ") + text); setTimeout(admSend, 1500);
+  setTimeout(() => { if (m.st === "⏳") { m.st = "⚠ страница сайта не ответила — напиши там"; privShowChat(); } }, 8000);
+}
+// ── оплатили по меню: карточка + сигнал, пока она не нажмёт «Сделала»
+let PAIDQ = [], PAIDBEEP = 0;
+function paidShow() {
+  $("#paidq").innerHTML = PAIDQ.map((x, i) => `<div class="pq"><span class="tk">${x.tk ? x.tk + " tk" : "💰"}</span><div class="tx"><b>${esc(x.who)}</b> (${esc(PN4[x.p] || x.p)}) оплатил «${esc(x.what)}»<div class="do">👉 ${esc(x.act)}</div></div>${isC2C(x) ? `<button onclick="c2cGo(${i})" style="background:#2ecc71;color:#06210f">📷 Подключиться</button>` : ""}<button onclick="paidOk(${i})">✅ OK</button></div>`).join("");
+}
+// 24.11 владелец: Bonga «Посмотреть камеру» оплачен → одна кнопка: помощник жмёт его ник → камера, окошко «как пачка сигарет» на странице Бонги
+const isC2C = x => x.p === "bc" && /view your cam|посмотреть камеру|c2c|cam2cam/i.test(x.what || "");
+async function c2cGo(i) {
+  const x = PAIDQ[i]; if (!x) return;
+  try { await fetch("https://alicia-link.videorils.workers.dev/pcmd?m=cherry&p=bc", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ w: "alicia-panel", act: "c2c", who: x.who }) }); }
+  catch (e) { hint("⚠ нет связи — открой его камеру на Бонге сама (его ник → камера)"); return; }
+  hint("📷 Подключаюсь к камере <b>" + esc(x.who) + "</b> — открываю Бонгу, его камера появится маленьким окошком справа внизу. ⧉ — поверх всех окон");
+  call("openTab", { url: "https://rf.bongamodels.com/", prefix: "https://rf.bongamodels.com/", focus: true });
+  admEv("📷 C2C: подключилась к камере " + x.who); paidOk(i);
+}
+function paidOk(i) { const x = PAIDQ.splice(i, 1)[0]; if (x) admEv("✅ нажала OK: " + x.who + " — " + x.what); paidShow(); }
+setInterval(() => { if (PAIDQ.length && Date.now() - PAIDBEEP > 12000) { ding(); PAIDBEEP = Date.now(); } }, 3000);   // пищит, пока не нажмёт OK
+// ── «В комнате — с токенами»: кто писал в чате эфира (её страницы) + что знает бот (траты, писал ли он уже) — с кнопкой «написать»
+// текст в чат сайта: на сервер (/say) — страница эфира забирает сама (помощник 1.0 не передаёт команды вкладкам)
+// 25.11: общий чат — сразу в её вкладку эфира (помощник exec), без постоянного скрипта на странице; не вышло — старый путь через сервер
+const SAY_RE = [["cb", /^https:\/\/([^/]*\.)?chaturbate\.com\/b\//], ["sc", /^https:\/\/([^/]*\.)?(stripchat|mywebcamroom)\.com\/(.*broadcast|-?sweet-cherry)/i], ["bc", /^https:\/\/([^/]*\.)?bongamodels\.com\/console/], ["mv", /^https:\/\/www\.manyvids\.com\/live\/cam\/bad_secret/i]];
+let SAYJS = "";
+async function sayDirect(p, text) {
+  if (HV < 2 || !port) return null;
+  if (!SAYJS) try { SAYJS = await (await fetch("sites/say_direct.js?v=" + Date.now(), { cache: "no-store" })).text(); } catch (e) { return null; }
+  const tabs = await call("api", { fn: "tabs.query", args: [{}] }); if (!Array.isArray(tabs)) return null;
+  const re = (SAY_RE.find(x => x[0] === p) || [])[1], t = re && tabs.find(t => !t.discarded && re.test(t.url || "")); if (!t) return null;
+  const code = "(async()=>{try{return await (" + SAYJS + ")(" + JSON.stringify({ p, text }) + ")}catch(e){return {ok:false,err:String(e&&e.message||e)}}})()";
+  const r = await call("exec", { tab: t.id, world: "MAIN", code }, 20000); const x = Array.isArray(r) ? r[0] : null;
+  return x && x.res && x.res[0] ? x.res[0] : null;
+}
+async function sayQ(p, id, text) {
+  try { const v = await sayDirect(p, text);
+    if (v) { const w = WSAY[id]; if (w) { w.st = v.ok ? "✅" : "⚠ " + (v.err || "не ушло"); wallShow(true); } RSAID[id] = v.ok ? "ok" : (v.err || "не ушло");
+      fetch("https://alicia-link.videorils.workers.dev/say?m=cherry&res=1", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ id, ok: !!v.ok, err: v.err || "" }) }).catch(() => {});
+      if (v.ok) return; } } catch (e) {}
+  try { await fetch("https://alicia-link.videorils.workers.dev/say?m=cherry&p=" + p, { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ w: "alicia-panel", id, text }) }); } catch (e) {} }
+const PQ = "https://alicia-link.videorils.workers.dev/pq?m=cherry", LVN = ["", "есть токены", "тратит", "много тратит", "VIP"];
+let HUBPPL = [], RSAYDONE = new Set(), PPLHOLD = 0, RCHSEEN = new Set(), RSAID = {};
+// версия панели: хаб пишет в общий чат только через панель, которая это умеет (v ≥ 3); новая версия на сайте → панель обновится сама
+const PANEL_V = 59;
+setInterval(async () => {
+  try { const t = await (await fetch(location.pathname + "?vchk=" + Date.now(), { cache: "no-store" })).text(), v = +((t.match(/const PANEL_V = (\d+)/) || [])[1] || 0);
+    const busy = Object.values(PRIVLIVE).some(Boolean) || TYPES.length || PAIDQ.length || [...document.querySelectorAll("input,textarea")].some(i => i.value && i.type !== "file") || Object.keys(CUP).length;
+    if (v > PANEL_V && !busy) { admEv("🔄 панель обновилась сама до v" + v); await admSend(); location.reload(); } } catch (e) {}
+}, 300000);
+async function pq(body) { try { return await (await fetch(PQ, { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ w: "alicia-panel", ...body }) })).json(); } catch (e) { return { ok: false, err: "нет связи с ботом" }; } }
+// сводка зрителей с токенами: сколько уникальных и каких цветов на каждой площадке (цвет ника = сколько токенов)
+const PCOL={cb:{1:['#5ab4ff','голубые'],2:['#1f5fd6','синие'],3:['#a64dff','фиолет.'],4:['#5b1a9e','т.-фиолет.']},sc:{1:['#c9a24b','с лигой'],2:['#2ecc71','зелёные'],3:['#d43cff','Ultimate']},bc:{1:['#999','есть'],2:['#e0b020','Gold'],3:['#8fa6b8','Platinum']},mv:{1:['#ff5aa0','пишут']}};
+const PSN2={cb:'Чатур',sc:'Стрип',bc:'Бонга',mv:'MV'};
+function pplSum(l){const u={};l.forEach(r=>{const k=r.p+'|'+r.who.toLowerCase();u[k]=r});const v=Object.values(u),by={};v.forEach(r=>{by[r.p]=(by[r.p]||0)+1});   // 24.11 владелец: без лиг — только сколько с токенами на каждом сайте
+ return `<b>${v.length} с токенами</b> · `+['sc','cb','bc','mv'].filter(p=>by[p]).map(p=>`${PSN2[p]} ${by[p]}`).join(' · ')}
+function pplShow() {
+  if (Date.now() - PPLHOLD < 20000) return;                          // она печатает — не перерисовываем
+  const m = {}; for (const r of Object.values(ROOM)) if (Date.now() - r.t < 3600000) m[r.p + "|" + r.who.toLowerCase()] = { ...r };
+  for (const [p, u] of Object.entries(ROOMU2)) if (Date.now() - u.t < 180000) for (const x of u.list) { const k = p + "|" + x.who.toLowerCase();   // 24.11: из её вкладок + баланс (Бонга даёт «796 Tkn»)
+    m[k] = { ...(m[k] || { p, who: x.who, t: 0, text: "" }), lvl: Math.max(+x.lvl || 0, (m[k] || {}).lvl || 0), ...(x.bal != null ? { bal: +x.bal } : {}), ...(x.hid ? { hid: 1 } : {}), ...(x.lg ? { lg: x.lg } : {}) }; }
+  for (const h of HUBPPL) { const k = h.p + "|" + h.who.toLowerCase(); m[k] = { ...(m[k] || { p: h.p, who: h.who, t: 0, text: "" }), ...h, lvl: Math.max(h.lvl || 0, (m[k] || {}).lvl || 0), text: (m[k] || {}).text || h.said || "" }; }
+  // сверху самые ценные: $ = (сколько дал + уровень токенов) × цена токена площадки — Stripchat/Chaturbate дороже Бонги
+  const TV = { cb: .05, sc: .05, bc: .025, mv: .08 }, sc = r => (r.bal != null ? r.bal * 3 : (r.spent || 0) + (r.lvl || 0) * 100) * (TV[r.p] || .05);   // 24.11: у кого сейчас больше токенов — выше
+  const l = Object.values(m).filter(r => (r.lvl || 0) >= 1 || r.spent || r.bal > 0 || r.hid).sort((a, b) => sc(b) - sc(a) || b.t - a.t).slice(0, 120);
+  PPL = l; $("#ppln").textContent = l.length ? "(" + l.length + ")" : ""; $("#pssum").innerHTML = l.length ? pplSum(l) : "";
+  // 24.11 владелец: в строке только площадка, цветной ник и сколько tk — больше ничего (нажать на ник — переписка)
+  pplSite(l);   // 24.11 владелец: у неё зрители как у него в консоли — вкладки сайтов, сводка, список как на площадке
+  $("#ppl").innerHTML = l.map((r, i) => `<div class="pp"><span class="pf pf-${esc(r.p)}" style="border-radius:6px;padding:1px 6px;font-size:11px;font-weight:700">${esc(PN4[r.p] || r.p)}</span>` +
+    `<span class="nm" data-p="${esc(r.p)}" data-who="${esc(r.who)}" data-uid="${esc(r.uid || "")}" style="flex:1;font-size:17px;${lvO(r.p, r.lvl, r)};background:transparent">${esc(r.who)}</span><span style="margin-left:8px;font-weight:700;color:#ffd76a;white-space:nowrap">${r.bal != null ? esc(r.bal) + " tk" : esc(nowTk(r))}</span></div>`   /* 24.11 владелец: подписи «лига/1000+ за 2 нед/дал ей» убраны — по цвету ника и так видно; точный баланс сайты не отдают */).join("")
+    || '<div class="chat" style="color:#667">пока никого с токенами — появятся, когда напишут в чате эфира</div>';
+}
+let PPL = [];
+// 24.11 владелец: «у неё зрители так же, как у меня» — копия списка из его консоли (hub.html siteList)
+let PSITE = localStorage.psite || "sc", MHBM = {}, MVV = {};   // MHBM: «p|ник» → {u30: $ за 30 дн всем моделям, n, all} (MHB)
+const u30 = r => (MHBM[r.p + "|" + String(r.who).toLowerCase()] || {}).u30;
+function usdTag(r) { const v = u30(r), vd = (MHBM[r.p + "|" + String(r.who).toLowerCase()] || {}).vd || 0; if (v == null) return ""; const c = v >= 200 ? "#ffd700" : v >= 50 ? "#4cd964" : v >= 10 ? "#bdbdbd" : "#777";
+  return `<span title="тратит за 30 дней всем моделям (MHB) · был у неё в эфире ${vd} дн." style="color:${c};font-weight:${v >= 50 ? 800 : 600};font-size:13px;margin-left:8px;white-space:nowrap">$${Math.round(v)}/мес</span>`; }
+const PSN = { cb: "Чатур", sc: "Стрип", bc: "Бонга", mv: "MV" };
+const DKC = { cb: { 1: "#6ec6ff", 2: "#5b8cff", 3: "#c77dff", 4: "#9b59ff" }, bc: { 1: "#cfcfcf", 2: "#f0b52a", 3: "#a9c4d6" } };
+function psite(p) { PSITE = localStorage.psite = p; PPLHOLD = 0; pplSite(PPL); }
+function scNick(r) { return r.lvl >= 3 && !/royal|legend|diamond/.test(r.lg || "") ? "#c86bff" : (r.lg && NKL[r.lg] && r.lg != "grey") ? NKL[r.lg] : r.lvl == 2 ? "#4caf50" : "#e0e0e0"; }
+// 24.11: важность цвета ника. Стрип: legend>royal>diamond>Ultimate>platinum>gold>silver>bronze>зелёный>серый; Чатур/Бонга — уровень цвета
+const LGR={legend:9,royal:8,diamond:7,platinum:5,gold:4,silver:3,bronze:2};
+function colRank(r){if(r.p!='sc')return +r.lvl||0;const lg=r.lg||'';if(LGR[lg]>=7)return LGR[lg];if((r.lvl||0)>=3)return 6;return LGR[lg]||((r.lvl||0)>=2?1:0)}
+function pplSite(all) {
+  const n = {}; all.forEach(r => n[r.p] = (n[r.p] || 0) + 1); $("#pssum").innerHTML = "";
+  const tabs = '<div style="display:flex;gap:4px;margin:2px 0 6px">' + ["sc", "cb", "bc", "mv"].map(p => `<button class="pf-${p}" style="flex:1;padding:5px 2px;border:0;border-radius:8px;color:#fff;font-weight:700;cursor:pointer;${p == PSITE ? "outline:2px solid #fff;" : "opacity:.55;"}" onclick="psite('${p}')">${PSN[p]} ${p == "mv" && MVV.at ? (MVV.guest || 0) + (MVV.member || []).length : n[p] || 0}</button>`).join("") + "</div>";
+  const l = all.filter(r => r.p == PSITE && u30(r) !== 0).sort(   /* 24.11 владелец: кто тратит $0/мес (по MHB) — убираем, ищем китов */(a, b) => (colRank(b) - colRank(a)) || ((u30(b) ?? -1) - (u30(a) ?? -1)) || ((b.bal ?? -1) - (a.bal ?? -1)));   // 24.11 владелец: по цвету ника от важных к мелким, внутри — кто больше тратит (MHB)
+  const wb = l.filter(r => r.bal > 0), sum = wb.reduce((s, r) => s + r.bal, 0), hid = l.filter(r => r.hid).length;
+  const leg = '<div style="background:#1b1e28;border-radius:8px;padding:6px 8px;margin-bottom:6px;font-size:13px;color:#ffd76a">' + (PSITE == "sc" || PSITE == "bc" ? `💰 сейчас с токенами: <b>${wb.length}</b> из ${l.length}, всего у них <b>${sum}</b> tk${hid ? ` · баланс скрыт у ${hid}` : ""}` : `👥 с токенами: <b>${l.length}</b>` + (PSITE == "mv" && MVV.at ? ` · в комнате ${(MVV.guest || 0) + (MVV.member || []).length}, из них гостей без аккаунта ${MVV.guest || 0} (они не платят)` : "")) + "</div>";
+  const list = !l.length ? '<div class="chat" style="color:#667">тут сейчас никого с токенами</div>' : '<div style="background:#2b2b2b;border-radius:6px;padding:4px 0;border:1px solid #3a3a3a">' + l.map(r => {
+    const col = r.p == "sc" ? scNick(r) : ((DKC[r.p] || {})[r.lvl] || (r.p == "mv" ? "#ff5aa0" : "#cfcfcf"));
+    const dot = r.p == "sc" ? `<i style="display:inline-block;width:8px;height:8px;border-radius:50%;background:${NKL[r.lg || "grey"] || "#a0a0a0"};flex:none"></i>` : "";
+    const tk = r.bal != null ? r.bal + " tk" : r.hid ? "скрыт" : nowTk(r);
+    return `<div style="display:flex;align-items:center;gap:6px;padding:4px 10px;font:${r.p == "cb" ? "700 15px" : "600 16px"} ${NKF[r.p] || "Arial"}">${dot}<span class="nm" data-p="${esc(r.p)}" data-who="${esc(r.who)}" data-uid="${esc(r.uid || "")}" style="flex:1;color:${col};overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(r.who)}</span>${usdTag(r)}<span style="color:${r.bal > 0 ? "#ffd76a" : "#bdbdbd"};font-size:13px;font-weight:700;white-space:nowrap;margin-left:8px">${esc(tk)}</span></div>`; }).join("") + "</div>";
+  $("#ppl2").innerHTML = tabs + leg + list;
+}
+// 24.11 владелец: сколько у него токенов СЕЙЧАС. Точный баланс зрителя сайты не показывают никому — показываем то, что сайт даёт:
+// Чатур — цвет ника (сколько тратит за 2 недели), Стрип — лига/Ultimate/зелёный, Бонга — статус.
+function nowTk(r) {   // 24.11 владелец: «пиши сколько у него СЕЙЧАС токенов» — без лиг и «потратил». Число даёт только Бонга (r.bal); Стрип/Чатур баланс зрителя не отдают
+  if (r.bal != null) return r.bal + " tk";
+  if (r.hid) return "баланс скрыт";
+  return (+r.lvl || 0) >= 1 ? "есть tk" : "";
+}
+
+// ── переписка с человеком: нажала на ник (в ленте, донатах или списке) → весь диалог, «← Назад», можно написать самой
+let DLG = null;
+document.addEventListener("click", e => { const n = e.target.closest(".wh[data-p],.nm[data-p]"); if (n) dlgOpen(n.dataset.p, n.dataset.who, n.dataset.uid || ""); });
+async function dlgOpen(p, who, uid) {
+  if (!["cb", "sc", "bc", "mv"].includes(p) || !who) return;
+  DLG = { p, who, uid: uid || ((ROOM[p + "|" + who] || {}).uid) || "" };
+  $("#feed").style.display = "none"; $("#dlgw").style.display = "flex";
+  $("#dlgh").textContent = (PN4[p] || p) + " · " + who; $("#dlgst").textContent = ""; $("#dlgc").innerHTML = '<div class="chat" style="color:#889">⏳ загружаю переписку…</div>'; $("#dlgin").focus();
+  dlgLoad();
+}
+async function dlgLoad() {
+  if (!DLG) return; const d = DLG, j = await pq({ op: "dlg", p: d.p, who: d.who, uid: d.uid });
+  if (DLG !== d) return;
+  const ms = (j && j.msgs) || [];
+  $("#dlgc").innerHTML = ms.length ? ms.slice().reverse().map(x => `<div class="pm ${x.me ? "me" : ""}"><span class="tm">${esc((x.t || "").slice(5, 16))}</span><b style="color:${x.me ? "#9fbaff" : "#ffd76a"}">${x.me ? "ты" : esc(d.who)}</b>: ${esc(x.ru || x.text)}` +
+      (x.ru && x.ru !== x.text ? `<br><small style="color:#889">${esc(x.text)}</small>` : "") + `</div>`).join("")
+    : `<div class="chat" style="color:#889">${esc((j && j.err) || "переписки с ним ещё нет — напиши первой внизу")}</div>`;
+  if (j && j.info) $("#dlgst").textContent = j.info;
+}
+setInterval(() => { if (DLG && $("#dlgw").style.display === "flex") dlgLoad(); }, 6000);
+function dlgClose() { DLG = null; $("#dlgw").style.display = "none"; $("#feed").style.display = ""; feedShow(LASTFEED.length ? LASTFEED : null); }
+async function dlgSay() {
+  const inp = $("#dlgin"), text = inp.value.trim(); if (!DLG || !text) return;
+  inp.value = ""; $("#dlgst").textContent = "⏳ отправляю… (бот переведёт и отправит ему в личку)";
+  const j = await pq({ op: "send", p: DLG.p, who: DLG.who, uid: DLG.uid, text });
+  $("#dlgst").textContent = j && j.ok ? "✅ ушло в очередь — через ~10–30 сек появится в переписке" : "⚠ " + ((j && j.err) || "не ушло");
+  admEv("✍️ написала " + DLG.who + ": " + text); setTimeout(dlgLoad, 8000); setTimeout(dlgLoad, 25000);
+}
+async function dlgBot() {
+  if (!DLG) return; $("#dlgst").textContent = "⏳ бот пишет ему в личку…";
+  let j = await pq({ op: "botdm", p: DLG.p, who: DLG.who, uid: DLG.uid });
+  if (j && !j.ok && /в личку/.test(j.err || "")) {                     // 25.11 владелец: лички нет — бот пишет ему на стене (в чат эфира)
+    $("#dlgst").textContent = "⏳ лички нет — бот пишет ему в чат эфира…";
+    const d = DLG, k = await pq({ op: "botreply", p: d.p, who: d.who, uid: d.uid, text: "(he is in her room, silent — she greets him first, warm and playful, light hook)" });
+    if (k && k.ok && k.text) { await roomSay(d.p, d.who, k.ru || k.text, "", true, k.text); $("#dlgst").textContent = "🤖 бот написал ему в чат эфира: «" + (k.ru || k.text) + "»"; }
+    else $("#dlgst").textContent = "⚠ " + ((k && k.err) || "бот не смог написать");
+    admEv("🤖 попросила бота написать " + d.who + " (в чат эфира)"); return;
+  }
+  $("#dlgst").textContent = j && j.ok ? ((j.ru || j.text) ? "🤖 бот пишет: «" + (j.ru || j.text) + "» — через ~10–30 сек появится тут" : "🤖 бот уже пишет ему — через ~30–60 сек сообщение появится тут") : "⚠ " + ((j && j.err) || "не вышло");
+  admEv("🤖 попросила бота написать " + DLG.who); setTimeout(dlgLoad, 10000); setTimeout(dlgLoad, 30000);
+}
+async function hubLoop() { await hubSync(); setTimeout(hubLoop, TYPES.length ? 2000 : 5000); }
+hubLoop();
+admEv("📂 панель открыта"); setTimeout(admSend, 3000); setInterval(admSend, 15000);
+</script><script>function thSet(l){document.documentElement.classList.toggle('light',l);localStorage.theme=l?'light':'dark';var b=document.getElementById('thb');if(b)b.textContent=l?'🌙 Тёмный':'☀️ Белый'}thSet(localStorage.theme!=='dark');</script></body></html>
