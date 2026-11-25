@@ -1077,7 +1077,7 @@ async function dlgSay() {
 async function dlgBot() {
   if (!DLG) return; $("#dlgst").textContent = "⏳ бот пишет ему в личку…";
   const j = await pq({ op: "botdm", p: DLG.p, who: DLG.who, uid: DLG.uid });
-  $("#dlgst").textContent = j && j.ok ? "🤖 бот пишет: «" + (j.ru || j.text || "") + "» — через ~10–30 сек появится тут" : "⚠ " + ((j && j.err) || "не вышло");
+  $("#dlgst").textContent = j && j.ok ? ((j.ru || j.text) ? "🤖 бот пишет: «" + (j.ru || j.text) + "» — через ~10–30 сек появится тут" : "🤖 бот уже пишет ему — через ~30–60 сек сообщение появится тут") : "⚠ " + ((j && j.err) || "не вышло");
   admEv("🤖 попросила бота написать " + DLG.who); setTimeout(dlgLoad, 10000); setTimeout(dlgLoad, 30000);
 }
 async function hubLoop() { await hubSync(); setTimeout(hubLoop, TYPES.length ? 2000 : 5000); }
