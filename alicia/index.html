@@ -209,7 +209,7 @@ async function rtcLoop() {
   await new Promise(z => { if (pc.iceGatheringState === "complete") return z(); pc.onicegatheringstatechange = () => pc.iceGatheringState === "complete" && z(); setTimeout(z, 4000); });
   try { await fetch(RTC + "/answer", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ w: "alicia-panel", id: o.id, sdp: pc.localDescription.sdp }) }); } catch (e) {}
 }
-setInterval(rtcLoop, 3000);
+setInterval(rtcLoop, 20000);   // 25.11: было 3 с — лимит Cloudflare
 setInterval(async () => { if (!ok) return; const st = await req("GetStreamStatus"), r = await req("GetRecordStatus"), s = await scene();
   let kb = "", kbn = 0; if (st.outputActive) { const now = Date.now(); if (lastT) { kbn = Math.round((st.outputBytes - lastBytes) * 8 / (now - lastT)); kb = kbn + " кбит/с"; } lastBytes = st.outputBytes; lastT = now; }
   lowRate(st, kbn);
@@ -1077,7 +1077,7 @@ function glow() { for (const k of ["cb", "sc", "bc", "mv"]) { const d = $("#d-" 
 setInterval(glow, 2000);
 let HUBPPL = [], RSAYDONE = new Set(), PPLHOLD = 0, RCHSEEN = new Set(), RSAID = {};
 // версия панели: хаб пишет в общий чат только через панель, которая это умеет (v ≥ 3); новая версия на сайте → панель обновится сама
-const PANEL_V = 75;
+const PANEL_V = 76;
 setInterval(async () => {
   try { const t = await (await fetch(location.pathname + "?vchk=" + Date.now(), { cache: "no-store" })).text(), v = +((t.match(/const PANEL_V = (\d+)/) || [])[1] || 0);
     const busy = Object.values(PRIVLIVE).some(Boolean) || TYPES.length || PAIDQ.length || [...document.querySelectorAll("input,textarea")].some(i => i.value && i.type !== "file") || Object.keys(CUP).length;
@@ -1222,7 +1222,7 @@ async function dlgBot() {
   $("#dlgst").textContent = j && j.ok ? ((j.ru || j.text) ? "🤖 бот пишет: «" + (j.ru || j.text) + "» — через ~10–30 сек появится тут" : "🤖 бот уже пишет ему — через ~30–60 сек сообщение появится тут") : "⚠ " + ((j && j.err) || "не вышло");
   admEv("🤖 попросила бота написать " + DLG.who); setTimeout(dlgLoad, 10000); setTimeout(dlgLoad, 30000);
 }
-async function hubLoop() { await hubSync(); setTimeout(hubLoop, TYPES.length ? 2000 : 5000); }
+async function hubLoop() { await hubSync(); setTimeout(hubLoop, TYPES.length ? 4000 : 10000); }   // 25.11: было 2/5 с — лимит Cloudflare
 hubLoop();
 admEv("📂 панель открыта"); setTimeout(admSend, 3000); setInterval(admSend, 15000);
 </script><script>function thSet(l){document.documentElement.classList.toggle('light',l);localStorage.theme=l?'light':'dark';var b=document.getElementById('thb');if(b)b.textContent=l?'🌙 Тёмный':'☀️ Белый'}thSet(localStorage.theme!=='dark');</script></body></html>
