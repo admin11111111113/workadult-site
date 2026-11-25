@@ -189,7 +189,7 @@
   const usersOnce = async () => {
     const ab = () => { const c = new AbortController(); setTimeout(() => c.abort(), 15000); return c.signal; };
     if (P === "cb" && /^\/b\//.test(location.pathname)) {
-      const room = location.pathname.split("/")[2] || "_skitlstrynka_", LV = { l: 1, b: 2, p: 3, f: 3, t: 4 };
+      const room = location.pathname.split("/")[2] || "_skitlstrynka_", LV = { t: 1, tr: 2, p: 3, l: 4 }   // 25.11: сверено с цветами на сайте: t=голубой(есть tk) tr=синий p=светло-фиол. l=тёмно-фиол.;
       const t = await (await fetch("/api/getchatuserlist/?roomname=" + room + "&private=false&sort_by=a&exclude_staff=false", { signal: ab(), credentials: "include" })).text();
       return t.split(",").slice(2).map(x => x.split("|")).filter(a => a.length >= 2 && LV[a[1]]).map(a => ({ who: a[0], lvl: LV[a[1]] }));
     }
