@@ -222,7 +222,8 @@ setInterval(async () => { if (!ok) return; const st = await req("GetStreamStatus
   // статус Bonga — с её консоли (golive.js шлёт live bc); если консоль молчит — что видно по OBS
   // консоль Bonga молчит → судим по OBS: все потоки (включая вывод bonga) идут = Bonga в эфире
   { const bo = ol.find(o => /bonga/i.test(o.outputName || ""));
-    liveSet("bc", "obs", bo ? !!bo.outputActive : !!st.outputActive && nOut >= 2 && nOut === ol.length, "obs"); }
+    liveSet("bc", "obs", bo ? !!bo.outputActive : !!st.outputActive && nOut >= 2 && nOut === ol.length, "obs");
+    bcWatch(st, bo); }
   // OBS запустили кнопкой в самом OBS (не «Начать эфир» в панели) — сайты дожимаем сами (22.11: стрим шёл, сайты не открылись)
   // только переход «не шёл → пошёл» при открытой панели (OBSWAS === false). При открытии панели посреди эфира (OBSWAS = null) — ничего не трогаем
   if (st.outputActive && OBSWAS === false && Date.now() - GOING > 120000 && !["cb", "sc", "bc", "mv"].some(k => LIVE[k] && LIVE[k].on)) { GOING = Date.now(); hint("▶ Вижу, OBS начал трансляцию — запускаю сайты сама…"); sitesGo("pre").then(() => setTimeout(() => sitesGo("post"), 8000)); LIVE_T = Date.now(); }
@@ -267,6 +268,33 @@ function liveEval(p) {
   if (was !== on) showTot();
 }
 setInterval(() => ["cb", "sc", "bc", "mv"].forEach(liveEval), 5000);
+// 25.11 владелец: «на Бонге эфир сам вырубается (OBS не вывозит) — бот должен подключать сам».
+// Основной поток OBS идёт, а Бонга упала (её выход в OBS встал или консоль Бонги пишет «не в эфире») 30+ сек →
+// сами: перезагрузить консоль Бонги с автозапуском («Начать трансляцию»), перезапустить выход bonga в OBS, второе «Начать трансляцию» жмёт golive.js.
+// Только если Бонга в этом эфире уже была, не чаще раза в 3 мин, не в привате Бонги; после 5 неудач подряд — сказать ей.
+let BCOK = 0, BCFIX = 0, BCTRY = 0;
+function bcWatch(st, bo) {
+  const L = LV.bc || {}, tabFresh = L.tab && Date.now() - L.tab.t < 45000;
+  const down = !!st.outputActive && ((bo && !bo.outputActive) || (tabFresh && !L.tab.on));
+  if (!st.outputActive) { BCOK = 0; BCTRY = 0; return; }
+  if (!down) { if (bo ? bo.outputActive : (tabFresh && L.tab.on)) { BCOK = Date.now(); BCTRY = 0; } return; }
+  if (!BCOK || Date.now() - BCOK < 30000 || Date.now() - GOING < 120000 || Date.now() - BCFIX < 180000 || PRIVLIVE.bc) return;
+  if (BCTRY >= 5) return;
+  BCFIX = Date.now(); BCTRY++; bcRelive(bo, BCTRY);
+}
+async function bcRelive(bo, n) {
+  admEv("🔁 Bonga: эфир упал — переподключаю сама (попытка " + n + ")"); hint("🔁 Bonga отвалилась — переподключаю сама, ничего не нажимай");
+  GO_UNTIL = Date.now() + 240000;
+  await pushScripts({ step1: GO_PAGES.bc }); await pushScripts();
+  call("openTab", { url: "https://rf.bongamodels.com/", prefix: "https://rf.bongamodels.com/", pinned: true });
+  await new Promise(z => setTimeout(z, 12000));
+  if (bo && bo.outputName) {
+    if (bo.outputActive) { await reqS("StopOutput", { outputName: bo.outputName }); await new Promise(z => setTimeout(z, 3000)); }
+    const r = await reqS("StartOutput", { outputName: bo.outputName });
+    admEv((r.requestStatus || {}).result ? "🔁 Bonga: поток из OBS перезапущен" : "⚠ Bonga: OBS не перезапустил выход — " + ((r.requestStatus || {}).comment || ""));
+  }
+  if (n >= 5) setTimeout(() => { if (!(LIVE.bc && LIVE.bc.on)) { hint("⚠️ Bonga не поднимается 5 раз подряд — открой вкладку Bonga и нажми «Начать трансляцию» сама"); admEv("⚠ Bonga: 5 попыток не помогли — попросила её нажать самой"); } }, 60000);
+}
 async function goLive() {
   GOING = Date.now();
   call("openTab", { url: LOV_PAGE, prefix: "https://rugextension.lovense.com/", pinned: true });
@@ -1025,7 +1053,7 @@ async function sayQ(p, id, text) {
 const PQ = "https://alicia-link.videorils.workers.dev/pq?m=cherry", LVN = ["", "есть токены", "тратит", "много тратит", "VIP"];
 let HUBPPL = [], RSAYDONE = new Set(), PPLHOLD = 0, RCHSEEN = new Set(), RSAID = {};
 // версия панели: хаб пишет в общий чат только через панель, которая это умеет (v ≥ 3); новая версия на сайте → панель обновится сама
-const PANEL_V = 67;
+const PANEL_V = 68;
 setInterval(async () => {
   try { const t = await (await fetch(location.pathname + "?vchk=" + Date.now(), { cache: "no-store" })).text(), v = +((t.match(/const PANEL_V = (\d+)/) || [])[1] || 0);
     const busy = Object.values(PRIVLIVE).some(Boolean) || TYPES.length || PAIDQ.length || [...document.querySelectorAll("input,textarea")].some(i => i.value && i.type !== "file") || Object.keys(CUP).length;
