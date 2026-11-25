@@ -195,7 +195,7 @@ setInterval(async () => { if (!ok || CAMLIVE) return; const s = await scene(); i
   const im = await req("GetSourceScreenshot", { sourceName: s, imageFormat: "jpg", imageWidth: 960, imageCompressionQuality: 70 });
   if (im.imageData) $("#cam").src = im.imageData; }, 700);
 // ── видео владельцу: он присылает предложение (через alicia-link), мы отвечаем и шлём видео виртуальной камеры напрямую
-const RTC = "https://alicia-link.videorils.workers.dev/rtc";
+const RTC = "https://alicia-link.katehub.workers.dev/rtc";
 let RTCPC = null, RTCID = "";
 async function rtcLoop() {
   if (!CAMST) return;
@@ -629,7 +629,7 @@ rqLoop();
 
 // ── сводка для админки владельца: раз в 15 сек что видно на панели (статусы, подсказки, донаты, чат, маленький кадр)
 document.addEventListener("click", e => { const b = e.target.closest("button"); if (b) admEv("👆 нажала «" + b.textContent.trim() + "»"); }, true);
-const ADM_URL = "https://alicia-link.videorils.workers.dev/her";
+const ADM_URL = "https://alicia-link.katehub.workers.dev/her";
 function admShot() { const im = CAMLIVE ? $("#camv") : $("#cam"), w = im.videoWidth || im.naturalWidth, h = im.videoHeight || im.naturalHeight; if (!w) return "";
   try { const c = document.createElement("canvas"); c.width = 320; c.height = Math.round(320 * h / w);
     c.getContext("2d").drawImage(im, 0, 0, c.width, c.height); return c.toDataURL("image/jpeg", 0.5); } catch (e) { return ""; } }
@@ -654,7 +654,7 @@ function lovCtl(m) {
     (m.timer ? " · ⏱ <b>" + esc(m.timer) + "</b>" : "") + (m.limit ? " · " + esc(m.limit) : "") + ((m.toys || []).length ? "<br><small>" + esc(m.toys.join(" · ")) + "</small>" : "");
 }
 async function lovStop() { if (!LOVCTL || !confirm("Закончить управление игрушкой?")) return;
-  try { await fetch("https://alicia-link.videorils.workers.dev/pcmd?p=" + LOVCTL.p, { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ w: "alicia-panel", act: "lovstop" }) }); hint("⏳ Заканчиваю управление…"); } catch (e) {} }
+  try { await fetch("https://alicia-link.katehub.workers.dev/pcmd?p=" + LOVCTL.p, { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ w: "alicia-panel", act: "lovstop" }) }); hint("⏳ Заканчиваю управление…"); } catch (e) {} }
 // ── ПРИВАТ: запрос с сайта → большое окно тут; «Принять/Отклонить» уходит на сайт (golive.js нажмёт кнопку сам)
 let PRIVREQ = null, PRIVLIVE = {}, PORDER = [], PSEL = "", PUNREAD = {};
 const PN4 = { cb: "Chaturbate", sc: "Stripchat", bc: "Bongacams", mv: "ManyVids" };
@@ -688,7 +688,7 @@ function privShow(p, text) {
 function privHide() { PRIVREQ = null; $("#priv").style.display = "none"; }
 async function privAns(act) {
   if (!PRIVREQ) return; $("#privst").textContent = act === "accept" ? "⏳ принимаю на сайте…" : "⏳ отклоняю…";
-  try { await fetch("https://alicia-link.videorils.workers.dev/pcmd?p=" + PRIVREQ, { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ w: "alicia-panel", act }) }); }
+  try { await fetch("https://alicia-link.katehub.workers.dev/pcmd?p=" + PRIVREQ, { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ w: "alicia-panel", act }) }); }
   catch (e) { $("#privst").textContent = "⚠ нет связи — нажми на сайте"; return; }
   admEv(act === "accept" ? "🔒 приняла приват" : "🔒 отклонила приват"); setTimeout(privHide, 6000);
 }
@@ -707,7 +707,7 @@ function privOn(p, on) {
   if (on) { ding(); admEv("🔒 приват идёт на " + (PN4[p] || p)); hint("🔒 Приват на " + (PN4[p] || p) + " — смотри его сообщения в комнате " + (PN4[p] || p)); }
 }
 // ── бот (работает на ПК владельца): галочки «авто» по площадкам + что он написал людям
-const HUB_URL = "https://alicia-link.videorils.workers.dev/hub", PNAME = { cb: "Chaturbate", sc: "Stripchat", bc: "Bongacams", mv: "ManyVids" };
+const HUB_URL = "https://alicia-link.katehub.workers.dev/hub", PNAME = { cb: "Chaturbate", sc: "Stripchat", bc: "Bongacams", mv: "ManyVids" };
 let AUTO_T = 0;
 async function autoSet(p, on) { AUTO_T = Date.now(); admEv((on ? "🤖 включила" : "🤖 выключила") + " авто на " + PNAME[p]);
   try { await fetch(HUB_URL, { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ w: "alicia-panel", p, on }) }); } catch (e) {} }
@@ -792,7 +792,7 @@ async function hubSync() {
       || '<div class="chat" style="color:#889">пока ничего не писал</div>';
 }
 // ── кастомы: она видит, что просят (решает админ — кнопок «да/нет» тут нет); оплачено → «сними и загрузи» → бот сам отправит ему
-const UP_URL = "https://alicia-link.videorils.workers.dev/up", CUP = {};      // id → % загрузки / "err:…"
+const UP_URL = "https://alicia-link.katehub.workers.dev/up", CUP = {};      // id → % загрузки / "err:…"
 let CUSTS = [], CUSTPAID = null;
 const CST = { new: ["💬 обсуждают", "#aab"], ok: ["🤝 договорились — ждём оплату", "#9fe0b0"], paid: ["💰 ОПЛАЧЕНО — сними и загрузи", "#ffb347"],
   uploaded: ["📤 загружено — бот отправляет", "#7fc4ff"], sent: ["✅ отправлено ему", "#7ee08a"], closed: ["✅ готово", "#7ee08a"] };
@@ -849,7 +849,7 @@ async function custUp(id, inp) {
   delete CUP[id]; c.st = "uploaded"; custRender(); admEv("✅ загрузила кастом для " + c.who); setTimeout(hubSync, 2000);
 }
 // ── «Фото и видео»: её загрузки → alicia-link /up?lib=1 → хаб; список с подписями ИИ — /lls
-const LLS = "https://alicia-link.videorils.workers.dev/lls?w=alicia-panel";
+const LLS = "https://alicia-link.katehub.workers.dev/lls?w=alicia-panel";
 function libOpen() { document.documentElement.classList.remove("light"); $("#libv").style.display = "flex"; libLoad(); }   // в светлой теме фото блёклые (двойная инверсия) — галерея всегда в тёмной
 function libClose() { $("#libv").style.display = "none"; thSet(localStorage.theme !== "dark"); }
 async function libLoad() {
@@ -1040,7 +1040,7 @@ function paidShow() {
 const isC2C = x => x.p === "bc" && /view your cam|посмотреть камеру|c2c|cam2cam/i.test(x.what || "");
 async function c2cGo(i) {
   const x = PAIDQ[i]; if (!x) return;
-  try { await fetch("https://alicia-link.videorils.workers.dev/pcmd?p=bc", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ w: "alicia-panel", act: "c2c", who: x.who }) }); }
+  try { await fetch("https://alicia-link.katehub.workers.dev/pcmd?p=bc", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ w: "alicia-panel", act: "c2c", who: x.who }) }); }
   catch (e) { hint("⚠ нет связи — открой его камеру на Бонге сама (его ник → камера)"); return; }
   hint("📷 Подключаюсь к камере <b>" + esc(x.who) + "</b> — открываю Бонгу, его камера появится маленьким окошком справа внизу. ⧉ — поверх всех окон");
   call("openTab", { url: "https://rf.bongamodels.com/", prefix: "https://rf.bongamodels.com/", focus: true });
@@ -1065,10 +1065,10 @@ async function sayDirect(p, text) {
 async function sayQ(p, id, text) {
   try { const v = await sayDirect(p, text);
     if (v) { const w = WSAY[id]; if (w) { w.st = v.ok ? "✅" : "⚠ " + (v.err || "не ушло"); wallShow(true); } RSAID[id] = v.ok ? "ok" : (v.err || "не ушло");
-      fetch("https://alicia-link.videorils.workers.dev/say?res=1", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ id, ok: !!v.ok, err: v.err || "" }) }).catch(() => {});
+      fetch("https://alicia-link.katehub.workers.dev/say?res=1", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ id, ok: !!v.ok, err: v.err || "" }) }).catch(() => {});
       if (v.ok) return; } } catch (e) {}
-  try { await fetch("https://alicia-link.videorils.workers.dev/say?p=" + p, { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ w: "alicia-panel", id, text }) }); } catch (e) {} }
-const PQ = "https://alicia-link.videorils.workers.dev/pq", LVN = ["", "есть токены", "тратит", "много тратит", "VIP"];
+  try { await fetch("https://alicia-link.katehub.workers.dev/say?p=" + p, { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ w: "alicia-panel", id, text }) }); } catch (e) {} }
+const PQ = "https://alicia-link.katehub.workers.dev/pq", LVN = ["", "есть токены", "тратит", "много тратит", "VIP"];
 // 25.11 владелец: как в его консоли — карточка площадки светится ЗЕЛЁНЫМ, когда пришёл донат (20 сек), КРАСНЫМ — когда там сейчас кит; оба — двойная рамка
 const GDON = {}; let GWH = {};
 function glowTip(p) { GDON[p] = Date.now(); glow(); }
@@ -1077,7 +1077,7 @@ function glow() { for (const k of ["cb", "sc", "bc", "mv"]) { const d = $("#d-" 
 setInterval(glow, 2000);
 let HUBPPL = [], RSAYDONE = new Set(), PPLHOLD = 0, RCHSEEN = new Set(), RSAID = {};
 // версия панели: хаб пишет в общий чат только через панель, которая это умеет (v ≥ 3); новая версия на сайте → панель обновится сама
-const PANEL_V = 76;
+const PANEL_V = 77;
 setInterval(async () => {
   try { const t = await (await fetch(location.pathname + "?vchk=" + Date.now(), { cache: "no-store" })).text(), v = +((t.match(/const PANEL_V = (\d+)/) || [])[1] || 0);
     const busy = Object.values(PRIVLIVE).some(Boolean) || TYPES.length || PAIDQ.length || [...document.querySelectorAll("input,textarea")].some(i => i.value && i.type !== "file") || Object.keys(CUP).length;
