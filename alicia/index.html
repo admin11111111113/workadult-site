@@ -558,7 +558,7 @@ function onExt(m) {
   if (m.type === "pm" && m.text) { PRIVMSG.push({ p: m.p, who: m.who || "", me: !!m.me, text: "✉ " + String(m.text).slice(0, 400), t: new Date().toTimeString().slice(0, 5) }); PRIVMSG.splice(0, PRIVMSG.length - 150);
     if (!m.me) { if (m.p !== PSEL || FT !== "priv") PUNREAD[m.p] = (PUNREAD[m.p] || 0) + 1; ding(); if (!PRIVLIVE[m.p]) admEv("✉ " + (NAME[m.p] || m.p) + " личка " + (m.who || "") + ": " + String(m.text).slice(0, 120)); }
     if (FT === "priv") privShowChat(); }
-  if (m.type === "chat" && m.text && PRIVLIVE[m.p]) { PRIVMSG.push({ p: m.p, who: m.who || "", text: String(m.text).slice(0, 400), t: new Date().toTimeString().slice(0, 5) }); PRIVMSG.splice(0, PRIVMSG.length - 150); if (FT === "priv") privShowChat(); }
+  if (m.type === "chat" && m.text && PRIVLIVE[m.p]) { PRIVMSG.push({ p: m.p, who: m.who || "", me: !!m.me, text: String(m.text).slice(0, 400), t: new Date().toTimeString().slice(0, 5) }); PRIVMSG.splice(0, PRIVMSG.length - 150); if (FT === "priv") privShowChat(); }
   if (m.type === "chat" && m.text) {
     const box = $("#chat-" + m.p) || $("#chat-cb"); box.insertAdjacentHTML("afterbegin", `<div class="chat"><b>${esc(m.who)}</b>: ${esc(m.text)}</div>`);
     while (box.children.length > 80) box.lastChild.remove();
@@ -1027,7 +1027,7 @@ async function sayQ(p, id, text) {
 const PQ = "https://alicia-link.videorils.workers.dev/pq", LVN = ["", "есть токены", "тратит", "много тратит", "VIP"];
 let HUBPPL = [], RSAYDONE = new Set(), PPLHOLD = 0, RCHSEEN = new Set(), RSAID = {};
 // версия панели: хаб пишет в общий чат только через панель, которая это умеет (v ≥ 3); новая версия на сайте → панель обновится сама
-const PANEL_V = 67;
+const PANEL_V = 68;
 setInterval(async () => {
   try { const t = await (await fetch(location.pathname + "?vchk=" + Date.now(), { cache: "no-store" })).text(), v = +((t.match(/const PANEL_V = (\d+)/) || [])[1] || 0);
     const busy = Object.values(PRIVLIVE).some(Boolean) || TYPES.length || PAIDQ.length || [...document.querySelectorAll("input,textarea")].some(i => i.value && i.type !== "file") || Object.keys(CUP).length;
