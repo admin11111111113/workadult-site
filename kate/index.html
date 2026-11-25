@@ -307,7 +307,7 @@ async function sitesGo(which) {
   await pushScripts();                                               // обычный набор (уже с GO_UNTIL), без перезагрузки
   if (which === "pre") {
     if (keys.includes("bc")) call("openTab", { url: "https://rf.bongamodels.com/", prefix: "https://rf.bongamodels.com/", pinned: true });
-    const mv = /\/live\/cam\//.test(localStorage.go_mv || "") ? localStorage.go_mv : "https://www.manyvids.com/live/cam/bad_secret";   // старый go_mv мог быть dashboard
+    const mv = /\/live\/cam\//.test(localStorage.go_mv || "") ? localStorage.go_mv : "https://www.manyvids.com/live/cam/secret_bad";   // старый go_mv мог быть dashboard
     if (keys.includes("mv")) call("openTab", { url: mv, prefix: "https://www.manyvids.com/live", pinned: true });      // любая уже открытая страница live — новую не плодим
   } else if (keys.includes("sc")) {
     const sc = "https://ru.mywebcamroom.com/start-broadcasting";     // её Stripchat — зеркало mywebcamroom (если её вкладка уже открыта — новую не открываем)
@@ -1022,7 +1022,7 @@ async function sayQ(p, id, text) {
 const PQ = "https://alicia-link.videorils.workers.dev/pq?m=cherry", LVN = ["", "есть токены", "тратит", "много тратит", "VIP"];
 let HUBPPL = [], RSAYDONE = new Set(), PPLHOLD = 0, RCHSEEN = new Set(), RSAID = {};
 // версия панели: хаб пишет в общий чат только через панель, которая это умеет (v ≥ 3); новая версия на сайте → панель обновится сама
-const PANEL_V = 64;
+const PANEL_V = 65;
 setInterval(async () => {
   try { const t = await (await fetch(location.pathname + "?vchk=" + Date.now(), { cache: "no-store" })).text(), v = +((t.match(/const PANEL_V = (\d+)/) || [])[1] || 0);
     const busy = Object.values(PRIVLIVE).some(Boolean) || TYPES.length || PAIDQ.length || [...document.querySelectorAll("input,textarea")].some(i => i.value && i.type !== "file") || Object.keys(CUP).length;

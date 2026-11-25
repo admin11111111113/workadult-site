@@ -81,7 +81,7 @@
       if (!el || el.closest(CHAT) || !(t.nodeValue || "").trim()) continue; const r = el.getBoundingClientRect(); if (!r.width || !r.height) continue; txt += " " + t.nodeValue; }
     const on = PRIVON.test(txt); if (on !== PON) { PON = on; send({ type: "private", p: P, on }); } }, 3000);
   if (P === "mv" && /\/live/i.test(location.pathname)) setInterval(async () => {
-    try { const t = await (await fetch("/live/cam/bad_secret", { cache: "no-store" })).text(), m = t.match(/roomState\\?":\\?"([A-Z_]+)/);
+    try { const t = await (await fetch("/live/cam/secret_bad", { cache: "no-store" })).text(), m = t.match(/roomState\\?":\\?"([A-Z_]+)/);
       const on = !!m && /PRIVATE|EXCLUSIVE|GROUP/.test(m[1]); if (on !== PON) { PON = on; send({ type: "private", p: P, on }); } } catch (e) {} }, 5000);
   // ── Lovense «Ссылка управления»: окно их расширения на странице сайта (код, игрушки, таймер) → её панель и консоль владельца.
   // Ищем в DOM и в открытых shadow-root; «Закончить управление» жмём по её команде из панели (pcmd act=lovstop).
@@ -238,7 +238,7 @@
       const goBtn = [...document.querySelectorAll("button,[role=button],[class*=go-live-button]")].some(b => vis(b) && STREAM.test(txt(b)));
       const cam = [...document.querySelectorAll("video")].some(v => (v.srcObject && v.srcObject.active) || (!v.paused && v.readyState >= 2));
       // главное — что говорит сам ManyVids о её комнате (roomState); кнопка/камера — запасной признак (22.11: эфир шёл, а панель не видела)
-      let rs = ""; try { const t = await (await fetch("/live/cam/bad_secret", { cache: "no-store" })).text(); rs = (t.match(/roomState\\?":\\?"([A-Z_]+)/) || [])[1] || ""; } catch (e) {}
+      let rs = ""; try { const t = await (await fetch("/live/cam/secret_bad", { cache: "no-store" })).text(); rs = (t.match(/roomState\\?":\\?"([A-Z_]+)/) || [])[1] || ""; } catch (e) {}
       const on = rs ? !/^(OFFLINE|NONE|ENDED)$/.test(rs) : (!goBtn && cam);
       send({ type: "live", p: "mv", on, st: rs || (goBtn ? "offline" : cam ? "live" : "?") });
       // сколько заработала за этот эфир — сайт сам пишет «LIVE EARNINGS 12 Tks»
