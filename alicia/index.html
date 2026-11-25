@@ -568,7 +568,7 @@ if (window.chrome && chrome.runtime && chrome.runtime.connect) ext(); else dot("
 // 24.11: личка через её браузер (помощник 2.0). Хаб даёт задание «сходи в API сайта» → выполняем в её уже открытой вкладке
 // (Стрип/MV/Fansly/My.Club) тихо, без новых вкладок и кликов → итог обратно хабу. Нет 2.0 / нет вкладки — хаб всё делает по-старому.
 let RQ_H = null;
-const RQ_RE = [["sc", /^https:\/\/([^/]*\.)?(stripchat\.com|mywebcamroom\.com)\//], ["mv", /^https:\/\/www\.manyvids\.com\//], ["fs", /^https:\/\/fansly\.com\//], ["mc", /^https:\/\/my\.club\//], ["cb", /^https:\/\/chaturbate\.com\//], ["bc", /^https:\/\/([^/]*\.)?bongamodels\.com\//], ["mhb", /^https:\/\/d\.modelshelperbot\.com\//]];   /* 24.11: mhb — проверка трат зрителя по нику (её вход в MHB) */   // cb/bc — только оплаты (отчёты API)
+const RQ_RE = [["sc", /^https:\/\/([^/]*\.)?(stripchat\.com|mywebcamroom\.com)\//], ["mv", /^https:\/\/www\.manyvids\.com\//], ["fs", /^https:\/\/fansly\.com\//], ["mc", /^https:\/\/my\.club\//], ["cb", /^https:\/\/([^/]*\.)?chaturbate\.com\//], ["bc", /^https:\/\/([^/]*\.)?bongamodels\.com\//], ["mhb", /^https:\/\/d\.modelshelperbot\.com\//]];   /* 24.11: mhb — проверка трат зрителя по нику (её вход в MHB) */   // cb/bc — только оплаты (отчёты API)
 const rqSleep = ms => new Promise(r => setTimeout(r, ms));
 function rqPost(rq, d) { return fetch(rq.url + "/rq/res?k=" + rq.k, { method: "POST", body: JSON.stringify(d) }).catch(() => {}); }
 async function rqRun(job, have, rq) {
@@ -589,6 +589,7 @@ async function rqLoop() {
     const tabs = await call("api", { fn: "tabs.query", args: [{}] }), have = {};
     if (!Array.isArray(tabs)) { await rqSleep(5000); continue; }
     for (const t of tabs) if (!t.discarded) for (const [p, re] of RQ_RE) if (!have[p] && re.test(t.url || "")) have[p] = t.id;
+    for (const t of tabs) if (!t.discarded) for (const [p, re] of SAY_RE) if (re.test(t.url || "")) have[p] = t.id;   // 25.11: страница эфира важнее (общий чат); личке всё равно какая вкладка
     let j; try { j = await (await fetch(rq.url + "/rq/take?k=" + rq.k + "&hv=" + HV + "&tabs=" + Object.keys(have).join(","), { cache: "no-store" })).json(); }
     catch (e) { await rqSleep(5000); continue; }
     if (j.err) { await rqSleep(5000); continue; }
@@ -998,11 +999,28 @@ function paidOk(i) { const x = PAIDQ.splice(i, 1)[0]; if (x) admEv("✅ нажа
 setInterval(() => { if (PAIDQ.length && Date.now() - PAIDBEEP > 12000) { ding(); PAIDBEEP = Date.now(); } }, 3000);   // пищит, пока не нажмёт OK
 // ── «В комнате — с токенами»: кто писал в чате эфира (её страницы) + что знает бот (траты, писал ли он уже) — с кнопкой «написать»
 // текст в чат сайта: на сервер (/say) — страница эфира забирает сама (помощник 1.0 не передаёт команды вкладкам)
-async function sayQ(p, id, text) { try { await fetch("https://alicia-link.videorils.workers.dev/say?p=" + p, { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ w: "alicia-panel", id, text }) }); } catch (e) {} }
+// 25.11: общий чат — сразу в её вкладку эфира (помощник exec), без постоянного скрипта на странице; не вышло — старый путь через сервер
+const SAY_RE = [["cb", /^https:\/\/([^/]*\.)?chaturbate\.com\/b\//], ["sc", /^https:\/\/([^/]*\.)?(stripchat|mywebcamroom)\.com\/(.*broadcast|_?skitlstrynka)/i], ["bc", /^https:\/\/([^/]*\.)?bongamodels\.com\/console/], ["mv", /^https:\/\/www\.manyvids\.com\/live\/cam\/bad_secret/i]];
+let SAYJS = "";
+async function sayDirect(p, text) {
+  if (HV < 2 || !port) return null;
+  if (!SAYJS) try { SAYJS = await (await fetch("sites/say_direct.js?v=" + Date.now(), { cache: "no-store" })).text(); } catch (e) { return null; }
+  const tabs = await call("api", { fn: "tabs.query", args: [{}] }); if (!Array.isArray(tabs)) return null;
+  const re = (SAY_RE.find(x => x[0] === p) || [])[1], t = re && tabs.find(t => !t.discarded && re.test(t.url || "")); if (!t) return null;
+  const code = "(async()=>{try{return await (" + SAYJS + ")(" + JSON.stringify({ p, text }) + ")}catch(e){return {ok:false,err:String(e&&e.message||e)}}})()";
+  const r = await call("exec", { tab: t.id, world: "MAIN", code }, 20000); const x = Array.isArray(r) ? r[0] : null;
+  return x && x.res && x.res[0] ? x.res[0] : null;
+}
+async function sayQ(p, id, text) {
+  try { const v = await sayDirect(p, text);
+    if (v) { const w = WSAY[id]; if (w) { w.st = v.ok ? "✅" : "⚠ " + (v.err || "не ушло"); wallShow(true); } RSAID[id] = v.ok ? "ok" : (v.err || "не ушло");
+      fetch("https://alicia-link.videorils.workers.dev/say?res=1", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ id, ok: !!v.ok, err: v.err || "" }) }).catch(() => {});
+      if (v.ok) return; } } catch (e) {}
+  try { await fetch("https://alicia-link.videorils.workers.dev/say?p=" + p, { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ w: "alicia-panel", id, text }) }); } catch (e) {} }
 const PQ = "https://alicia-link.videorils.workers.dev/pq", LVN = ["", "есть токены", "тратит", "много тратит", "VIP"];
 let HUBPPL = [], RSAYDONE = new Set(), PPLHOLD = 0, RCHSEEN = new Set(), RSAID = {};
 // версия панели: хаб пишет в общий чат только через панель, которая это умеет (v ≥ 3); новая версия на сайте → панель обновится сама
-const PANEL_V = 56;
+const PANEL_V = 57;
 setInterval(async () => {
   try { const t = await (await fetch(location.pathname + "?vchk=" + Date.now(), { cache: "no-store" })).text(), v = +((t.match(/const PANEL_V = (\d+)/) || [])[1] || 0);
     const busy = Object.values(PRIVLIVE).some(Boolean) || TYPES.length || PAIDQ.length || [...document.querySelectorAll("input,textarea")].some(i => i.value && i.type !== "file") || Object.keys(CUP).length;
@@ -1105,12 +1123,6 @@ async function dlgBot() {
   $("#dlgst").textContent = j && j.ok ? ((j.ru || j.text) ? "🤖 бот пишет: «" + (j.ru || j.text) + "» — через ~10–30 сек появится тут" : "🤖 бот уже пишет ему — через ~30–60 сек сообщение появится тут") : "⚠ " + ((j && j.err) || "не вышло");
   admEv("🤖 попросила бота написать " + DLG.who); setTimeout(dlgLoad, 10000); setTimeout(dlgLoad, 30000);
 }
-// 25.11 владелец «сразу ставь»: новая версия панели на сайте → панель сама перезагружается (когда она ничего не печатает)
-let PVER = null;
-setInterval(async () => { try { const v = (await (await fetch("ver.txt?x=" + Date.now(), { cache: "no-store" })).text()).trim();
-  if (PVER === null) { PVER = v; return; }
-  const typing = Date.now() - DMHOLD < 30000 || [...document.querySelectorAll("input,textarea")].some(i => i.type !== "checkbox" && i.type !== "password" && (i.value || "").trim() && document.activeElement === i);
-  if (v && v !== PVER && !typing) location.reload(); } catch (e) {} }, 60000);
 async function hubLoop() { await hubSync(); setTimeout(hubLoop, TYPES.length ? 2000 : 5000); }
 hubLoop();
 admEv("📂 панель открыта"); setTimeout(admSend, 3000); setInterval(admSend, 15000);
