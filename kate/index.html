@@ -1002,7 +1002,7 @@ setInterval(() => { if (PAIDQ.length && Date.now() - PAIDBEEP > 12000) { ding();
 // ── «В комнате — с токенами»: кто писал в чате эфира (её страницы) + что знает бот (траты, писал ли он уже) — с кнопкой «написать»
 // текст в чат сайта: на сервер (/say) — страница эфира забирает сама (помощник 1.0 не передаёт команды вкладкам)
 // 25.11: общий чат — сразу в её вкладку эфира (помощник exec), без постоянного скрипта на странице; не вышло — старый путь через сервер
-const SAY_RE = [["cb", /^https:\/\/([^/]*\.)?chaturbate\.com\/b\//], ["sc", /^https:\/\/([^/]*\.)?(stripchat|mywebcamroom)\.com\/(.*broadcast|-?sweet-cherry)/i], ["bc", /^https:\/\/([^/]*\.)?bongamodels\.com\/console/], ["mv", /^https:\/\/www\.manyvids\.com\/live\/cam\/bad_secret/i]];
+const SAY_RE = [["cb", /^https:\/\/([^/]*\.)?chaturbate\.com\/b\//], ["sc", /^https:\/\/([^/]*\.)?(stripchat|mywebcamroom)\.com\/(.*broadcast|-?sweet-cherry)/i], ["bc", /^https:\/\/([^/]*\.)?bongamodels\.com\/console/], ["mv", /^https:\/\/www\.manyvids\.com\/live\/cam\/secret_bad/i]];
 let SAYJS = "";
 async function sayDirect(p, text) {
   if (HV < 2 || !port) return null;
