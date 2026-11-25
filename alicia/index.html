@@ -650,6 +650,9 @@ document.addEventListener("click", () => { try { if ("Notification" in window &&
 function ding() { try { const a = new AudioContext(); [880, 1175, 1568, 1175, 1568].forEach((f, i) => { const o = a.createOscillator(), g = a.createGain(); o.frequency.value = f; o.connect(g); g.connect(a.destination);
   g.gain.setValueAtTime(.2, a.currentTime + i * .15); g.gain.exponentialRampToValueAtTime(.001, a.currentTime + i * .15 + .14); o.start(a.currentTime + i * .15); o.stop(a.currentTime + i * .15 + .15); }); } catch (e) {} }
 function privShow(p, text) {
+  if (PRIVLIVE[p]) return;                                            // 25.11 владелец: приват уже идёт — не звоним и не кидаем уведомления
+  if (PRIVREQ === p && Date.now() - (window.PRIVAT || 0) < 90000) { $("#privt").textContent = text || ""; return; }   // тот же запрос — одно уведомление, не три
+  window.PRIVAT = Date.now();
   PRIVREQ = p; $("#privp").textContent = PN4[p] || p; $("#privt").textContent = text || ""; $("#privst").textContent = ""; $("#priv").style.display = "flex"; privRing(); titleFlash(true, "🔒 ПРИВАТ!"); sysNote("🔒 Запрос привата", (PN4[p] || p) + " — зайди в панель");
   clearInterval(window.PRING); let n = 0; window.PRING = setInterval(() => { if (!PRIVREQ || ++n > 15) { titleFlash(false); return clearInterval(window.PRING); } privRing(); }, 2500);   // 23.11: звенит, пока не ответит (до ~40 сек)
   admEv("🔒 запрос привата на " + (PN4[p] || p) + ": " + (text || ""));
@@ -665,7 +668,7 @@ const PRIVIGN = {};
 function privEnd() { for (const k of Object.keys(PRIVLIVE)) if (PRIVLIVE[k]) { PRIVIGN[k] = 1; privOn(k, false); } admEv("🔓 сама закрыла приват кнопкой"); }   // 24.11 владелец: приват кончился, а панель не закрыла
 function privOn(p, on) {
   if (on && !(LIVE[p] && LIVE[p].on)) on = false;                    // 23.11: не в эфире на этой площадке — привата быть не может
-  PRIVLIVE[p] = on;
+  PRIVLIVE[p] = on; if (on && PRIVREQ === p) privHide();            // 25.11: приват начался — окно запроса убираем
   PORDER = PORDER.filter(k => k !== p && PRIVLIVE[k]); if (on) { PORDER.push(p); if (!PSEL || !PRIVLIVE[PSEL]) PSEL = p; } else if (PSEL === p) PSEL = PORDER[0] || "";   // 23.11: два привата сразу — «Приват 1/2»
   const any = Object.keys(PRIVLIVE).filter(k => PRIVLIVE[k]);
   $("#privbar").style.display = any.length ? "block" : "none"; $("#privbar").innerHTML = "🔒 ИДЁТ ПРИВАТ — " + PORDER.map((k, i) => (PORDER.length > 1 ? (i + 1) + ") " : "") + PN4[k]).join(", ") + " · его сообщения и ответ — во вкладке «🔒 Приват» " + '<button onclick="privEnd()" style="margin-left:10px;padding:3px 10px;font-size:13px;background:#2e7d32">✓ приват закончился</button>';
@@ -1023,7 +1026,7 @@ async function sayQ(p, id, text) {
 const PQ = "https://alicia-link.videorils.workers.dev/pq", LVN = ["", "есть токены", "тратит", "много тратит", "VIP"];
 let HUBPPL = [], RSAYDONE = new Set(), PPLHOLD = 0, RCHSEEN = new Set(), RSAID = {};
 // версия панели: хаб пишет в общий чат только через панель, которая это умеет (v ≥ 3); новая версия на сайте → панель обновится сама
-const PANEL_V = 64;
+const PANEL_V = 65;
 setInterval(async () => {
   try { const t = await (await fetch(location.pathname + "?vchk=" + Date.now(), { cache: "no-store" })).text(), v = +((t.match(/const PANEL_V = (\d+)/) || [])[1] || 0);
     const busy = Object.values(PRIVLIVE).some(Boolean) || TYPES.length || PAIDQ.length || [...document.querySelectorAll("input,textarea")].some(i => i.value && i.type !== "file") || Object.keys(CUP).length;
