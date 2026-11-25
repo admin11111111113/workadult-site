@@ -499,7 +499,7 @@ function onExt(m) {
     else if (m.act === "panel") call("openTab", { url: location.href, prefix: location.origin + location.pathname, focus: true });
   }
   if (m.type === "login") { dot(m.p, m.ok);
-    if (m.p === "mv" && !m.ok) { $("#s-mv").textContent = "не вошла в аккаунт"; hint("🔑 ManyVids: ты не вошла в аккаунт — войди на вкладке ManyVids (логин Bad_Secret), потом снова «Начать эфир»"); } }
+    if (m.p === "mv" && !m.ok) { $("#s-mv").textContent = "не вошла в аккаунт"; hint("🔑 ManyVids: ты не вошла в аккаунт — войди на вкладке ManyVids (логин Secret_bad), потом снова «Начать эфир»"); } }
   const NAME = { cb: "Chaturbate", sc: "Stripchat", bc: "Bonga", mv: "ManyVids" };
   if (m.type === "golog") {                                         // журнал запуска: последние 8 строк, не затираем
     GOLOG.push(new Date().toTimeString().slice(0, 8) + " " + NAME[m.p] + ": " + m.text); GOLOG.splice(0, GOLOG.length - 8);
