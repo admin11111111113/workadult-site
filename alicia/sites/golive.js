@@ -287,7 +287,7 @@
   const chatInput = () => [...document.querySelectorAll("textarea,input[type=text],input:not([type]),[contenteditable=true],[contenteditable='']")]
     .filter(e => e.getClientRects().length && !e.disabled && !e.readOnly && !/search|поиск|tìm|приват|private|личн/i.test((e.placeholder || "") + (e.getAttribute("aria-label") || "") + (e.getAttribute("data-placeholder") || "") + (e.name || ""))
       // 24.11 владелец «ебанутый бот»: ответ из общего чата ушёл в личку dante_7 (открыто окошко лички) → на Стрипе ТОЛЬКО поле общего чата эфира; и не чат Lovense (lvs-…)
-      && (P !== "sc" || !!e.closest(".model-chat-public")) && !e.closest("[class*=lvs-]")
+      && (P !== "sc" || !!e.closest(".model-chat-public")) && !((l => l && l !== document.documentElement && l !== document.body)(e.closest("[class*=lvs-]")))
       // 24.11: НЕ поле лички! У неё на Стрипе было открыто окошко лички gigigiova3 — фразы для общего чата уходили ему в личку
       && !e.closest("[class*=messenger i],[class*=conversation i],[class*=private-message i],[class*=pm-chat i],[class*=dialog i],[class*=popup i],[class*=float i],[class*=modal i],[role=dialog],.bm_im_float_dialog,[class*=bm_im]"))
     .sort((a, b) => (SAYIN.test((b.placeholder || "") + (b.getAttribute("aria-label") || "") + (b.getAttribute("data-placeholder") || "")) ? 1 : 0) - (SAYIN.test((a.placeholder || "") + (a.getAttribute("aria-label") || "") + (a.getAttribute("data-placeholder") || "")) ? 1 : 0)

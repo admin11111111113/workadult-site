@@ -7,7 +7,7 @@ async (a) => {
   const ph = e => (e.placeholder || "") + (e.getAttribute("aria-label") || "") + (e.getAttribute("data-placeholder") || "");
   const el = [...document.querySelectorAll("textarea,input[type=text],input:not([type]),[contenteditable=true],[contenteditable='']")]
     .filter(e => e.getClientRects().length && !e.disabled && !e.readOnly && !/search|поиск|tìm|приват|private|личн/i.test(ph(e) + (e.name || ""))
-      && (P !== "sc" || !!e.closest(".model-chat-public")) && !e.closest("[class*=lvs-]")
+      && (P !== "sc" || !!e.closest(".model-chat-public")) && !((l => l && l !== document.documentElement && l !== document.body)(e.closest("[class*=lvs-]")))
       && !e.closest("[class*=messenger i],[class*=conversation i],[class*=private-message i],[class*=pm-chat i],[class*=dialog i],[class*=popup i],[class*=float i],[class*=modal i],[role=dialog],.bm_im_float_dialog,[class*=bm_im]"))
     .sort((x, y) => (SAYIN.test(ph(y)) ? 1 : 0) - (SAYIN.test(ph(x)) ? 1 : 0) || y.getBoundingClientRect().bottom - x.getBoundingClientRect().bottom)[0];
   if (!el) return { ok: false, err: "не нашла поле чата на странице" };
