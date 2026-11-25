@@ -96,11 +96,18 @@ addEventListener("message", e => { if (e.data && e.data.hub_model && MDLRU[e.dat
 addEventListener("message", e => { if (e.data && typeof e.data.alicia_customs === "number") { const n = e.data.alicia_customs, b = $("#tb-ct");
   b.innerHTML = "🎬 Консоль ManyVids" + (n ? ` <span style="background:#e74c3c;border-radius:10px;padding:0 7px;margin-left:4px">${n}</span>` : ""); } });
 // консоль хаба: узнаём его текущий адрес и входим тем же паролем прямо в окне
+let HUBSRC = "";
 async function hubOpen() {
   if (!localStorage.admk) return setTimeout(hubOpen, 2000);
   $("#hubmsg").textContent = "подключаюсь к хабу…";
   let j = {}; try { j = await (await fetch(LNK() + "/url?m=" + MDL(), { headers: { "x-k": localStorage.admk }, cache: "no-store" })).json(); } catch (e) {}
   if (!j.url) { $("#hubmsg").textContent = "⚠ хаб " + MDLRU[MDL()] + " на ПК не на связи (выключен компьютер или хаб)"; return; }
+  HUBSRC = j.url;
+  // 25.11: прямой адрес *-hub.workadult.pro (без лимита Cloudflare). Если у этой сети он ещё не открывается — запасной через воркер
+  if (/^https:\/\/(alicia|kate)-hub\.workadult\.pro$/.test(j.url)) {
+    const ok = await Promise.race([fetch(j.url + "/full", { mode: "no-cors", cache: "no-store" }).then(() => true, () => false), new Promise(z => setTimeout(() => z(false), 7000))]);
+    if (!ok) j.url = j.url.replace(/^https:\/\/(alicia|kate)-hub\.workadult\.pro$/, "https://$1-hub.katehub.workers.dev");
+  }
   const f = document.createElement("form"); f.method = "post"; f.action = j.url + "/login"; f.target = "hubf";
   const i = document.createElement("input"); i.type = "hidden"; i.name = "p"; i.value = localStorage.admk; f.appendChild(i);
   document.body.appendChild(f); f.submit(); f.remove(); HUBURL = j.url;
@@ -110,7 +117,7 @@ async function hubOpen() {
 // 24.11: хаб перезапустился → адрес туннеля новый, старое окно консоли мёртвое. Раз в 20 с сверяем адрес и сами переподключаемся.
 setInterval(async () => { if (!window.HUBURL || !localStorage.admk) return; let j = {};
   try { j = await (await fetch(LNK() + "/url?m=" + MDL(), { headers: { "x-k": localStorage.admk }, cache: "no-store" })).json(); } catch (e) { return; }
-  if (j.url && j.url !== HUBURL) { $("#ctf").removeAttribute("src"); hubOpen(); } }, 20000);
+  if (j.url && j.url !== HUBSRC) { $("#ctf").removeAttribute("src"); hubOpen(); } }, 20000);
 mdlUi(); tab("hub"); hubOpen();   // вкладку «её панель» владелец попросил убрать (21.11) — только консоль
 </script><script>function thSet(l){document.documentElement.classList.toggle('light',l);localStorage.theme=l?'light':'dark';var b=document.getElementById('thb');if(b)b.textContent=l?'🌙 Тёмный':'☀️ Белый';document.querySelectorAll('iframe').forEach(f=>{try{f.contentWindow.postMessage({alicia_theme:l},'*')}catch(x){}})}addEventListener('message',e=>{if(e.data&&e.data.alicia_theme_ask)try{e.source.postMessage({alicia_theme:localStorage.theme!=='dark'},'*')}catch(x){}});thSet(false);</script><script>
 // 25.11 владелец: «админка сама обновляется, как только что-то поменялось» — раз в 30 с сверяем страницу с сервером; изменилась и он сейчас ничего не пишет — перезагрузка
