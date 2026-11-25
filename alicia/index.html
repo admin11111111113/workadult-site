@@ -224,8 +224,8 @@ setInterval(async () => { if (!ok) return; const st = await req("GetStreamStatus
   // только переход «не шёл → пошёл» при открытой панели (OBSWAS === false). При открытии панели посреди эфира (OBSWAS = null) — ничего не трогаем
   if (st.outputActive && OBSWAS === false && Date.now() - GOING > 120000 && !["cb", "sc", "bc", "mv"].some(k => LIVE[k] && LIVE[k].on)) { GOING = Date.now(); hint("▶ Вижу, OBS начал трансляцию — запускаю сайты сама…"); sitesGo("pre").then(() => setTimeout(() => sitesGo("post"), 8000)); LIVE_T = Date.now(); }
   OBSWAS = !!st.outputActive;
-  $("#st").textContent = (st.outputActive ? "● В ЭФИРЕ " + (st.outputTimecode || "").slice(0, 8) + " " + kb + " · потоков " + nOut + " из " + Math.max(ol.length, 1) : "эфир выключен") + (s === PAUSE ? " · ПАУЗА" : "") + (r.outputActive ? " · ⏺ запись" : "");
-  $("#b-go").disabled = !!st.outputActive; $("#b-pause").textContent = s === PAUSE ? "▶ Вернуться" : "⏸ Пауза";
+  $("#st").textContent = (st.outputActive ? "● В ЭФИРЕ " + (st.outputTimecode || "").slice(0, 8) + " " + kb + " · потоков " + nOut + " из " + Math.max(ol.length, 1) : "эфир выключен") + (isPause(s) ? " · ПАУЗА" : "") + (r.outputActive ? " · ⏺ запись" : "");
+  $("#b-go").disabled = !!st.outputActive; $("#b-pause").textContent = isPause(s) ? "▶ Вернуться" : "⏸ Пауза";
   $("#b-rec").textContent = r.outputActive ? "⏹ Сохранить видео" : "⏺ Снять видео"; }, 2000);
 // 24.11 владелец: битрейт упал и эфир тупит ~30 сек подряд → подсказка «перезагрузи ПК и роутер» с кнопкой ОК (не во время привата, не чаще раза в 15 мин)
 let LOWN = 0, LOWAT = 0, PCINFO = null, AWAKE = null;
@@ -319,10 +319,13 @@ setInterval(() => {                                                 // чере�
   if (off.length) hint("⚠️ OBS шлёт, но " + off.join(" и ") + " эфир не видит. Открой страницу эфира и проверь, что там выбран OBS / внешний кодировщик и ключ совпадает");
 }, 5000);
 async function stopLive() { if (confirm("Закончить эфир?")) { await req("StopStream"); hint("Эфир закончен. Отдыхай 💜"); } }
+const isPause = s => s === PAUSE || /^brb$/i.test(s || "");   // 25.11 владелец: «Пауза» = её сцена brb
 async function pause() {
   const s = await scene();
-  if (s === PAUSE) { const l = await req("GetSceneList"); await req("SetCurrentProgramScene", { sceneName: prevScene || l.scenes.find(x => x.sceneName !== PAUSE).sceneName }); return; }
   const l = await req("GetSceneList");
+  if (isPause(s)) { await req("SetCurrentProgramScene", { sceneName: (prevScene && !isPause(prevScene) ? prevScene : null) || l.scenes.find(x => !isPause(x.sceneName)).sceneName }); return; }
+  const brb = l.scenes.find(x => /^brb$/i.test(x.sceneName));
+  if (brb) { prevScene = s; await req("SetCurrentProgramScene", { sceneName: brb.sceneName }); return; }
   if (!l.scenes.some(x => x.sceneName === PAUSE)) { await req("CreateScene", { sceneName: PAUSE });
     await req("CreateInput", { sceneName: PAUSE, inputName: "Пауза — текст", inputKind: "text_gdiplus_v3", inputSettings: { text: "Скоро вернусь 💋", font: { face: "Arial", size: 96, style: "Bold" } } }); }
   prevScene = s; await req("SetCurrentProgramScene", { sceneName: PAUSE });
