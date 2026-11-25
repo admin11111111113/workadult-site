@@ -18,7 +18,7 @@ body{height:100vh;display:flex;flex-direction:column}#tabs{display:flex;gap:6px;
 #tabs button{border-radius:8px 8px 0 0;background:#2b2b2b;color:#fff;padding:8px 18px}#tabs button.sel{background:#e0363c}
 #hubv{flex:1;min-height:0;display:flex}#hubf{flex:1;border:0;background:#262626}#herv{flex:1;overflow:auto;display:none}
 html.light{background:#fff}html.light body{background:#ecedf3}html.light body>*:not(#lbv):not(#hubv):not(#ctv):not(#tabs){filter:invert(1) hue-rotate(180deg)}html.light body>*:not(#lbv):not(#hubv):not(#ctv):not(#tabs) img,html.light body>*:not(#lbv):not(#hubv):not(#ctv):not(#tabs) video{filter:invert(1) hue-rotate(180deg)}html.light #lbf{background:#f4f5f8!important}#thb{font:inherit;font-size:13px;font-weight:600;border:1px solid #555;border-radius:10px;padding:6px 12px;cursor:pointer;background:#3d3d3d;color:#fff;white-space:nowrap}#thb{display:none!important}</style></head><body>
-<div id="tabs"><button id="tb-hub" class="sel" onclick="tab('hub')">🖥 Консоль Алисии</button><button id="tb-ct" onclick="tab('ct')">🎬 Консоль ManyVids</button><button id="tb-lb" onclick="tab('lb')">📸 Фото и видео</button><button id="tb-her" style="display:none" onclick="tab('her')"></button>
+<div id="tabs"><select id="mdl" onchange="mdlSet(this.value)" style="border-radius:8px;padding:6px 8px;background:#2b2b2b;color:#fff;border:0;align-self:center;margin-right:4px"><option value="alicia">👩 Алисия</option><option value="cherry">🍒 Черри</option></select><button id="tb-hub" class="sel" onclick="tab('hub')">🖥 Консоль Алисии</button><button id="tb-ct" onclick="tab('ct')">🎬 Консоль ManyVids</button><button id="tb-lb" onclick="tab('lb')">📸 Фото и видео</button><button id="tb-her" style="display:none" onclick="tab('her')"></button>
  <span id="hubmsg" style="color:#889;font-size:13px;align-self:center;margin-left:8px"></span><span style="margin-left:auto;align-self:center"><button id="thb" onclick="thSet(localStorage.theme==='dark')"></button></span></div>
 <div id="hubv"><iframe id="hubf" name="hubf"></iframe></div>
 <div id="ctv" style="flex:1;min-height:0;display:none"><iframe id="ctf" style="flex:1;border:0;background:#262626;width:100%;height:100%"></iframe></div>
@@ -79,6 +79,13 @@ function tab(t) { $("#hubv").style.display = t === "hub" ? "flex" : "none"; $("#
   $("#tb-hub").classList.toggle("sel", t === "hub"); $("#tb-her").classList.toggle("sel", t === "her"); $("#tb-ct").classList.toggle("sel", t === "ct"); localStorage.admTab = t;
   if (t === "ct" && HUBURL && !$("#ctf").src) $("#ctf").src = HUBURL + "/full?set=content"; }
 let HUBURL = "";
+// 25.11 владелец: вторая модель — выбор модели; у каждой свой хаб (свой адрес в alicia-link /url?m=)
+const MDL = () => localStorage.mdl || "alicia";
+const MDLRU = { alicia: "Алисии", cherry: "Черри" };
+function mdlUi() { $("#mdl").value = MDL(); $("#tb-hub").textContent = "🖥 Консоль " + MDLRU[MDL()]; $("#tb-ct").style.display = MDL() === "alicia" ? "" : "none";
+  if (MDL() !== "alicia" && localStorage.admTab === "ct") tab("hub"); }
+function mdlSet(k) { localStorage.mdl = k; HUBURL = ""; for (const i of ["#ctf", "#lbf"]) $(i).removeAttribute("src"); $("#hubf").src = "about:blank"; mdlUi(); tab("hub"); hubOpen(); }
+addEventListener("message", e => { if (e.data && e.data.hub_model && MDLRU[e.data.hub_model]) mdlSet(e.data.hub_model); });
 // цифра новых кастомов на кнопке вкладки — присылает консоль хаба из iframe
 addEventListener("message", e => { if (e.data && typeof e.data.alicia_customs === "number") { const n = e.data.alicia_customs, b = $("#tb-ct");
   b.innerHTML = "🎬 Консоль ManyVids" + (n ? ` <span style="background:#e74c3c;border-radius:10px;padding:0 7px;margin-left:4px">${n}</span>` : ""); } });
@@ -86,17 +93,17 @@ addEventListener("message", e => { if (e.data && typeof e.data.alicia_customs ==
 async function hubOpen() {
   if (!localStorage.admk) return setTimeout(hubOpen, 2000);
   $("#hubmsg").textContent = "подключаюсь к хабу…";
-  let j = {}; try { j = await (await fetch("https://alicia-link.videorils.workers.dev/url", { headers: { "x-k": localStorage.admk }, cache: "no-store" })).json(); } catch (e) {}
-  if (!j.url) { $("#hubmsg").textContent = "⚠ хаб на ПК не на связи (выключен компьютер или хаб)"; return; }
+  let j = {}; try { j = await (await fetch("https://alicia-link.videorils.workers.dev/url?m=" + MDL(), { headers: { "x-k": localStorage.admk }, cache: "no-store" })).json(); } catch (e) {}
+  if (!j.url) { $("#hubmsg").textContent = "⚠ хаб " + MDLRU[MDL()] + " на ПК не на связи (выключен компьютер или хаб)"; return; }
   const f = document.createElement("form"); f.method = "post"; f.action = j.url + "/login"; f.target = "hubf";
   const i = document.createElement("input"); i.type = "hidden"; i.name = "p"; i.value = localStorage.admk; f.appendChild(i);
   document.body.appendChild(f); f.submit(); f.remove(); HUBURL = j.url;
-  $("#hubf").addEventListener("load", () => { if (!$("#ctf").src) $("#ctf").src = HUBURL + "/full?set=content"; }, { once: true });   // грузим сразу — чтобы цифра кастомов была видна
+  if (MDL() === "alicia") $("#hubf").addEventListener("load", () => { if (!$("#ctf").src) $("#ctf").src = HUBURL + "/full?set=content"; }, { once: true });   // грузим сразу — чтобы цифра кастомов была видна
   $("#hubmsg").innerHTML = "";
 }
 // 24.11: хаб перезапустился → адрес туннеля новый, старое окно консоли мёртвое. Раз в 20 с сверяем адрес и сами переподключаемся.
 setInterval(async () => { if (!window.HUBURL || !localStorage.admk) return; let j = {};
-  try { j = await (await fetch("https://alicia-link.videorils.workers.dev/url", { headers: { "x-k": localStorage.admk }, cache: "no-store" })).json(); } catch (e) { return; }
+  try { j = await (await fetch("https://alicia-link.videorils.workers.dev/url?m=" + MDL(), { headers: { "x-k": localStorage.admk }, cache: "no-store" })).json(); } catch (e) { return; }
   if (j.url && j.url !== HUBURL) { $("#ctf").removeAttribute("src"); hubOpen(); } }, 20000);
-tab("hub"); hubOpen();   // вкладку «её панель» владелец попросил убрать (21.11) — только консоль
+mdlUi(); tab("hub"); hubOpen();   // вкладку «её панель» владелец попросил убрать (21.11) — только консоль
 </script><script>function thSet(l){document.documentElement.classList.toggle('light',l);localStorage.theme=l?'light':'dark';var b=document.getElementById('thb');if(b)b.textContent=l?'🌙 Тёмный':'☀️ Белый';document.querySelectorAll('iframe').forEach(f=>{try{f.contentWindow.postMessage({alicia_theme:l},'*')}catch(x){}})}addEventListener('message',e=>{if(e.data&&e.data.alicia_theme_ask)try{e.source.postMessage({alicia_theme:localStorage.theme!=='dark'},'*')}catch(x){}});thSet(false);</script></body></html>
