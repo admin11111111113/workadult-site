@@ -288,12 +288,20 @@
   const chatInput = () => [...document.querySelectorAll("textarea,input[type=text],input:not([type]),[contenteditable=true],[contenteditable='']")]
     .filter(e => e.getClientRects().length && !e.disabled && !e.readOnly && !/search|поиск|tìm|приват|private|личн/i.test((e.placeholder || "") + (e.getAttribute("aria-label") || "") + (e.getAttribute("data-placeholder") || "") + (e.name || ""))
       // 24.11 владелец «ебанутый бот»: ответ из общего чата ушёл в личку dante_7 (открыто окошко лички) → на Стрипе ТОЛЬКО поле общего чата эфира; и не чат Lovense (lvs-…)
-      && (P !== "sc" || !!e.closest(".model-chat-public")) && !((l => l && l !== document.documentElement && l !== document.body)(e.closest("[class*=lvs-]")))
+      && (P !== "sc" || !!e.closest(".model-chat-public"))
+      // 25.11 владелец «чувак про ATM спрашивает, а бот про переодевание»: на Чатуре личка — вкладка MESSAGES в той же панели; только поле вкладки ЧАТ
+      && (P !== "cb" || !!e.closest("#ChatTabContents")) && !((l => l && l !== document.documentElement && l !== document.body)(e.closest("[class*=lvs-]")))
       // 24.11: НЕ поле лички! У неё на Стрипе было открыто окошко лички gigigiova3 — фразы для общего чата уходили ему в личку
       && !e.closest("[class*=messenger i],[class*=conversation i],[class*=private-message i],[class*=pm-chat i],[class*=dialog i],[class*=popup i],[class*=float i],[class*=modal i],[role=dialog],.bm_im_float_dialog,[class*=bm_im]"))
     .sort((a, b) => (SAYIN.test((b.placeholder || "") + (b.getAttribute("aria-label") || "") + (b.getAttribute("data-placeholder") || "")) ? 1 : 0) - (SAYIN.test((a.placeholder || "") + (a.getAttribute("aria-label") || "") + (a.getAttribute("data-placeholder") || "")) ? 1 : 0)
       || b.getBoundingClientRect().bottom - a.getBoundingClientRect().bottom)[0];
   async function say(text) {
+    let back = null;                                                  // Чатур: открыта личка (MESSAGES) → на секунду на вкладку ЧАТ, отправили — вернули как было
+    if (P === "cb") { const ct = document.querySelector("#chat-tab-default");
+      if (ct && !ct.classList.contains("active")) { back = document.querySelector("#ChatTabContainer .chat-tab-handle.active"); ct.click(); await new Promise(r => setTimeout(r, 500)); } }
+    try { return await say0(text); } finally { if (back) { await new Promise(r => setTimeout(r, 300)); back.click(); } }
+  }
+  async function say0(text) {
     const el = chatInput(); if (!el) return "не нашла поле чата на странице";
     el.focus();
     if (el.isContentEditable) { document.execCommand("selectAll", false); document.execCommand("insertText", false, text); }
