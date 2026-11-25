@@ -320,12 +320,27 @@ setInterval(() => {                                                 // чере�
 }, 5000);
 async function stopLive() { if (confirm("Закончить эфир?")) { await req("StopStream"); hint("Эфир закончен. Отдыхай 💜"); } }
 const isPause = s => s === PAUSE || /^brb$/i.test(s || "");   // 25.11 владелец: «Пауза» = её сцена brb
+// 25.11 владелец: на паузе звук выключен (микрофон и звук ПК), «Вернуться» — включаем обратно только то, что выключили мы
+async function pauseMute(on) {
+  try {
+    if (on) { const l = await req("GetInputList"), done = [];
+      for (const i of l.inputs || []) { if (!/wasapi|pulse|coreaudio|dshow_input|audio/i.test(i.inputKind || "")) continue;
+        try { const m = await req("GetInputMute", { inputName: i.inputName }); if (!m.inputMuted) { await req("SetInputMute", { inputName: i.inputName, inputMuted: true }); done.push(i.inputName); } } catch (e) {} }
+      localStorage.pauseMuted = JSON.stringify(done); }
+    else { const done = JSON.parse(localStorage.pauseMuted || "[]");
+      for (const n of done) { try { await req("SetInputMute", { inputName: n, inputMuted: false }); } catch (e) {} } localStorage.pauseMuted = "[]"; }
+  } catch (e) {}
+}
+// лишняя сцена «Пауза» (её делала старая кнопка) — убираем, если есть brb и сейчас не на ней
+let pauseClean = setInterval(async () => { try { const l = await req("GetSceneList"); if (!l.scenes) return; const s = await scene();
+  if (!l.scenes.some(x => x.sceneName === PAUSE)) return clearInterval(pauseClean);
+  if (l.scenes.some(x => /^brb$/i.test(x.sceneName)) && s !== PAUSE) { await req("RemoveScene", { sceneName: PAUSE }); clearInterval(pauseClean); } } catch (e) {} }, 15000);
 async function pause() {
   const s = await scene();
   const l = await req("GetSceneList");
-  if (isPause(s)) { await req("SetCurrentProgramScene", { sceneName: (prevScene && !isPause(prevScene) ? prevScene : null) || l.scenes.find(x => !isPause(x.sceneName)).sceneName }); return; }
+  if (isPause(s)) { await req("SetCurrentProgramScene", { sceneName: (prevScene && !isPause(prevScene) ? prevScene : null) || l.scenes.find(x => !isPause(x.sceneName)).sceneName }); await pauseMute(false); return; }
   const brb = l.scenes.find(x => /^brb$/i.test(x.sceneName));
-  if (brb) { prevScene = s; await req("SetCurrentProgramScene", { sceneName: brb.sceneName }); return; }
+  if (brb) { prevScene = s; await req("SetCurrentProgramScene", { sceneName: brb.sceneName }); await pauseMute(true); return; }
   if (!l.scenes.some(x => x.sceneName === PAUSE)) { await req("CreateScene", { sceneName: PAUSE });
     await req("CreateInput", { sceneName: PAUSE, inputName: "Пауза — текст", inputKind: "text_gdiplus_v3", inputSettings: { text: "Скоро вернусь 💋", font: { face: "Arial", size: 96, style: "Bold" } } }); }
   prevScene = s; await req("SetCurrentProgramScene", { sceneName: PAUSE });
