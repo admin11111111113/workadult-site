@@ -92,7 +92,8 @@ input{font:inherit;padding:8px;border-radius:8px;border:1px solid #444;backgroun
    <div style="display:flex;gap:6px"><input id="dlgin" placeholder="пиши ему по-русски — уйдёт на его языке" style="margin:0;font-size:17px" onkeydown="if(event.key==='Enter')dlgSay()"><button class="go" onclick="dlgSay()">➤ Отправить</button><button style="background:#6e2a30" onclick="dlgBot()">🤖 Пусть бот</button></div><small id="dlgst" style="color:#99a"></small></div>
  </div>
  <div class="col"><div id="wall" style="display:none"></div><div id="bot" style="display:none"></div>
-  <div class="ftabs" id="rtabs"><button id="ft-ppl" class="sel" onclick="ftab('ppl')">👥 Зрители <span id="ppln"></span></button><button id="ft-wall" onclick="ftab('wall')" style="display:none">🧱 Стена <span id="walln"></span></button><button id="ft-priv" onclick="ftab('priv')">🔒 Приват</button></div>
+  <div class="ftabs" id="rtabs"><button id="ft-ppl" class="sel" onclick="ftab('ppl')">👥 Зрители <span id="ppln"></span></button><button id="ft-wall" onclick="ftab('wall')" style="display:none">🧱 Стена <span id="walln"></span></button><button id="ft-priv" onclick="ftab('priv')">🔒 Приват</button><button id="ft-faq" onclick="ftab('faq')">❓ Вопросы <span id="faqn" style="background:#c0392b;color:#fff;border-radius:9px;padding:0 6px;font-size:13px"></span></button></div>
+  <div id="faqw" style="flex:1;min-height:0;display:none;flex-direction:column;gap:6px"><div style="color:#ccb;font-size:14px;line-height:1.4">❓ Что тебя спрашивают фаны (со всех сайтов). Ответь по-русски коротко и честно — бот запомнит и дальше будет отвечать им сам, ничего не выдумывая. Можно отвечать после эфира. Лишний вопрос — «убрать».</div><div class="box" id="faqc" style="flex:1;min-height:0"></div></div>
   <div id="pplw" style="flex:1;min-height:0;display:flex;flex-direction:column"><div id="pssum" style="font-size:13px;padding:2px 4px 6px;line-height:1.6"></div><div class="box" id="ppl2" style="flex:1;min-height:0"></div></div>
   <div id="wallw" style="flex:1;min-height:0;display:none;flex-direction:column;gap:6px"><div style="color:#99a;font-size:13px">Все сообщения из чатов эфира (Chaturbate, Stripchat, Bonga, ManyVids) по-русски. «✍️ Ответить» — пишешь по-русски, ему уйдёт на его языке в чат сайта; «🤖 Бот» — бот ответит сам. Ник — его переписка.</div><div class="box" id="wallc" style="flex:1;min-height:0"></div></div>
 <div id="privw" style="flex:1;min-height:0;display:none;flex-direction:column;gap:6px"><div class="box" id="privc" style="flex:1;min-height:0"></div>
@@ -735,6 +736,7 @@ async function hubSync() {
   RQ_H = alive && h.rq && h.rq.url ? h.rq : null;
   feedShow(alive ? h.feed || [] : null);
   if (alive) { if (h.tipmenu) { TIPMENU = h.tipmenu; try { localStorage.tipmenu = JSON.stringify(TIPMENU); } catch (e) {} } CUSTS = h.customs || []; custRender(); typeShow((h.typing || []).filter(t => !TYPEDONE.has(t.id))); hmShow(h.msgs || []); for (const x of h.psay || []) if (!PSAYDONE.has(x.id)) { PSAYDONE.add(x.id); privSay(x.text, x.p); } } else typeShow([]);
+  if (alive) faqBadge(h.faq_n || 0, Object.values(h.live_on || {}).some(Boolean));
   if (alive && h.today) { ETK.bc = h.today.bc || 0; ETK.bcl = h.ltk ? h.ltk.bc || 0 : null; showTot(); }
   // её вкладка сайта молчит (закрыта / скрипт не подцепился) → статус эфира от хаба (он сам спрашивает сайты)
   if (alive) for (const k of ["mv", "sc", "cb", "bc"]) liveSet(k, "hub", !!(h.live_on || {})[k], "hub");
@@ -881,8 +883,9 @@ async function hmAns(rep) {
 // ── вкладки над лентой: все / кто что оплатил / приватный чат
 let FT = "ppl", PRIVMSG = [], PSAYDONE = new Set(JSON.parse(sessionStorage.psay || "[]"));
 setInterval(() => { sessionStorage.psay = JSON.stringify([...PSAYDONE].slice(-50)); }, 5000);
-function ftab(t) { if (!["priv", "ppl"].includes(t)) t = "ppl";              // 24.11: стены справа нет — её сообщения в ленте слева FT = t; ["priv", "wall", "ppl"].forEach(k => $("#ft-" + k).classList.toggle("sel", k === t));
-  $("#privw").style.display = t === "priv" ? "flex" : "none"; $("#wallw").style.display = t === "wall" ? "flex" : "none"; $("#pplw").style.display = t === "ppl" ? "flex" : "none";
+function ftab(t) { if (!["priv", "ppl", "faq"].includes(t)) t = "ppl";              // 24.11: стены справа нет — её сообщения в ленте слева
+  FT = t; ["priv", "wall", "ppl", "faq"].forEach(k => $("#ft-" + k).classList.toggle("sel", k === t));
+  $("#privw").style.display = t === "priv" ? "flex" : "none"; $("#wallw").style.display = t === "wall" ? "flex" : "none"; $("#pplw").style.display = t === "ppl" ? "flex" : "none"; $("#faqw").style.display = t === "faq" ? "flex" : "none"; if (t === "faq") faqLoad();
   if (!DLG) $("#feed").style.display = "";
   if (t === "priv") privShowChat(); else if (t === "wall") { WALLNEW = 0; $("#walln").textContent = ""; wallShow(true); } else pplShow(); }
 // ── СТЕНА: все сообщения чатов эфира со всех сайтов, по-русски; ответ сама (перевод на его язык → чат сайта) или ботом
@@ -1020,12 +1023,31 @@ async function sayQ(p, id, text) {
 const PQ = "https://alicia-link.videorils.workers.dev/pq", LVN = ["", "есть токены", "тратит", "много тратит", "VIP"];
 let HUBPPL = [], RSAYDONE = new Set(), PPLHOLD = 0, RCHSEEN = new Set(), RSAID = {};
 // версия панели: хаб пишет в общий чат только через панель, которая это умеет (v ≥ 3); новая версия на сайте → панель обновится сама
-const PANEL_V = 63;
+const PANEL_V = 64;
 setInterval(async () => {
   try { const t = await (await fetch(location.pathname + "?vchk=" + Date.now(), { cache: "no-store" })).text(), v = +((t.match(/const PANEL_V = (\d+)/) || [])[1] || 0);
     const busy = Object.values(PRIVLIVE).some(Boolean) || TYPES.length || PAIDQ.length || [...document.querySelectorAll("input,textarea")].some(i => i.value && i.type !== "file") || Object.keys(CUP).length;
     if (v > PANEL_V && !busy) { admEv("🔄 панель обновилась сама до v" + v); await admSend(); location.reload(); } } catch (e) {}
 }, 300000);
+// ── 25.11 ВОПРОСЫ ФАНОВ: бот собирает, она отвечает — бот потом отвечает её словами
+let FAQ_N = 0, FAQ_WAS_LIVE = false, FAQ_SHOWN = false;
+function faqBadge(n, live) {
+  FAQ_N = n; $("#faqn").textContent = n ? n : "";
+  if (live) FAQ_WAS_LIVE = true;
+  else if (FAQ_WAS_LIVE && n && !FAQ_SHOWN && !DLG) { FAQ_SHOWN = true; ftab("faq"); }   // эфир закончился — сразу показываем вопросы
+}
+async function faqLoad() {
+  const r = await pq({ op: "faq" }); const el = $("#faqc"); if (!el) return;
+  if (!r.ok) { el.innerHTML = '<div style="color:#e99;padding:8px">' + esc(r.err || "нет связи с ботом") + '</div>'; return; }
+  if (!r.items.length) { el.innerHTML = '<div style="color:#99a;padding:8px">Пока вопросов нет — бот запишет, как только фаны что-то спросят про тебя.</div>'; return; }
+  el.innerHTML = r.items.map(x => `<div style="padding:8px 6px;border-bottom:1px solid #333;${x.a ? "opacity:.75" : ""}">
+    <div style="font-size:17px;font-weight:bold">${esc(x.q)} ${x.n > 1 ? `<span style="color:#f0b52a;font-size:13px">спросили ${x.n} раз</span>` : ""}</div>
+    ${x.ex.length ? `<div style="color:#99a;font-size:12px;margin:2px 0 4px">${x.ex.map(esc).join("<br>")}</div>` : ""}
+    <div style="display:flex;gap:6px"><input id="fa-${x.id}" value="${esc(x.a || "")}" placeholder="твой ответ по-русски" style="margin:0;font-size:16px;flex:1" onkeydown="if(event.key==='Enter')faqSave('${x.id}')">
+    <button class="go" onclick="faqSave('${x.id}')">${x.a ? "✓ Изменить" : "✓ Ответить"}</button><button style="background:#444" onclick="faqDel('${x.id}')">убрать</button></div></div>`).join("");
+}
+async function faqSave(id) { const v = ($("#fa-" + id).value || "").trim(); if (!v) return; const r = await pq({ op: "faqans", id, a: v }); if (r.ok) { FAQ_N = Math.max(0, FAQ_N - 1); faqLoad(); } else alert(r.err || "не сохранилось"); }
+async function faqDel(id) { const r = await pq({ op: "faqans", id, del: 1 }); if (r.ok) faqLoad(); }
 async function pq(body) { try { return await (await fetch(PQ, { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ w: "alicia-panel", ...body }) })).json(); } catch (e) { return { ok: false, err: "нет связи с ботом" }; } }
 // сводка зрителей с токенами: сколько уникальных и каких цветов на каждой площадке (цвет ника = сколько токенов)
 const PCOL={cb:{1:['#5ab4ff','голубые'],2:['#1f5fd6','синие'],3:['#a64dff','фиолет.'],4:['#5b1a9e','т.-фиолет.']},sc:{1:['#c9a24b','с лигой'],2:['#2ecc71','зелёные'],3:['#d43cff','Ultimate']},bc:{1:['#999','есть'],2:['#e0b020','Gold'],3:['#8fa6b8','Platinum']},mv:{1:['#ff5aa0','пишут']}};
