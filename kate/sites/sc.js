@@ -1,7 +1,7 @@
 // Stripchat: донаты и сообщения комнаты из API чата модели (под её входом). Приходит с сайта, расширение не трогаем.
 (() => {
   if (window.__aliciaSC) return; window.__aliciaSC = 1;
-  const UID = "KATE_SC_UID", seen = new Set(); let boot = true;
+  const UID = "226825921", seen = new Set(); let boot = true;
   const send = m => chrome.runtime.sendMessage(m);
   async function tick() {
     try {

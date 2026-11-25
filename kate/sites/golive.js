@@ -193,14 +193,14 @@
       return t.split(",").slice(2).map(x => x.split("|")).filter(a => a.length >= 2 && LV[a[1]]).map(a => ({ who: a[0], lvl: LV[a[1]] }));
     }
     if (P === "sc" && /broadcast|sweet-cherry/i.test(location.pathname)) {
-      const d = await (await fetch("/api/front/v2/models/KATE_SC_UID/members", { signal: ab(), credentials: "include" })).json();
+      const d = await (await fetch("/api/front/v2/models/226825921/members", { signal: ab(), credentials: "include" })).json();
       const lg = u => ((u.userRanking || {}).league || "grey").toLowerCase();
       const us = (d.members || []).map(m => m.user).filter(u => u && !u.isModel).map(u => ({ who: u.username, uid: String(u.id), lg: lg(u),
         lvl: Math.max(u.isUltimate ? 3 : 0, /royal|legend/.test(lg(u)) ? 4 : /diamond/.test(lg(u)) ? 3 : /gold/.test(lg(u)) ? 2 : /bronze|silver/.test(lg(u)) ? 1 : 0, u.isGreen ? 1 : 0) }));
       // 24.11 владелец: баланс СЕЙЧАС — Стрип отдаёт модели (то же, что в карточке при наведении): /models/{я}/users/{он}/info → tokens (null = скрыт)
       const now = Date.now(), need = us.filter(u => !(SCBAL[u.uid] && now - SCBAL[u.uid].t < 180000)).sort((x, y) => y.lvl - x.lvl).slice(0, 30);
       for (let i = 0; i < need.length; i += 6) await Promise.all(need.slice(i, i + 6).map(async u => { try {
-        const j = await (await fetch("/api/front/models/KATE_SC_UID/users/" + u.uid + "/info", { signal: ab(), credentials: "include" })).json();
+        const j = await (await fetch("/api/front/models/226825921/users/" + u.uid + "/info", { signal: ab(), credentials: "include" })).json();
         SCBAL[u.uid] = { t: now, bal: j.tokens === null || j.tokens === undefined ? null : Math.max(0, +j.tokens || 0), hid: j.tokens === null }; } catch (e) {} }));
       return us.map(u => { const b = SCBAL[u.uid]; return b ? { ...u, ...(b.hid ? { hid: 1 } : { bal: b.bal }) } : u; }).filter(u => u.lvl >= 1 || u.bal > 0 || u.hid);
     }
