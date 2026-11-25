@@ -1053,7 +1053,7 @@ async function sayQ(p, id, text) {
 const PQ = "https://alicia-link.videorils.workers.dev/pq?m=cherry", LVN = ["", "есть токены", "тратит", "много тратит", "VIP"];
 let HUBPPL = [], RSAYDONE = new Set(), PPLHOLD = 0, RCHSEEN = new Set(), RSAID = {};
 // версия панели: хаб пишет в общий чат только через панель, которая это умеет (v ≥ 3); новая версия на сайте → панель обновится сама
-const PANEL_V = 69;
+const PANEL_V = 70;
 setInterval(async () => {
   try { const t = await (await fetch(location.pathname + "?vchk=" + Date.now(), { cache: "no-store" })).text(), v = +((t.match(/const PANEL_V = (\d+)/) || [])[1] || 0);
     const busy = Object.values(PRIVLIVE).some(Boolean) || TYPES.length || PAIDQ.length || [...document.querySelectorAll("input,textarea")].some(i => i.value && i.type !== "file") || Object.keys(CUP).length;
@@ -1076,7 +1076,13 @@ async function faqLoad() {
     <div style="display:flex;gap:6px"><input id="fa-${x.id}" value="${esc(x.a || "")}" placeholder="твой ответ по-русски" style="margin:0;font-size:16px;flex:1" onkeydown="if(event.key==='Enter')faqSave('${x.id}')">
     <button class="go" onclick="faqSave('${x.id}')">${x.a ? "✓ Изменить" : "✓ Ответить"}</button><button style="background:#444" onclick="faqDel('${x.id}')">убрать</button></div></div>`).join("");
 }
-async function faqSave(id) { const v = ($("#fa-" + id).value || "").trim(); if (!v) return; const r = await pq({ op: "faqans", id, a: v }); if (r.ok) { FAQ_N = Math.max(0, FAQ_N - 1); faqLoad(); } else alert(r.err || "не сохранилось"); }
+// 25.11: бот перезапускался — ответ не терялся: пробуем ещё 8 раз раз в 5 сек, без окошек «нет связи»
+async function faqSave(id, n = 0) { const inp = $("#fa-" + id), v = ((inp && inp.value) || "").trim(); if (!v) return;
+  const r = await pq({ op: "faqans", id, a: v });
+  if (r.ok) { FAQ_N = Math.max(0, FAQ_N - 1); faqLoad(); return; }
+  if (inp) { inp.style.borderColor = "#e8a33d"; inp.title = "сохраняю… бот перезапускается"; }
+  if (n < 8) return setTimeout(() => faqSave(id, n + 1), 5000);
+  if (inp) { inp.style.borderColor = "#e8364f"; inp.title = "не сохранилось — нажми «Ответить» ещё раз"; } }
 async function faqDel(id) { const r = await pq({ op: "faqans", id, del: 1 }); if (r.ok) faqLoad(); }
 async function pq(body) { try { return await (await fetch(PQ, { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ w: "alicia-panel", ...body }) })).json(); } catch (e) { return { ok: false, err: "нет связи с ботом" }; } }
 // сводка зрителей с токенами: сколько уникальных и каких цветов на каждой площадке (цвет ника = сколько токенов)
