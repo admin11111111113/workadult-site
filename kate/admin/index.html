@@ -53,7 +53,7 @@ function ui() { const n = !!localStorage.noImg; $("#shot").style.display = n ? "
 ui();
 async function load(clear) {
   if (!localStorage.admk) { $("#login").style.display = "flex"; return; }
-  let r; try { r = await fetch("https://alicia-link.videorils.workers.dev/her?m=" + MDL() + (clear === 1 ? "&clear=1" : ""), { headers: { "x-k": localStorage.admk }, cache: "no-store" }); } catch (e) { $("#s-on").textContent = "нет связи"; return; }
+  let r; try { r = await fetch(LNK() + "/her?m=" + MDL() + (clear === 1 ? "&clear=1" : ""), { headers: { "x-k": localStorage.admk }, cache: "no-store" }); } catch (e) { $("#s-on").textContent = "нет связи"; return; }
   if (r.status === 403) { localStorage.admk = ""; $("#lerr").textContent = "неверный пароль"; $("#login").style.display = "flex"; return; }
   $("#login").style.display = "none";
   const { st, ev, now } = await r.json();
@@ -83,6 +83,8 @@ let HUBURL = "";
 // 25.11 владелец: у каждой модели своя ссылка — workadult.pro/alicia/admin/ и workadult.pro/kate/admin/ (один и тот же файл, модель — по адресу)
 const MPATH = { alicia: "/alicia/admin/", cherry: "/kate/admin/" };
 const MDL = () => location.pathname.startsWith("/kate/") ? "cherry" : "alicia";
+// 25.11: Кейт — свой аккаунт Cloudflare (лимит 100k/сутки на аккаунт)
+const LNK = () => MDL() === "cherry" ? "https://kate-link.katehub.workers.dev" : "https://alicia-link.videorils.workers.dev";
 localStorage.mdl = MDL();
 function mdlUrl() {}
 const MDLRU = { alicia: "Алисии", cherry: "Кейт" };
@@ -97,7 +99,7 @@ addEventListener("message", e => { if (e.data && typeof e.data.alicia_customs ==
 async function hubOpen() {
   if (!localStorage.admk) return setTimeout(hubOpen, 2000);
   $("#hubmsg").textContent = "подключаюсь к хабу…";
-  let j = {}; try { j = await (await fetch("https://alicia-link.videorils.workers.dev/url?m=" + MDL(), { headers: { "x-k": localStorage.admk }, cache: "no-store" })).json(); } catch (e) {}
+  let j = {}; try { j = await (await fetch(LNK() + "/url?m=" + MDL(), { headers: { "x-k": localStorage.admk }, cache: "no-store" })).json(); } catch (e) {}
   if (!j.url) { $("#hubmsg").textContent = "⚠ хаб " + MDLRU[MDL()] + " на ПК не на связи (выключен компьютер или хаб)"; return; }
   const f = document.createElement("form"); f.method = "post"; f.action = j.url + "/login"; f.target = "hubf";
   const i = document.createElement("input"); i.type = "hidden"; i.name = "p"; i.value = localStorage.admk; f.appendChild(i);
@@ -107,7 +109,7 @@ async function hubOpen() {
 }
 // 24.11: хаб перезапустился → адрес туннеля новый, старое окно консоли мёртвое. Раз в 20 с сверяем адрес и сами переподключаемся.
 setInterval(async () => { if (!window.HUBURL || !localStorage.admk) return; let j = {};
-  try { j = await (await fetch("https://alicia-link.videorils.workers.dev/url?m=" + MDL(), { headers: { "x-k": localStorage.admk }, cache: "no-store" })).json(); } catch (e) { return; }
+  try { j = await (await fetch(LNK() + "/url?m=" + MDL(), { headers: { "x-k": localStorage.admk }, cache: "no-store" })).json(); } catch (e) { return; }
   if (j.url && j.url !== HUBURL) { $("#ctf").removeAttribute("src"); hubOpen(); } }, 20000);
 mdlUi(); tab("hub"); hubOpen();   // вкладку «её панель» владелец попросил убрать (21.11) — только консоль
 </script><script>function thSet(l){document.documentElement.classList.toggle('light',l);localStorage.theme=l?'light':'dark';var b=document.getElementById('thb');if(b)b.textContent=l?'🌙 Тёмный':'☀️ Белый';document.querySelectorAll('iframe').forEach(f=>{try{f.contentWindow.postMessage({alicia_theme:l},'*')}catch(x){}})}addEventListener('message',e=>{if(e.data&&e.data.alicia_theme_ask)try{e.source.postMessage({alicia_theme:localStorage.theme!=='dark'},'*')}catch(x){}});thSet(false);</script><script>
