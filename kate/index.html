@@ -37,7 +37,7 @@ input{font:inherit;padding:8px;border-radius:8px;border:1px solid #444;backgroun
 .pp .nm{font-weight:700;color:#ffd76a}.pp .sd{flex:1;color:#aab;font-size:13px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.pp button{padding:6px 10px;font-size:13px}.pp.done{opacity:.6}
 .wh,.nm{cursor:pointer}.wh:hover,.nm:hover{text-decoration:underline}
 .csec{color:#889;font-size:13px;margin:14px 0 6px;font-weight:700;text-transform:uppercase}
-#thb{font:inherit;font-size:13px;font-weight:600;border:1px solid #555;border-radius:10px;padding:6px 12px;cursor:pointer;background:#3d3d3d;color:#fff;white-space:nowrap}#top{background:#141414!important;border-bottom:3px solid #e0363c}#thb{display:none!important}.nf{font-size:13px!important;padding:5px 8px!important;gap:8px!important;margin-bottom:4px!important}.nf .wh{font-size:12px!important}.nf .pf{font-size:10px!important;padding:1px 5px!important;border-radius:5px}.nf .tm{font-size:10px!important}.nf .tx{font-size:12.5px!important;font-weight:400!important;line-height:1.3}.pf.pf-sc{background:#e0363c!important;color:#fff!important}.pf.pf-cb{background:#ffe08a!important;color:#1a1a1a!important}.pf.pf-bc{background:#2ecc71!important;color:#0d2a17!important}.pf.pf-mv{background:#ff2d8f!important;color:#fff!important}.nf .tkn{font-size:13px!important;font-weight:700!important;min-width:0!important;color:#ffd24d}</style></head><body>
+#thb{font:inherit;font-size:13px;font-weight:600;border:1px solid #555;border-radius:10px;padding:6px 12px;cursor:pointer;background:#3d3d3d;color:#fff;white-space:nowrap}#top{background:#141414!important;border-bottom:3px solid #e0363c}#thb{display:none!important}.nf{font-size:13px!important;padding:5px 8px!important;gap:8px!important;margin-bottom:4px!important}.nf .wh{font-size:12px!important}.nf .pf{font-size:10px!important;padding:1px 5px!important;border-radius:5px}.nf .tm{font-size:10px!important}.nf .tx{font-size:12.5px!important;font-weight:400!important;line-height:1.3}.pf.pf-sc{background:#e0363c!important;color:#fff!important}.pf.pf-cb{background:#ffe08a!important;color:#1a1a1a!important}.pf.pf-bc{background:#2ecc71!important;color:#0d2a17!important}.pf.pf-mv{background:#ff2d8f!important;color:#fff!important}.nf .tkn{font-size:13px!important;font-weight:700!important;min-width:0!important;color:#ffd24d}.pl.gdon{box-shadow:0 0 0 3px #2ecc40,0 0 22px 4px #2ecc40;animation:gpdon 1s ease-in-out infinite alternate}.pl.gwh{box-shadow:0 0 0 3px #ff2a2a,0 0 22px 4px #ff2a2a;animation:gpwh 1.4s ease-in-out infinite alternate}.pl.gdon.gwh{animation:gpdw 1s ease-in-out infinite alternate}@keyframes gpdon{from{box-shadow:0 0 0 2px #2ecc40,0 0 8px #2ecc40}to{box-shadow:0 0 0 4px #2ecc40,0 0 26px 6px #2ecc40}}@keyframes gpwh{from{box-shadow:0 0 0 2px #ff2a2a,0 0 8px #ff2a2a}to{box-shadow:0 0 0 4px #ff2a2a,0 0 26px 6px #ff2a2a}}@keyframes gpdw{from{box-shadow:0 0 0 3px #2ecc40,0 0 0 6px #ff2a2a,0 0 14px 6px #ff2a2a}to{box-shadow:0 0 0 4px #2ecc40,0 0 0 8px #ff2a2a,0 0 26px 9px #ff2a2a}}</style></head><body>
 <div id="top">
  <div class="pl site"><span class="dot" id="d-cb"></span>Chaturbate<small id="t-cb">0 tk</small><label class="au"><input type="checkbox" id="a-cb" onchange="autoSet('cb',this.checked)"> авто</label></div>
  <div class="pl site"><span class="dot" id="d-sc"></span>Stripchat<small id="t-sc">0 tk</small><label class="au"><input type="checkbox" id="a-sc" onchange="autoSet('sc',this.checked)"> авто</label></div>
@@ -537,7 +537,7 @@ function onExt(m) {
   // запоминаем только ManyVids (у Bonga 2-й шаг в консоли — её открывать напрямую нельзя)
   if (m.type === "golearn" && m.p === "mv" && /\/live\/cam\//.test(m.url || "")) localStorage.go_mv = m.url;
   if (m.type === "live") liveSet(m.p, "tab", m.on, m.st);
-  if (m.type === "earn" && m.p === "mv") { ETK.mv = m.tk; showTot(); }
+  if (m.type === "earn" && m.p === "mv") { if (ETK.mv && m.tk > ETK.mv) glowTip("mv"); ETK.mv = m.tk; showTot(); }
   if (m.type === "lovlog") hint("🎀 " + esc(m.text.replace(/^Lovense: /, "Lovense: ")));
   if (m.type === "lovsites") {
     LOV.sites = m.n; LOV.have = m.have || []; LOV.toys = m.toys || [];
@@ -546,7 +546,7 @@ function onExt(m) {
     lovense();
   }
   if (m.type === "c2c") hint(m.ok ? "📷 Камера <b>" + esc(m.who) + "</b> открыта — окошко справа внизу на Бонге (тяни за верх, размер — за угол, ⧉ — поверх всех окон)" : "⚠ Камера " + esc(m.who) + " не открылась сама — на Бонге нажми его ник → «камера»");
-  if (m.type === "tip") {
+  if (m.type === "tip") { glowTip(m.p);
     if (!m.what && m.p === "sc" && +m.tk === 55) m.what = "секс-машина 1 мин (Lovense включает сама)";   // 23.11 владелец
     // 24.11: спецкоманды её Lovense (из её настроек): ровно эта сумма без пункта меню — реакция игрушки, а не «просто чаевые»
     const LOVTK = { 25: "Lovense: случайный уровень вибрации", 38: "Lovense: случайное время вибрации 10–50 сек", 100: "Lovense: землетрясение 20 сек", 120: "Lovense: фейерверк 22 сек", 160: "Lovense: волна 30 сек", 200: "Lovense: пульс 40 сек", 1000: "Lovense: очистить очередь", 5555: "Lovense: пауза игрушки 10 сек" };
@@ -767,12 +767,12 @@ async function hubSync() {
   feedShow(alive ? h.feed || [] : null);
   if (alive) { if (h.tipmenu) { TIPMENU = h.tipmenu; try { localStorage.tipmenu = JSON.stringify(TIPMENU); } catch (e) {} } CUSTS = h.customs || []; custRender(); typeShow((h.typing || []).filter(t => !TYPEDONE.has(t.id))); hmShow(h.msgs || []); for (const x of h.psay || []) if (!PSAYDONE.has(x.id)) { PSAYDONE.add(x.id); privSay(x.text, x.p); } } else typeShow([]);
   if (alive) faqBadge(h.faq_n || 0, Object.values(h.live_on || {}).some(Boolean));
-  if (alive && h.today) { ETK.bc = h.today.bc || 0; ETK.bcl = h.ltk ? h.ltk.bc || 0 : null; showTot(); }
+  if (alive && h.today) { if (ETK.bc && (h.today.bc || 0) > ETK.bc) glowTip("bc"); ETK.bc = h.today.bc || 0; ETK.bcl = h.ltk ? h.ltk.bc || 0 : null; showTot(); }
   // её вкладка сайта молчит (закрыта / скрипт не подцепился) → статус эфира от хаба (он сам спрашивает сайты)
   if (alive) for (const k of ["mv", "sc", "cb", "bc"]) liveSet(k, "hub", !!(h.live_on || {})[k], "hub");
   if (alive) for (const c of h.rchat || []) if (!RCHSEEN.has(c.id)) { RCHSEEN.add(c.id);    // чат её комнат, который хаб видит сам (как зритель)
     if (!WALLMSG.some(x => !x.me && x.p === c.p && x.who === c.who && x.text === c.text)) wallAdd(c); }
-  if (alive) { HUBPPL = h.ppl || []; MHBM = h.mhb || {}; MVV = h.mvv || {}; pplShow(); for (const x of h.rsay || []) if (!RSAYDONE.has(x.id)) { RSAYDONE.add(x.id); /* хаб сам кладёт текст на сервер (/say), страница эфира забирает */
+  if (alive) { HUBPPL = h.ppl || []; GWH = {}; for (const r of HUBPPL) if (r.wh && r.wh.k === "кит") GWH[r.p] = 1; glow(); MHBM = h.mhb || {}; MVV = h.mvv || {}; pplShow(); for (const x of h.rsay || []) if (!RSAYDONE.has(x.id)) { RSAYDONE.add(x.id); /* хаб сам кладёт текст на сервер (/say), страница эфира забирает */
       // 24.11: что бот (или Роман) написал в общий чат — тоже в ленту
       const d = x.at ? new Date(x.at * 1000) : new Date();
       const w = { id: "r" + x.id, me: true, bot: !/^🙋/.test(x.ru || ""), p: x.p, to: "чат", ru: x.ru || x.text, out: x.text, st: "", t: d.toTimeString().slice(0, 5), ft: d.toLocaleString("sv").slice(0, 16) };
@@ -1051,9 +1051,15 @@ async function sayQ(p, id, text) {
       if (v.ok) return; } } catch (e) {}
   try { await fetch("https://alicia-link.videorils.workers.dev/say?m=cherry&p=" + p, { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ w: "alicia-panel", id, text }) }); } catch (e) {} }
 const PQ = "https://alicia-link.videorils.workers.dev/pq?m=cherry", LVN = ["", "есть токены", "тратит", "много тратит", "VIP"];
+// 25.11 владелец: как в его консоли — карточка площадки светится ЗЕЛЁНЫМ, когда пришёл донат (20 сек), КРАСНЫМ — когда там сейчас кит; оба — двойная рамка
+const GDON = {}; let GWH = {};
+function glowTip(p) { GDON[p] = Date.now(); glow(); }
+function glow() { for (const k of ["cb", "sc", "bc", "mv"]) { const d = $("#d-" + k), c = d && d.closest(".pl"); if (!c) continue;
+  c.classList.toggle("gdon", Date.now() - (GDON[k] || 0) < 20000); c.classList.toggle("gwh", !!GWH[k]); } }
+setInterval(glow, 2000);
 let HUBPPL = [], RSAYDONE = new Set(), PPLHOLD = 0, RCHSEEN = new Set(), RSAID = {};
 // версия панели: хаб пишет в общий чат только через панель, которая это умеет (v ≥ 3); новая версия на сайте → панель обновится сама
-const PANEL_V = 72;
+const PANEL_V = 73;
 setInterval(async () => {
   try { const t = await (await fetch(location.pathname + "?vchk=" + Date.now(), { cache: "no-store" })).text(), v = +((t.match(/const PANEL_V = (\d+)/) || [])[1] || 0);
     const busy = Object.values(PRIVLIVE).some(Boolean) || TYPES.length || PAIDQ.length || [...document.querySelectorAll("input,textarea")].some(i => i.value && i.type !== "file") || Object.keys(CUP).length;
