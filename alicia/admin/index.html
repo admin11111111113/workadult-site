@@ -33,6 +33,7 @@ html.light{background:#fff}html.light body{background:#ecedf3}html.light body>*:
  <div class="pl"><span class="dot" id="d-sc"></span>Stripchat<small id="s-sc">…</small></div>
  <div class="pl"><span class="dot" id="d-bc"></span>Bongacams<small id="s-bc">…</small></div>
  <div class="pl"><span class="dot" id="d-mv"></span>ManyVids<small id="s-mv">…</small></div>
+ <div class="pl"><span class="dot" id="d-fs"></span>Fansly<small id="s-fs">…</small></div>
  <div class="pl">Сегодня<small id="s-tot">…</small></div>
 </div>
 <div id="grid">
@@ -63,6 +64,7 @@ async function load(clear) {
   dot("obs", on ? st.obs : null, st.obsTxt || ""); dot("ext", on ? /на связи/.test(st.ext) : null, st.ext || "");
   dot("lov", on && st.lov && st.lov !== "…" ? !/нет|запусти|не подкл|не добавл|из 4/i.test(st.lov) : null, st.lov || "");
   for (const k of ["cb", "sc", "bc", "mv"]) { const s = (st.sites || {})[k] || {}; dot(k, on && /ok/.test(s.on) ? true : on && /no/.test(s.on) ? false : null, s.t || ""); }
+  { const f = (st.live || {}).fs || {}; dot("fs", on ? !!f.on : null, on ? (f.on ? "в эфире" : "не в эфире") : ""); }   // 26.11 владелец: «и у меня добавь Fansly»
   $("#s-tot").textContent = ((st.tot || {}).cb || 0) + ((st.tot || {}).sc || 0) + " tk";
   if (!localStorage.noImg) $("#shot").src = st.shot || "";
   $("#stream").textContent = st.stream || ""; $("#hint").textContent = st.hint || "";
