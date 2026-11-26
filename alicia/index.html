@@ -580,7 +580,7 @@ function onExt(m) {
     TOT[m.p] = (TOT[m.p] || 0) + m.tk; showTot(); const a = act(m.what);
     LOCALTIPS.push({ id: "l" + Date.now() + Math.random(), at: Date.now(), t: nowT(), p: m.p, who: m.who, tk: m.tk, text: (m.what || "") + (a ? " 👉 " + a : ""), kind: "tip" }); feedShow(null);
     $("#wall").insertAdjacentHTML("afterbegin", `<div class="tip"><b>${esc(m.who)}</b> ${m.tk} tk · ${({ cb: "Chaturbate", sc: "Stripchat", bc: "Bongacams", mv: "ManyVids" })[m.p] || m.p}${m.what ? " — " + esc(m.what) : ""}${a ? "<br>👉 " + esc(a) : ""}</div>`);
-    hint(`💰 <b>${esc(m.who)}</b> дал ${m.tk} tk <small>(${esc(PN4[m.p] || m.p)})</small><br>${m.what ? `<b style="color:#ffd24d">ЗА: ${esc(m.what)}</b>` : `<span style="color:#aaa">просто чаевые (не по меню)</span>`}${a ? "<br>👉 СДЕЛАЙ: " + esc(a) : ""}<br>Скажи: «Thank you ${esc(m.who)} 😘»`);
+    hint(`💰 <b>${esc(m.who)}</b> дал ${m.tk} tk <small>(${esc(PN4[m.p] || m.p)})</small><br>${m.what ? `<b style="color:#ffd24d">ЗА: ${esc(m.what)}</b>` : `<span style="color:#aaa">просто чаевые (не по меню)</span>`}${a ? "<br>👉 СДЕЛАЙ: " + esc(a) : ""}`);   // 26.11 владелец: «скажи спасибо» убрать — видно «просто чаевые» и достаточно
     if (a) { PAIDQ.push({ p: m.p, who: m.who, tk: m.tk, what: m.what, act: a }); PAIDQ.splice(0, PAIDQ.length - 5); paidShow(); ding(); PAIDBEEP = Date.now(); admEv("💰 оплатили по меню: " + m.who + " — " + m.what); }
   }
   if (m.type === "lovctl") lovCtl(m);
@@ -1118,7 +1118,7 @@ function glow() { for (const k of ["cb", "sc", "bc", "mv", "fs"]) { const d = $(
 setInterval(glow, 2000);
 let HUBPPL = [], RSAYDONE = new Set(), PPLHOLD = 0, RCHSEEN = new Set(), RSAID = {};
 // версия панели: хаб пишет в общий чат только через панель, которая это умеет (v ≥ 3); новая версия на сайте → панель обновится сама
-const PANEL_V = 93;
+const PANEL_V = 94;
 setInterval(async () => {
   try { const t = await (await fetch(location.pathname + "?vchk=" + Date.now(), { cache: "no-store" })).text(), v = +((t.match(/const PANEL_V = (\d+)/) || [])[1] || 0);
     const busy = Object.values(PRIVLIVE).some(Boolean) || TYPES.length || PAIDQ.length || [...document.querySelectorAll("input,textarea")].some(i => i.value && i.type !== "file") || Object.keys(CUP).length;
