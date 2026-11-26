@@ -86,7 +86,7 @@ let HUBURL = "";
 const MPATH = { alicia: "/alicia/admin/", cherry: "/kate/admin/" };
 const MDL = () => location.pathname.startsWith("/kate/") ? "cherry" : "alicia";
 // 25.11: Кейт — свой аккаунт Cloudflare (лимит 100k/сутки на аккаунт)
-const LNK = () => MDL() === "cherry" ? "https://kate-link.katehub.workers.dev" : "https://alicia-link.videorils.workers.dev";   // 26.11: katehub (акк 2) упёрся в дневной лимит Cloudflare
+const LNK = () => MDL() === "cherry" ? "https://alicia-link.videorils.workers.dev" : "https://alicia-link.videorils.workers.dev";   // 26.11: katehub (акк 2) упёрся в дневной лимит Cloudflare
 localStorage.mdl = MDL();
 function mdlUrl() {}
 const MDLRU = { alicia: "Алисии", cherry: "Кейт" };

@@ -51,7 +51,7 @@
   const ACC = /^(принять|accept|approve|согласиться|начать приват|start private( show)?|chấp nhận)$/i, DEC = /^(отклонить|decline|reject|deny|отказаться|từ chối)$/i;
   const PRIV = /приват|private|privat|riêng tư|exclusive|эксклюзив/i;
   let REQ = null;                                                    // {acc, dec, key}
-  const PCMD = "https://kate-link.katehub.workers.dev/pcmd?m=cherry&p=" + P;
+  const PCMD = "https://alicia-link.videorils.workers.dev/pcmd?m=cherry&p=" + P;
   setInterval(async () => {
     let found = null;
     for (const b of document.querySelectorAll("button,a,[role=button],[class*=btn i],[class*=button i]")) {
@@ -321,8 +321,8 @@
     // куда писать: CB /b/, SC — страница эфира или её комната, Bonga — консоль, MV — страница live
     if (!(P === "bc" ? /^\/console/.test(location.pathname) : P === "sc" ? /broadcast|sweet-cherry/i.test(location.pathname) : mine()) || !chatInput()) return;
     let c = await send({ type: "poll", ch: "say-" + P });           // помощник 1.1
-    if (!(c && c.text) && Date.now() - (window.__sayW || 0) > 45000) try { window.__sayW = Date.now(); c = await (await fetch("https://kate-link.katehub.workers.dev/say?m=cherry&p=" + P, { cache: "no-store" })).json(); } catch (e) { c = null; }   // помощник 1.0 — с сервера напрямую
-    if (c && c.text) { const err = await say(c.text); send({ type: "saidres", p: P, id: c.id, ok: !err, err }); try { fetch("https://kate-link.katehub.workers.dev/say?m=cherry&res=1", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ id: c.id, ok: !err, err: err || "" }) }); } catch (e) {} }
+    if (!(c && c.text) && Date.now() - (window.__sayW || 0) > 45000) try { window.__sayW = Date.now(); c = await (await fetch("https://alicia-link.videorils.workers.dev/say?m=cherry&p=" + P, { cache: "no-store" })).json(); } catch (e) { c = null; }   // помощник 1.0 — с сервера напрямую
+    if (c && c.text) { const err = await say(c.text); send({ type: "saidres", p: P, id: c.id, ok: !err, err }); try { fetch("https://alicia-link.videorils.workers.dev/say?m=cherry&res=1", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ id: c.id, ok: !err, err: err || "" }) }); } catch (e) {} }
   }, 1000);
   // запоминаем страницу, где есть кнопка запуска (для ManyVids/Bonga панель потом открывает её сама)
   if (STREAM) setTimeout(() => {
