@@ -580,7 +580,10 @@ function onExt(m) {
     if (!m.what && ["sc", "cb", "bc"].includes(m.p)) m.what = LOVTK[+m.tk] || (+m.tk >= 55 && +m.tk <= 75 ? "Lovense: полный контроль игрушки 60 сек" : "");
     // 24.11 владелец: сумма = цена пункта ещё не значит, что он выбрал пункт (25 tk — может, просто чаевые). Пункт — только если сайт сам подписал.
     TOT[m.p] = (TOT[m.p] || 0) + m.tk; showTot(); const a = act(m.what);
-    LOCALTIPS.push({ id: "l" + Date.now() + Math.random(), at: Date.now(), t: nowT(), p: m.p, who: m.who, tk: m.tk, text: (m.what || "") + (a ? " 👉 " + a : ""), kind: "tip" }); feedShow(null);
+    const LT = { id: "l" + Date.now() + Math.random(), at: Date.now(), t: nowT(), p: m.p, who: m.who, tk: m.tk, text: (m.what || "") + (a ? " 👉 " + a : ""), kind: "tip" };
+    LOCALTIPS.push(LT); feedShow(null);
+    if (m.what && !/[а-яё]/i.test(m.what) && /[^\s\d\p{P}\p{S}]{2}/u.test(m.what))   // 26.11 владелец «опять английские слова»: подпись доната — по-русски
+      fetch("https://translate.googleapis.com/translate_a/single?client=gtx&sl=auto&tl=ru&dt=t&q=" + encodeURIComponent(m.what)).then(r => r.json()).then(j => { const t = j[0].map(x => x[0]).join(""); if (t) { LT.text = t + (a ? " 👉 " + a : ""); feedShow(null); } }).catch(() => {});
     $("#wall").insertAdjacentHTML("afterbegin", `<div class="tip"><b>${esc(m.who)}</b> ${m.tk} tk · ${({ cb: "Chaturbate", sc: "Stripchat", bc: "Bongacams", mv: "ManyVids" })[m.p] || m.p}${m.what ? " — " + esc(m.what) : ""}${a ? "<br>👉 " + esc(a) : ""}</div>`);
     // 26.11 владелец: «как у меня — строкой с площадкой, без жёлтого окна и ОК»: донат только строкой в «Донаты и сообщения»
     // hint(`💰 <b>${esc(m.who)}</b> дал ${m.tk} tk <small>(${esc(PN4[m.p] || m.p)})</small><br>${m.what ? `<b style="color:#ffd24d">ЗА: ${esc(m.what)}</b>` : `<span style="color:#aaa">просто чаевые (не по меню)</span>`}${a ? "<br>👉 СДЕЛАЙ: " + esc(a) : ""}`);   // 26.11 владелец: «скажи спасибо» убрать — видно «просто чаевые» и достаточно
@@ -1136,7 +1139,7 @@ function glow() { for (const k of ["cb", "sc", "bc", "mv", "fs"]) { const d = $(
 setInterval(glow, 2000);
 let HUBPPL = [], RSAYDONE = new Set(), PPLHOLD = 0, RCHSEEN = new Set(), RSAID = {};
 // версия панели: хаб пишет в общий чат только через панель, которая это умеет (v ≥ 3); новая версия на сайте → панель обновится сама
-const PANEL_V = 107;
+const PANEL_V = 108;
 setInterval(async () => {
   try { const t = await (await fetch(location.pathname + "?vchk=" + Date.now(), { cache: "no-store" })).text(), v = +((t.match(/const PANEL_V = (\d+)/) || [])[1] || 0);
     const busy = Object.values(PRIVLIVE).some(Boolean) || TYPES.length || PAIDQ.length || [...document.querySelectorAll("input,textarea")].some(i => i.value && i.type !== "file") || Object.keys(CUP).length;
