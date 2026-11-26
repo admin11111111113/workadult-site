@@ -183,6 +183,17 @@
       pmFirst = false;
     }, 1500);
     setTimeout(() => diag("через 20 с"), 20000);
+    // 26.11 владелец «Бонга горит зелёным, а донатов в уведомлениях нет»: счётчик «Всего чаевых» в консоли эфира — вырос → донат в панель сразу
+    { let tot = null, cnt = null, miss = 0;
+      setInterval(() => {
+        const it = [...document.querySelectorAll(".lo-panel-data__data--item")].map(e => (e.innerText || "").replace(/\s+/g, " ").trim());
+        const g = re => { const x = it.find(t => re.test(t)); return x ? parseInt(x.replace(/[^\d]/g, "")) : null; };
+        const t = g(/всего\s*\S*аев|total\s*tips/i), n = g(/подсч\S*\s*чаев|tips?\s*count/i);
+        if (t == null || isNaN(t)) { if (++miss === 6) send({ type: "probe", p: P, text: "счётчик чаевых Бонги не нашла: " + (it.slice(0, 6).join(" | ") || "нет .lo-panel-data__data--item") }); return; }
+        if (tot != null && t > tot) { const k = (n != null && cnt != null && n > cnt) ? n - cnt : 1;
+          send({ type: "tip", p: "bc", who: k > 1 ? k + " донатов" : "кто-то", tk: t - tot, what: "" }); }
+        tot = t; cnt = n;
+      }, 5000); }
     let wasOn = false; setInterval(() => { const on = PRIVON.test((document.body && document.body.innerText || "").slice(0, 200000)); if (on && !wasOn) setTimeout(() => diag("приват, отправлено строк " + sent), 15000); wasOn = on; }, 3000);
   }
   // ── 24.11 владелец: зрители с токенами — прямо из её открытых вкладок (хабу не надо открывать комнату зрителем).
