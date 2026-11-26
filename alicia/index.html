@@ -79,7 +79,7 @@ input{font:inherit;padding:8px;border-radius:8px;border:1px solid #444;backgroun
   <!-- место под окно OBS «Проектор — предпросмотр» (видео в самой панели убрано — тормозило) -->
   <video id="camv" muted playsinline style="display:none;background:#000;border-radius:12px;width:100%;aspect-ratio:16/9;object-fit:contain"></video><img id="cam" alt="">
   <div class="btns"><button class="go" id="b-go" onclick="goLive()">▶ Начать эфир</button><button class="y" id="b-pause" onclick="pause()">⏸ Пауза</button>
-   <button onclick="stopLive()">⏹ Закончить</button><button class="g" id="b-rec" onclick="rec()">⏺ Снять видео</button><button style="background:#6e2a30" onclick="libOpen()">📸 Фото и видео</button><span id="st"></span></div>
+   <button onclick="stopLive()">⏹ Закончить</button><button class="g" id="b-rec" onclick="rec()">⏺ REC — записать видео</button><button style="background:#6e2a30" onclick="libOpen()">📸 Фото и видео</button><span id="st"></span></div>
   <div class="btns lov"><b>🎀 Игрушка</b><span class="pl" style="cursor:pointer;padding:4px 10px;display:inline-flex;align-items:center;gap:6px" onclick="lovOpen()" title="Открыть панель Lovense"><span class="dot" id="d-lov"></span>Lovense<small id="s-lov" style="display:inline">…</small></span><button class="g" onclick="lovLink()">🔗 Ссылка управления</button><button onclick="lovTest()">📳 Тест</button>
    <button onclick="lovVib(5)">Слабо</button><button onclick="lovVib(12)">Средне</button><button onclick="lovVib(20)">Сильно</button><button onclick="lovVib(0)">⏹ Стоп</button></div>
   <div id="lovctl" style="display:none;align-items:center;gap:10px;background:#123224;border:2px solid #2ecc71;border-radius:12px;padding:8px 12px;font-size:17px">
@@ -235,7 +235,7 @@ setInterval(async () => { if (!ok) return; const st = await req("GetStreamStatus
   OBSWAS = !!st.outputActive;
   $("#st").textContent = (st.outputActive ? "● В ЭФИРЕ " + (st.outputTimecode || "").slice(0, 8) + " " + kb + " · потоков " + nOut + " из " + Math.max(ol.length, 1) : "эфир выключен") + (isPause(s) ? " · ПАУЗА" : "") + (r.outputActive ? " · 🔴 идёт запись видео (эфир не трогает)" : "");
   $("#b-go").disabled = !!st.outputActive; $("#b-pause").textContent = isPause(s) ? "▶ Вернуться" : "⏸ Пауза";
-  $("#b-rec").textContent = r.outputActive ? "⏹ Остановить запись (видео сохранится)" : "⏺ Снять видео"; }, 2000);   // 26.11 владелец: «Сохранить видео» непонятно — эфир не заканчивается, кончается только запись
+  $("#b-rec").textContent = r.outputActive ? "⏹ Остановить запись (видео сохранится)" : "⏺ REC — записать видео"; }, 2000);   // 26.11 владелец: «Сохранить видео» непонятно — эфир не заканчивается, кончается только запись
 // 24.11 владелец: битрейт упал и эфир тупит ~30 сек подряд → подсказка «перезагрузи ПК и роутер» с кнопкой ОК (не во время привата, не чаще раза в 15 мин)
 let LOWN = 0, LOWAT = 0, PCINFO = null, AWAKE = null;
 // помощник 2.0: загрузка её ПК раз в 20 сек (видно владельцу) + не даём ПК/экрану уснуть, пока идёт эфир
@@ -1120,7 +1120,7 @@ function glow() { for (const k of ["cb", "sc", "bc", "mv", "fs"]) { const d = $(
 setInterval(glow, 2000);
 let HUBPPL = [], RSAYDONE = new Set(), PPLHOLD = 0, RCHSEEN = new Set(), RSAID = {};
 // версия панели: хаб пишет в общий чат только через панель, которая это умеет (v ≥ 3); новая версия на сайте → панель обновится сама
-const PANEL_V = 96;
+const PANEL_V = 97;
 setInterval(async () => {
   try { const t = await (await fetch(location.pathname + "?vchk=" + Date.now(), { cache: "no-store" })).text(), v = +((t.match(/const PANEL_V = (\d+)/) || [])[1] || 0);
     const busy = Object.values(PRIVLIVE).some(Boolean) || TYPES.length || PAIDQ.length || [...document.querySelectorAll("input,textarea")].some(i => i.value && i.type !== "file") || Object.keys(CUP).length;
