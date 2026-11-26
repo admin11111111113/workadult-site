@@ -705,6 +705,7 @@ document.addEventListener("click", () => { try { if ("Notification" in window &&
 function ding() { try { const a = new AudioContext(); [880, 1175, 1568, 1175, 1568].forEach((f, i) => { const o = a.createOscillator(), g = a.createGain(); o.frequency.value = f; o.connect(g); g.connect(a.destination);
   g.gain.setValueAtTime(.2, a.currentTime + i * .15); g.gain.exponentialRampToValueAtTime(.001, a.currentTime + i * .15 + .14); o.start(a.currentTime + i * .15); o.stop(a.currentTime + i * .15 + .15); }); } catch (e) {} }
 function privShow(p, text) {
+  if (!(LIVE[p] && LIVE[p].on)) { admEv("🔒 «запрос привата» на " + (PN4[p] || p) + " без эфира — не показываю: " + (text || "").slice(0, 120)); return; }   // 26.11 владелец: «Чатур не в эфире — какой запрос привата»
   if (PRIVLIVE[p]) return;                                            // 25.11 владелец: приват уже идёт — не звоним и не кидаем уведомления
   if (PRIVREQ === p && Date.now() - (window.PRIVAT || 0) < 90000) { $("#privt").textContent = text || ""; return; }   // тот же запрос — одно уведомление, не три
   window.PRIVAT = Date.now();
@@ -1120,7 +1121,7 @@ function glow() { for (const k of ["cb", "sc", "bc", "mv", "fs"]) { const d = $(
 setInterval(glow, 2000);
 let HUBPPL = [], RSAYDONE = new Set(), PPLHOLD = 0, RCHSEEN = new Set(), RSAID = {};
 // версия панели: хаб пишет в общий чат только через панель, которая это умеет (v ≥ 3); новая версия на сайте → панель обновится сама
-const PANEL_V = 97;
+const PANEL_V = 98;
 setInterval(async () => {
   try { const t = await (await fetch(location.pathname + "?vchk=" + Date.now(), { cache: "no-store" })).text(), v = +((t.match(/const PANEL_V = (\d+)/) || [])[1] || 0);
     const busy = Object.values(PRIVLIVE).some(Boolean) || TYPES.length || PAIDQ.length || [...document.querySelectorAll("input,textarea")].some(i => i.value && i.type !== "file") || Object.keys(CUP).length;
