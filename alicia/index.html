@@ -223,7 +223,10 @@ setInterval(async () => { if (!ok) return; const st = await req("GetStreamStatus
   { const bo = ol.find(o => /bonga/i.test(o.outputName || ""));
     liveSet("bc", "obs", bo ? !!bo.outputActive : !!st.outputActive && nOut >= 2 && nOut === ol.length, "obs");
     bcWatch(st, bo);
-    const fo = ol.find(o => /fansly/i.test(o.outputName || ""));
+    // 26.11: выход Fansly — по имени, а если цель названа иначе — по адресу сервера в её настройках (раз в минуту)
+    let fo = ol.find(o => /fansly/i.test(o.outputName || "") || o.outputName === FSOUT);
+    if (!fo && Date.now() - FSLOOK > 60000) { FSLOOK = Date.now();
+      for (const o of ol) { try { const x = await req("GetOutputSettings", { outputName: o.outputName }); if (/fansly/i.test(JSON.stringify(x || {}))) { FSOUT = o.outputName; fo = o; break; } } catch (e) {} } }
     if (fo) liveSet("fs", "obs", !!fo.outputActive, "obs");
     fsWatch(st, fo); }
   // OBS запустили кнопкой в самом OBS (не «Начать эфир» в панели) — сайты дожимаем сами (22.11: стрим шёл, сайты не открылись)
@@ -284,13 +287,19 @@ function bcWatch(st, bo) {
   if (BCTRY >= 5) return;
   BCFIX = Date.now(); BCTRY++; bcRelive(bo, BCTRY);
 }
-let FSDOWN = 0, FSFIX = 0, FSTRY = 0;
+let FSDOWN = 0, FSFIX = 0, FSTRY = 0, FSOUT = "", FSLOOK = 0, FSON = 0, FSUP = 0;
 async function fsWatch(st, fo) {
-  if (!st.outputActive || !fo) { FSDOWN = 0; FSTRY = 0; return; }
-  if (fo.outputActive) { FSDOWN = 0; FSTRY = 0; return; }
+  if (!st.outputActive || !fo) { FSDOWN = 0; FSTRY = 0; FSUP = 0; return; }
+  if (!FSUP) FSUP = Date.now();
+  // упал = выход в OBS стоит ИЛИ выход «идёт», а хаб (спрашивает сам Fansly) 90+ сек видит «не в эфире», хотя раньше в этом эфире видел
+  const H = (LV.fs || {}).hub, hubOff = H && Date.now() - H.t < 45000 && !H.on;
+  if (H && H.on && Date.now() - H.t < 45000) FSON = Date.now();
+  const down = !fo.outputActive || (hubOff && FSON && Date.now() - FSUP > 180000);
+  if (!down) { FSDOWN = 0; if (fo.outputActive && FSON && Date.now() - FSON < 60000) FSTRY = 0; return; }
   if (!FSDOWN) FSDOWN = Date.now();
-  if (Date.now() - FSDOWN < 30000 || Date.now() - FSFIX < 180000 || FSTRY >= 5) return;
+  if (Date.now() - FSDOWN < (fo.outputActive ? 90000 : 30000) || Date.now() - FSFIX < 180000 || FSTRY >= 5 || Date.now() - GOING < 120000) return;
   FSFIX = Date.now(); FSTRY++;
+  if (fo.outputActive) { await reqS("StopOutput", { outputName: fo.outputName }); await new Promise(z => setTimeout(z, 3000)); }
   const r = await reqS("StartOutput", { outputName: fo.outputName });
   admEv((r.requestStatus || {}).result ? "🔁 Fansly: поток из OBS запустила сама (попытка " + FSTRY + ")" : "⚠ Fansly: OBS не запустил выход — " + ((r.requestStatus || {}).comment || ""));
   if (FSTRY >= 5) hint("⚠️ Fansly не поднимается — в OBS открой окно Multiple output и нажми «Start» у Fansly");
@@ -1096,7 +1105,7 @@ function glow() { for (const k of ["cb", "sc", "bc", "mv", "fs"]) { const d = $(
 setInterval(glow, 2000);
 let HUBPPL = [], RSAYDONE = new Set(), PPLHOLD = 0, RCHSEEN = new Set(), RSAID = {};
 // версия панели: хаб пишет в общий чат только через панель, которая это умеет (v ≥ 3); новая версия на сайте → панель обновится сама
-const PANEL_V = 79;
+const PANEL_V = 80;
 setInterval(async () => {
   try { const t = await (await fetch(location.pathname + "?vchk=" + Date.now(), { cache: "no-store" })).text(), v = +((t.match(/const PANEL_V = (\d+)/) || [])[1] || 0);
     const busy = Object.values(PRIVLIVE).some(Boolean) || TYPES.length || PAIDQ.length || [...document.querySelectorAll("input,textarea")].some(i => i.value && i.type !== "file") || Object.keys(CUP).length;
