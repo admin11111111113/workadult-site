@@ -1022,7 +1022,7 @@ function privSel(p) { PSEL = p; PUNREAD[p] = 0; privShowChat(); }
 // 25.11 владелец «почему не по-русски»: его строки в привате — перевод на русский (оригинал мелко под ним)
 const PTRQ = new Set();
 async function privTr() {
-  const need = PRIVMSG.filter(m => !m.me && !m.ru && m.text && !/[а-яё]/i.test(m.text) && /[a-z]{2}/i.test(m.text) && !PTRQ.has(m.text)).slice(-15);
+  const need = PRIVMSG.filter(m => !m.me && !m.ru && m.text && !/[а-яё]/i.test(m.text) && /[^\s\d\p{P}\p{S}]{2}/u.test(m.text.replace(/:[a-z_]+:/gi, "")) && !PTRQ.has(m.text)).slice(-15);
   if (!need.length) return;
   need.forEach(m => PTRQ.add(m.text));
   let done = 0;
@@ -1037,7 +1037,9 @@ async function privTr() {
   if (done && FT === "priv") privShowChat();
 }
 // 26.11 владелец «не видно картинок, что он шлёт»: смайлы-картинки Чатура %%%[emoticon имя|url|…]%%% → картинка
-const emo = h => String(h).replace(/%%%\[emoticon ([^|\]]*)\|(https:\/\/[^|\]\s]+)[^\]]*\]%%%/g, (_, n, u) => `<img src="${u}" alt="${n}" style="max-height:60px;max-width:220px;vertical-align:middle;border-radius:6px">`);
+// 26.11 владелец «где смайлы»: коды смайлов Стрипа (:shy: :flirt: …) — показываем картинкой-эмодзи
+const SCE = { shy: "🙈", flirt: "😏", crazyguy: "🤪", crazy: "🤪", love: "😍", inlove: "😍", kiss: "😘", lol: "😂", laugh: "😂", wink: "😉", smile: "🙂", happy: "😊", sad: "😢", cry: "😭", devil: "😈", fire: "🔥", heart: "❤️", hearts: "💕", cool: "😎", tongue: "😛", hot: "🥵", angel: "😇", blush: "😊", omg: "😱", wow: "😮", yes: "👍", like: "👍", ok: "👌", clap: "👏", party: "🥳", drool: "🤤", lick: "😋", hug: "🤗", rose: "🌹", flower: "🌸", gift: "🎁", money: "💰", sexy: "🔥", naughty: "😈", bye: "👋", hi: "👋", hello: "👋", thinking: "🤔", sleep: "😴", angry: "😠", sweat: "😅", peach: "🍑", eggplant: "🍆", drops: "💦", horny: "😈", moan: "😩" };
+const emo = h => String(h).replace(/(^|[\s>]):([a-z_]{2,15}):(?=$|[\s<.,!?])/gi, (w, b, n) => SCE[n.toLowerCase()] ? b + SCE[n.toLowerCase()] : w).replace(/%%%\[emoticon ([^|\]]*)\|(https:\/\/[^|\]\s]+)[^\]]*\]%%%/g, (_, n, u) => `<img src="${u}" alt="${n}" style="max-height:60px;max-width:220px;vertical-align:middle;border-radius:6px">`);
 function privShowChat() {
   const any = PORDER.filter(k => PRIVLIVE[k]), two = any.length > 1;
   if (any.length && !any.includes(PSEL)) PSEL = any[0];
@@ -1124,7 +1126,7 @@ function glow() { for (const k of ["cb", "sc", "bc", "mv", "fs"]) { const d = $(
 setInterval(glow, 2000);
 let HUBPPL = [], RSAYDONE = new Set(), PPLHOLD = 0, RCHSEEN = new Set(), RSAID = {};
 // версия панели: хаб пишет в общий чат только через панель, которая это умеет (v ≥ 3); новая версия на сайте → панель обновится сама
-const PANEL_V = 102;
+const PANEL_V = 103;
 setInterval(async () => {
   try { const t = await (await fetch(location.pathname + "?vchk=" + Date.now(), { cache: "no-store" })).text(), v = +((t.match(/const PANEL_V = (\d+)/) || [])[1] || 0);
     const busy = Object.values(PRIVLIVE).some(Boolean) || TYPES.length || PAIDQ.length || [...document.querySelectorAll("input,textarea")].some(i => i.value && i.type !== "file") || Object.keys(CUP).length;
@@ -1252,8 +1254,8 @@ async function dlgLoad() {
   if (!DLG) return; const d = DLG, j = await pq({ op: "dlg", p: d.p, who: d.who, uid: d.uid });
   if (DLG !== d) return;
   const ms = (j && j.msgs) || [];
-  $("#dlgc").innerHTML = ms.length ? ms.slice().reverse().map(x => `<div class="pm ${x.me ? "me" : ""}"><span class="tm">${esc((x.t || "").slice(5, 16))}</span><b style="color:${x.me ? "#9fbaff" : "#ffd76a"}">${x.me ? "ты" : esc(d.who)}</b>: ${esc(x.ru || x.text)}` +
-      (x.ru && x.ru !== x.text ? `<br><small style="color:#889">${esc(x.text)}</small>` : "") + `</div>`).join("")
+  $("#dlgc").innerHTML = ms.length ? ms.slice().reverse().map(x => `<div class="pm ${x.me ? "me" : ""}"><span class="tm">${esc((x.t || "").slice(5, 16))}</span><b style="color:${x.me ? "#9fbaff" : "#ffd76a"}">${x.me ? "ты" : esc(d.who)}</b>: ${emo(esc(x.ru || x.text))}` +
+      (x.ru && x.ru !== x.text ? `<br><small style="color:#889">${emo(esc(x.text))}</small>` : "") + `</div>`).join("")
     : `<div class="chat" style="color:#889">${esc((j && j.err) || "переписки с ним ещё нет — напиши первой внизу")}</div>`;
   if (j && j.info) $("#dlgst").textContent = j.info;
 }
