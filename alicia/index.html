@@ -1040,7 +1040,14 @@ function privShowChat() {
   if (PSEL) PUNREAD[PSEL] = 0;
   const whoOf = k => ((PRIVMSG.filter(m => !m.me && m.p === k).pop() || {}).who || "");
   const tabs = two ? `<div style="display:flex;gap:6px;margin-bottom:6px">${any.map((k, i) => `<button class="pf pf-${k}" onclick="privSel('${k}')" style="flex:1;font-size:14px;padding:6px 8px;border-radius:8px;border:3px solid ${k === PSEL ? "#fff" : "transparent"};opacity:${k === PSEL ? 1 : .6};cursor:pointer">🔒 Приват ${i + 1} · ${esc(PN4[k] || k)}${whoOf(k) ? " · " + esc(whoOf(k)) : ""}${PUNREAD[k] ? ` <b style="background:#fff;color:#e0363c;border-radius:8px;padding:0 6px">${PUNREAD[k]}</b>` : ""}</button>`).join("")}</div>` : "";
-  const list = two ? PRIVMSG.filter(m => m.p === PSEL) : any.length ? PRIVMSG.filter(m => m.p === any[0]) : PRIVMSG;   // 26.11: личка Бонги не лезет в приват Чатура
+  let list = two ? PRIVMSG.filter(m => m.p === PSEL) : any.length ? PRIVMSG.filter(m => m.p === any[0]) : PRIVMSG.slice();   // 26.11: личка Бонги не лезет в приват Чатура
+  // 26.11 владелец «дублируется»: её сообщение приходит и от панели (⏳), и с вкладки сайта/хаба — одно и то же в пределах 3 мин показываем один раз
+  { const mm = s => { const [h, x] = String(s || "").split(":"); return (+h || 0) * 60 + (+x || 0); }, nt = s => String(s || "").replace(/^✉\s*/, "").replace(/\s+/g, " ").trim().toLowerCase(), last = {};
+    const keep = [];
+    for (const m of list) { const k = m.p + "|" + (m.me ? 1 : 0) + "|" + nt(m.text), o = last[k];
+      if (o && Math.abs(mm(m.t) - mm(o.t)) <= 3) { if (o.st === "⏳" && !m.st) o.st = "✅"; continue; }
+      last[k] = m; keep.push(m); }
+    list.length = 0; list.push(...keep); }
   $("#privc").innerHTML = (any.length ? tabs + `<div style="color:#ff8b8b;font-weight:700;margin-bottom:6px">🔒 ${two ? "Сейчас открыт: Приват " + (any.indexOf(PSEL) + 1) + " — " + esc(PN4[PSEL] || PSEL) + ". Ответ уйдёт ТОЛЬКО сюда." : "Идёт приват — " + esc(PN4[any[0]] || any[0]) + "."} Бот молчит — отвечай внизу.</div>`
     : '<div style="color:#889;margin-bottom:6px">Привата сейчас нет. Когда начнётся — его сообщения будут тут, бот в это время не пишет.</div>') +
     (list.slice().reverse().map(m => m.me ? `<div class="pm me"><span class="tm">${esc(m.t)} ${m.st || ""}</span><b style="color:#9fbaff">${m.by ? "Админ" : "ты"}</b>: ${esc(m.text)}${m.out && m.out !== m.text ? `<br><small style="color:#99a">ушло: ${esc(m.out)}</small>` : ""}</div>`
@@ -1110,7 +1117,7 @@ function glow() { for (const k of ["cb", "sc", "bc", "mv", "fs"]) { const d = $(
 setInterval(glow, 2000);
 let HUBPPL = [], RSAYDONE = new Set(), PPLHOLD = 0, RCHSEEN = new Set(), RSAID = {};
 // версия панели: хаб пишет в общий чат только через панель, которая это умеет (v ≥ 3); новая версия на сайте → панель обновится сама
-const PANEL_V = 84;
+const PANEL_V = 85;
 setInterval(async () => {
   try { const t = await (await fetch(location.pathname + "?vchk=" + Date.now(), { cache: "no-store" })).text(), v = +((t.match(/const PANEL_V = (\d+)/) || [])[1] || 0);
     const busy = Object.values(PRIVLIVE).some(Boolean) || TYPES.length || PAIDQ.length || [...document.querySelectorAll("input,textarea")].some(i => i.value && i.type !== "file") || Object.keys(CUP).length;
