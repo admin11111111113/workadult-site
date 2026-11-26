@@ -1047,8 +1047,11 @@ function privShowChat() {
   let list = two ? PRIVMSG.filter(m => m.p === PSEL) : any.length ? PRIVMSG.filter(m => m.p === any[0]) : PRIVMSG.slice();   // 26.11: личка Бонги не лезет в приват Чатура
   // 26.11 владелец «дублируется»: её сообщение приходит и от панели (⏳), и с вкладки сайта/хаба — одно и то же в пределах 3 мин показываем один раз
   { const mm = s => { const [h, x] = String(s || "").split(":"); return (+h || 0) * 60 + (+x || 0); }, nt = s => String(s || "").replace(/^✉\s*/, "").replace(/\s+/g, " ").trim().toLowerCase(), last = {};
-    const keep = [];
+    const keep = [], outs = {};
+    for (const m of list) if (m.me && m.out) outs[m.p + "|" + nt(m.out)] = m;   // 26.11 владелец: её сообщение по-русски + оно же с сайта по-английски = одно (показываем её русский, «ушло:» — английский)
     for (const m of list) { const k = m.p + "|" + (m.me ? 1 : 0) + "|" + nt(m.text), o = last[k];
+      const src = m.me && !m.out ? outs[m.p + "|" + nt(m.text)] : null;
+      if (src && src !== m && Math.abs(mm(m.t) - mm(src.t)) <= 3) { src.st = "✅"; continue; }
       if (o && Math.abs(mm(m.t) - mm(o.t)) <= 3) { if (o.st === "⏳" && !m.st) o.st = "✅"; continue; }
       last[k] = m; keep.push(m); }
     list.length = 0; list.push(...keep); }
@@ -1121,7 +1124,7 @@ function glow() { for (const k of ["cb", "sc", "bc", "mv", "fs"]) { const d = $(
 setInterval(glow, 2000);
 let HUBPPL = [], RSAYDONE = new Set(), PPLHOLD = 0, RCHSEEN = new Set(), RSAID = {};
 // версия панели: хаб пишет в общий чат только через панель, которая это умеет (v ≥ 3); новая версия на сайте → панель обновится сама
-const PANEL_V = 100;
+const PANEL_V = 101;
 setInterval(async () => {
   try { const t = await (await fetch(location.pathname + "?vchk=" + Date.now(), { cache: "no-store" })).text(), v = +((t.match(/const PANEL_V = (\d+)/) || [])[1] || 0);
     const busy = Object.values(PRIVLIVE).some(Boolean) || TYPES.length || PAIDQ.length || [...document.querySelectorAll("input,textarea")].some(i => i.value && i.type !== "file") || Object.keys(CUP).length;
