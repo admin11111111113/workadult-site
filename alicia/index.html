@@ -803,7 +803,7 @@ async function hubSync() {
   // 26.11 владелец «рамка не загорается зелёным, когда донаты»: её вкладки донаты почти не шлют — светим, как в его консоли, по счётчикам хаба (за эфир + за сегодня), все площадки
   if (alive) { const cur = {}; for (const src of [h.ltk || {}, h.today || {}]) for (const k in src) cur[k] = (cur[k] || 0) + (+src[k] || 0);
     const pv = window.TKPV; if (pv) for (const k in cur) if (pv[k] != null && cur[k] > pv[k]) glowTip(k);   // 26.11: ключ пропал/появился (сбой счётчика) — не донат
-    window.TKPV = { ...(pv || {}) }; for (const k in cur) TKPV[k] = Math.max(cur[k], (pv && pv[k]) || 0); }
+    window.TKPV = { ...(pv || {}), ...cur }; }   // пропавший на миг ключ помним прежним; новый эфир/день — счёт с нуля
   if (alive) for (const c of h.rchat || []) if (!RCHSEEN.has(c.id)) { RCHSEEN.add(c.id);    // чат её комнат, который хаб видит сам (как зритель)
     if (!WALLMSG.some(x => !x.me && x.p === c.p && x.who === c.who && x.text === c.text)) wallAdd(c); }
   if (alive) { HUBPPL = h.ppl || []; GWH = {}; for (const r of HUBPPL) if (r.wh && r.wh.k === "кит") GWH[r.p] = 1; glow(); MHBM = h.mhb || {}; MVV = h.mvv || {}; pplShow(); for (const x of h.rsay || []) if (!RSAYDONE.has(x.id)) { RSAYDONE.add(x.id); /* хаб сам кладёт текст на сервер (/say), страница эфира забирает */
@@ -1118,7 +1118,7 @@ function glow() { for (const k of ["cb", "sc", "bc", "mv", "fs"]) { const d = $(
 setInterval(glow, 2000);
 let HUBPPL = [], RSAYDONE = new Set(), PPLHOLD = 0, RCHSEEN = new Set(), RSAID = {};
 // версия панели: хаб пишет в общий чат только через панель, которая это умеет (v ≥ 3); новая версия на сайте → панель обновится сама
-const PANEL_V = 90;
+const PANEL_V = 91;
 setInterval(async () => {
   try { const t = await (await fetch(location.pathname + "?vchk=" + Date.now(), { cache: "no-store" })).text(), v = +((t.match(/const PANEL_V = (\d+)/) || [])[1] || 0);
     const busy = Object.values(PRIVLIVE).some(Boolean) || TYPES.length || PAIDQ.length || [...document.querySelectorAll("input,textarea")].some(i => i.value && i.type !== "file") || Object.keys(CUP).length;
