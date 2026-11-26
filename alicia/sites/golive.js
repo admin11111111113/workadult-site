@@ -56,7 +56,7 @@
   setInterval(async () => {
     let found = null;
     for (const b of document.querySelectorAll("button,a,[role=button],[class*=btn i],[class*=button i]")) {
-      if (!vis(b) || !ACC.test(txt(b))) continue;
+      const tc = (b.textContent || b.value || ""); if (tc.length > 40 || !ACC.test(tc.replace(/[^\p{L}\p{N} ]+/gu, " ").replace(/\s+/g, " ").trim()) || !vis(b)) continue;   // 26.11 «лагает Чатур»: vis()/innerText у всех кнопок раз в 2 с — дорого
       if (b.closest("[class*=msg-list], [class*=message-list], .js-chat_msg, [class*=chat-message i], [class*=messages-list i]")) continue;   // 25.11: строка чата «X хочет приват (start private show)» висит и после отказа — это не запрос
       let c = b; for (let i = 0; i < 7 && c.parentElement; i++) { c = c.parentElement; const t = (c.innerText || ""); if (t.length > 700) break;
         if (/друз|friend|bạn bè|подписк|follow/i.test(t)) break;    // заявка в друзья / уведомления — не приват (SC 22.11)
@@ -90,10 +90,11 @@
   const LCT = /ссылка управления|control link/i, LSES = /сеанс управления|control session|закончить управление|end control|stop control|ожидани|waiting/i;
   const deep = (root, out) => { for (const e of root.querySelectorAll("*")) { out.push(e); if (e.shadowRoot) deep(e.shadowRoot, out); } return out; };
   const roots = (r, out) => { out.push(r); for (const e of r.querySelectorAll("*")) if (e.shadowRoot) roots(e.shadowRoot, out); return out; };
-  let LC = null, lcLast = "", lcProbe = 0;
+  let LC = null, lcLast = "", lcProbe = 0, RTS = null, RTT = 0;
   setInterval(async () => {
     let box = null;                                                  // дёшево: сначала textContent (без перерасчёта страницы)
-    for (const r of roots(document, [])) {
+    if (!RTS || Date.now() - RTT > 30000) { RTS = roots(document, []); RTT = Date.now(); }   // 26.11: shadow-root ищем раз в 30 с, не каждые 3 с
+    for (const r of RTS) {
       const all = r === document ? document.body : r; if (!all || !LCT.test(all.textContent || "")) continue;
       for (const e of r.querySelectorAll("*")) { const t = e.textContent || ""; if (t.length < 800 && LCT.test(t) && LSES.test(t) && vis(e)) box = e; }
     }
