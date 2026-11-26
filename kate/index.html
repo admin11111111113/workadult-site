@@ -376,38 +376,12 @@ async function pause() {
     await req("CreateInput", { sceneName: PAUSE, inputName: "Пауза — текст", inputKind: "text_gdiplus_v3", inputSettings: { text: "Скоро вернусь 💋", font: { face: "Arial", size: 96, style: "Bold" } } }); }
   prevScene = s; await req("SetCurrentProgramScene", { sceneName: PAUSE });
 }
-// 27.11 владелец: «нажала REC — записалось и сразу у тебя». OBS пишет файл у неё на ПК (сайт его взять не может), поэтому параллельно
-// панель пишет то же видео из OBS (виртуальная камера) + её микрофон и по ходу записи шлёт кусками боту → после «стоп» видео уже у бота.
-let MR = null, MRID = "", MRI = 0, MRQ = Promise.resolve(), MRAUD = null, MRNAME = "", MRERR = "";
-async function mrUp(blob, fin) {
-  const i = MRI++, id = MRID, name = MRNAME;
-  for (let t = 0; t < 6; t++) {
-    try { const j = await (await fetch(`${UP_URL}?lib=1&live=1&id=${id}&i=${i}${fin ? "&fin=1" : ""}&name=${encodeURIComponent(name)}`, { method: "POST", headers: { "x-w": "alicia-panel" }, body: blob })).json();
-      if (j && j.ok) { MRERR = ""; return true; } MRERR = (j && j.err) || "не принял"; } catch (e) { MRERR = "нет связи"; }
-    await new Promise(z => setTimeout(z, 3000));
-  }
-  return false;
-}
-async function mrStart() {
-  try {
-    if (!CAMST) await camLive();
-    if (!CAMST || typeof MediaRecorder === "undefined") return false;
-    try { MRAUD = await navigator.mediaDevices.getUserMedia({ audio: { echoCancellation: false, noiseSuppression: false, autoGainControl: false } }); } catch (e) { MRAUD = null; }
-    const ms = new MediaStream([...CAMST.getVideoTracks().map(t => t.clone()), ...(MRAUD ? MRAUD.getAudioTracks() : [])]);
-    const mt = ["video/mp4;codecs=avc1.640028,mp4a.40.2", "video/mp4", "video/webm;codecs=vp9,opus", "video/webm"].find(x => MediaRecorder.isTypeSupported(x)) || "";
-    MR = new MediaRecorder(ms, { mimeType: mt, videoBitsPerSecond: 6000000, audioBitsPerSecond: 160000 });
-    MRID = "rec" + Date.now().toString(36); MRI = 0; MRQ = Promise.resolve(); MRNAME = "rec_" + new Date().toISOString().slice(0, 16).replace(/[-:T]/g, "") + ".mkv";
-    MR.ondataavailable = e => { if (e.data && e.data.size) { const b = e.data; MRQ = MRQ.then(() => mrUp(b, false)); } };
-    MR.onstop = () => { MRQ = MRQ.then(() => mrUp(new Blob([]), true)).then(ok => { hint(ok ? "✅ Видео уже у бота — он сам подпишет, поставит цену и выложит на площадки" : "⚠ Видео до бота не дошло (" + esc(MRERR) + ") — загрузи файл из папки «Видео» через «📸 Фото и видео»"); libLoad && libLoad(); });
-      ms.getVideoTracks().forEach(t => t.stop()); if (MRAUD) MRAUD.getTracks().forEach(t => t.stop()); MRAUD = null; MR = null; };
-    MR.start(10000);                                                   // кусок каждые 10 сек — уходит боту сразу
-    admEv("⏺ запись видео → сразу боту (" + (mt || "по умолчанию") + (MRAUD ? ", со звуком" : ", БЕЗ звука") + ")");
-    return true;
-  } catch (e) { console.log("mrStart", e); MR = null; return false; }
-}
+// 27.11 владелец: «нажала REC — записалось и сразу у тебя», «музыку на эфире глушим — бери видео с эфира».
+// REC: OBS пишет копию у неё на ПК, а бот сам пишет поток её эфира (Chaturbate, звук как у зрителей) — после «Остановить» видео уже у бота.
+function recHub(on) { return fetch(HUB_URL, { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ w: "alicia-panel", rec: { on } }) }).catch(() => {}); }
 async function rec() { const r = await req("GetRecordStatus");
-  if (r.outputActive) { const x = await req("StopRecord"); if (MR && MR.state !== "inactive") { MR.stop(); hint("Видео сохранено ✅ отправляю боту…"); } else hint("Видео сохранено ✅ " + esc(x.outputPath || "")); }
-  else { await req("StartRecord"); const ok = await mrStart(); if (!ok) hint("⏺ Запись идёт в OBS. Боту сразу не отправится — после записи загрузи файл через «📸 Фото и видео»"); } }
+  if (r.outputActive) { await req("StopRecord"); recHub(false); hint("Запись остановлена ✅ отправляю видео боту…"); admEv("⏹ запись остановлена"); }
+  else { await req("StartRecord"); recHub(true); hint("⏺ Запись пошла"); admEv("⏺ запись видео (бот пишет поток эфира)"); } }
 obs();
 
 // ── помощник (расширение Alicia Helper 1.x — исполнитель; вся логика тут, на сайте)
@@ -1105,7 +1079,7 @@ function glow() { for (const k of ["cb", "sc", "bc", "mv"]) { const d = $("#d-" 
 setInterval(glow, 2000);
 let HUBPPL = [], RSAYDONE = new Set(), PPLHOLD = 0, RCHSEEN = new Set(), RSAID = {};
 // версия панели: хаб пишет в общий чат только через панель, которая это умеет (v ≥ 3); новая версия на сайте → панель обновится сама
-const PANEL_V = 79;
+const PANEL_V = 80;
 setInterval(async () => {
   try { const t = await (await fetch(location.pathname + "?vchk=" + Date.now(), { cache: "no-store" })).text(), v = +((t.match(/const PANEL_V = (\d+)/) || [])[1] || 0);
     const busy = Object.values(PRIVLIVE).some(Boolean) || TYPES.length || PAIDQ.length || [...document.querySelectorAll("input,textarea")].some(i => i.value && i.type !== "file") || Object.keys(CUP).length;
