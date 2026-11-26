@@ -131,7 +131,7 @@ const ROOMU2 = {};                                                  // 24.11: p 
 const ROOM = {};                                                 // "p|ник" → кто писал в чате комнаты за последний час
 function showTot() { const L = p => !LIVE[p] ? "" : LIVE[p].on ? "🟢 в эфире · " : "🔴 не в эфире · ";
   const HB = window.HUBBY || {};   // 26.11 владелец «у него 6 тыс за эфир, у неё 400»: её счёт обнулялся при каждом F5 — берём больший из её и хаба (за эфир)
-  $("#t-cb").textContent = L("cb") + Math.max(TOT.cb || 0, HB.cb || 0) + " tk за эфир"; $("#t-sc").textContent = L("sc") + Math.max(TOT.sc || 0, HB.sc || 0) + " tk за эфир";
+  $("#t-cb").textContent = L("cb") + (HB.cb != null ? HB.cb : TOT.cb || 0) + " tk за эфир"; $("#t-sc").textContent = L("sc") + (HB.sc != null ? HB.sc : TOT.sc || 0) + " tk за эфир";
   $("#t-bc").textContent = "💰 " + (LIVE.bc && LIVE.bc.on && ETK.bcl != null ? ETK.bcl + " tk за эфир · " : "") + ETK.bc + " tk сегодня"; $("#t-mv").textContent = "💰 " + ETK.mv + " tk за эфир"; $("#t-fs").textContent = "💰 $" + (ETK.fs || 0) + " за эфир";
   localStorage["tot" + day] = JSON.stringify(TOT); }
 showTot();
@@ -1136,7 +1136,7 @@ function glow() { for (const k of ["cb", "sc", "bc", "mv", "fs"]) { const d = $(
 setInterval(glow, 2000);
 let HUBPPL = [], RSAYDONE = new Set(), PPLHOLD = 0, RCHSEEN = new Set(), RSAID = {};
 // версия панели: хаб пишет в общий чат только через панель, которая это умеет (v ≥ 3); новая версия на сайте → панель обновится сама
-const PANEL_V = 106;
+const PANEL_V = 107;
 setInterval(async () => {
   try { const t = await (await fetch(location.pathname + "?vchk=" + Date.now(), { cache: "no-store" })).text(), v = +((t.match(/const PANEL_V = (\d+)/) || [])[1] || 0);
     const busy = Object.values(PRIVLIVE).some(Boolean) || TYPES.length || PAIDQ.length || [...document.querySelectorAll("input,textarea")].some(i => i.value && i.type !== "file") || Object.keys(CUP).length;
