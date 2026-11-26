@@ -53,7 +53,7 @@ function ui() { const n = !!localStorage.noImg; $("#shot").style.display = n ? "
 ui();
 async function load(clear) {
   if (!localStorage.admk) { $("#login").style.display = "flex"; return; }
-  let r; try { r = await fetch(LNK() + "/her?m=" + MDL() + (clear === 1 ? "&clear=1" : ""), { headers: { "x-k": localStorage.admk }, cache: "no-store" }); } catch (e) { $("#s-on").textContent = "нет связи"; return; }
+  let r; try { r = await fetch((MDL() === "cherry" ? "https://kate-hub.workadult.pro" : "https://alicia-hub.workadult.pro") + "/lk/her" + (clear === 1 ? "?clear=1" : ""), { headers: { "x-k": localStorage.admk }, cache: "no-store" }); } catch (e) { $("#s-on").textContent = "нет связи"; return; }
   if (r.status === 403) { localStorage.admk = ""; $("#lerr").textContent = "неверный пароль"; $("#login").style.display = "flex"; return; }
   $("#login").style.display = "none";
   const { st, ev, now } = await r.json();
