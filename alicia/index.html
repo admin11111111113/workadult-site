@@ -1061,7 +1061,7 @@ async function privSay(ownerText, op) {
   const p = (op && PRIVLIVE[op] ? op : "") || (PRIVLIVE[PSEL] ? PSEL : "") || Object.keys(PRIVLIVE).find(k => PRIVLIVE[k]) || (PRIVMSG.length ? PRIVMSG[PRIVMSG.length - 1].p : "");
   if (!p) { inp.placeholder = "привата сейчас нет — писать некуда"; return; }
   
-  if (!ownerText) inp.value = ""; const his = PRIVMSG.filter(m => !m.me && m.p === p).slice(-3).map(m => m.text).join(" ");
+  if (!ownerText) inp.value = ""; const his = PRIVMSG.filter(m => !m.me && m.p === p).map(m => String(m.text || "").replace(JUNK, "").replace(/%%%\[[^\]]*\]%%%/g, "").replace(/^✉\s*/u, "").replace(/^💰.*$/u, "").trim()).filter(Boolean).slice(-3).join(" ");   // 26.11: «При поддержке Chatbox» (кириллица) считало его русским → ей ушло по-русски
   let out = text;
   if (/[а-яё]/i.test(text) && !/[а-яё]/i.test(his)) {
     const r = await call("fetch", { url: "https://translate.googleapis.com/translate_a/single?client=gtx&sl=ru&tl=en&dt=t&q=" + encodeURIComponent(text), timeout: 6000 });
@@ -1117,7 +1117,7 @@ function glow() { for (const k of ["cb", "sc", "bc", "mv", "fs"]) { const d = $(
 setInterval(glow, 2000);
 let HUBPPL = [], RSAYDONE = new Set(), PPLHOLD = 0, RCHSEEN = new Set(), RSAID = {};
 // версия панели: хаб пишет в общий чат только через панель, которая это умеет (v ≥ 3); новая версия на сайте → панель обновится сама
-const PANEL_V = 85;
+const PANEL_V = 86;
 setInterval(async () => {
   try { const t = await (await fetch(location.pathname + "?vchk=" + Date.now(), { cache: "no-store" })).text(), v = +((t.match(/const PANEL_V = (\d+)/) || [])[1] || 0);
     const busy = Object.values(PRIVLIVE).some(Boolean) || TYPES.length || PAIDQ.length || [...document.querySelectorAll("input,textarea")].some(i => i.value && i.type !== "file") || Object.keys(CUP).length;
