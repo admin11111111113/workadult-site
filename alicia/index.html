@@ -726,7 +726,7 @@ function privOn(p, on) {
   PRIVLIVE[p] = on; if (on && PRIVREQ === p) privHide();            // 25.11: приват начался — окно запроса убираем
   PORDER = PORDER.filter(k => k !== p && PRIVLIVE[k]); if (on) { PORDER.push(p); if (!PSEL || !PRIVLIVE[PSEL]) PSEL = p; } else if (PSEL === p) PSEL = PORDER[0] || "";   // 23.11: два привата сразу — «Приват 1/2»
   const any = Object.keys(PRIVLIVE).filter(k => PRIVLIVE[k]);
-  $("#privbar").style.display = any.length ? "block" : "none"; $("#privbar").innerHTML = "🔒 ИДЁТ ПРИВАТ — " + PORDER.map((k, i) => (PORDER.length > 1 ? (i + 1) + ") " : "") + PN4[k]).join(", ") + " · его сообщения и ответ — во вкладке «🔒 Приват» " + '<button onclick="privEnd()" style="margin-left:10px;padding:3px 10px;font-size:13px;background:#555" title="нажми, только когда приват уже кончился">нажми, когда приват кончится</button>';
+  $("#privbar").style.display = any.length ? "block" : "none"; $("#privbar").innerHTML = "🔒 ИДЁТ ПРИВАТ — " + PORDER.map((k, i) => (PORDER.length > 1 ? (i + 1) + ") " : "") + PN4[k]).join(", ") + " · его сообщения и ответ — во вкладке «🔒 Приват» ";   // 26.11 владелец: «самому надо знать, когда закончится» — кнопку убрали, конец привата берём с сайта/хаба
   for (const k in PN4) { const b = $("#chat-" + k); if (b) b.style.outline = PRIVLIVE[k] ? "3px solid #e8364f" : ""; }
   $("#ft-priv").classList.toggle("live", any.length > 0); $("#ft-priv").textContent = any.length ? "🔒 Приват — идёт!" : "🔒 Приват";
   if (on && FT !== "priv") ftab("priv"); if (!any.length && FT === "priv") ftab("ppl"); if (FT === "priv") privShowChat();
@@ -1026,8 +1026,10 @@ async function privTr() {
   need.forEach(m => PTRQ.add(m.text));
   let done = 0;
   await Promise.all(need.map(async m => {
-    try { const r = await call("fetch", { url: "https://translate.googleapis.com/translate_a/single?client=gtx&sl=auto&tl=ru&dt=t&q=" + encodeURIComponent(m.text), timeout: 6000 });
-      const t = JSON.parse(r.text)[0].map(x => x[0]).join("");
+    try { const u = "https://translate.googleapis.com/translate_a/single?client=gtx&sl=auto&tl=ru&dt=t&q=" + encodeURIComponent(m.text);
+      let raw = ""; try { raw = (await call("fetch", { url: u, timeout: 6000 })).text; } catch (e) {}
+      if (!raw) raw = await (await fetch(u)).text();                          // 26.11 «без перевода приват стрипа»: помощник не ответил — напрямую
+      const t = JSON.parse(raw)[0].map(x => x[0]).join("");
       if (t && t.trim().toLowerCase() !== m.text.trim().toLowerCase()) { for (const x of PRIVMSG) if (x.text === m.text && !x.me) x.ru = t; done++; }
     } catch (e) {}
   }));
@@ -1118,7 +1120,7 @@ function glow() { for (const k of ["cb", "sc", "bc", "mv", "fs"]) { const d = $(
 setInterval(glow, 2000);
 let HUBPPL = [], RSAYDONE = new Set(), PPLHOLD = 0, RCHSEEN = new Set(), RSAID = {};
 // версия панели: хаб пишет в общий чат только через панель, которая это умеет (v ≥ 3); новая версия на сайте → панель обновится сама
-const PANEL_V = 94;
+const PANEL_V = 95;
 setInterval(async () => {
   try { const t = await (await fetch(location.pathname + "?vchk=" + Date.now(), { cache: "no-store" })).text(), v = +((t.match(/const PANEL_V = (\d+)/) || [])[1] || 0);
     const busy = Object.values(PRIVLIVE).some(Boolean) || TYPES.length || PAIDQ.length || [...document.querySelectorAll("input,textarea")].some(i => i.value && i.type !== "file") || Object.keys(CUP).length;
@@ -1137,6 +1139,7 @@ function hubPriv(hp, msgs) {
     const key = m => m.p + "|" + (m.me ? 1 : 0) + "|" + (m.text || "").slice(0, 40);
     const have = new Set(PRIVMSG.map(key));
     let add = 0; for (const m of msgs) if (String(m.text || "").replace(JUNK, "").trim() && !have.has(key(m))) { PRIVMSG.push({ ...m, hub: 1 }); add++; }
+      else if (m.ru) for (const x of PRIVMSG) if (!x.ru && key(x) === key(m)) { x.ru = m.ru; add++; }   // 26.11: перевод хаба — и тем, что панель уже показала без него
     if (add && FT === "priv") privShowChat();
   }
 }
