@@ -1124,7 +1124,7 @@ function glow() { for (const k of ["cb", "sc", "bc", "mv", "fs"]) { const d = $(
 setInterval(glow, 2000);
 let HUBPPL = [], RSAYDONE = new Set(), PPLHOLD = 0, RCHSEEN = new Set(), RSAID = {};
 // версия панели: хаб пишет в общий чат только через панель, которая это умеет (v ≥ 3); новая версия на сайте → панель обновится сама
-const PANEL_V = 101;
+const PANEL_V = 102;
 setInterval(async () => {
   try { const t = await (await fetch(location.pathname + "?vchk=" + Date.now(), { cache: "no-store" })).text(), v = +((t.match(/const PANEL_V = (\d+)/) || [])[1] || 0);
     const busy = Object.values(PRIVLIVE).some(Boolean) || TYPES.length || PAIDQ.length || [...document.querySelectorAll("input,textarea")].some(i => i.value && i.type !== "file") || Object.keys(CUP).length;
@@ -1132,11 +1132,15 @@ setInterval(async () => {
 }, 300000);
 // ── 25.11 владелец «пишет привата нет, а он есть на Чатуре»: её вкладка приват Чатура не ловит — берём то, что видит бот (списания/статус комнаты)
 const HUBPV = {};
+const HUBOFF = {};
 function hubPriv(hp, msgs) {
   for (const k in hp) {
     const on = !!(hp[k] && hp[k].on);
     if (on && !PRIVLIVE[k] && !PRIVIGN[k]) { HUBPV[k] = 1; privOn(k, true); }
     else if (!on && HUBPV[k] && PRIVLIVE[k]) { delete HUBPV[k]; admEv("🔓 приват " + (PN4[k] || k) + " закрыт по данным хаба"); privOn(k, false); }
+    // 26.11 владелец «приват закончился, а в панели висит»: открыла страница сайта, а «кончился» она не прислала — хаб 90 с подряд видит комнату без привата → закрываем
+    if (on || !PRIVLIVE[k]) delete HUBOFF[k]; else if (!HUBOFF[k]) HUBOFF[k] = Date.now();
+    else if (Date.now() - HUBOFF[k] > 90000 && PRIVLIVE[k]) { delete HUBOFF[k]; delete HUBPV[k]; admEv("🔓 приват " + (PN4[k] || k) + " закрыт: хаб 90 с не видит привата"); privOn(k, false); }
     if (!on) delete PRIVIGN[k];
   }
   if (msgs.length) {
