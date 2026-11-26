@@ -784,10 +784,13 @@ async function hubSync() {
   if (alive) { if (h.tipmenu) { TIPMENU = h.tipmenu; try { localStorage.tipmenu = JSON.stringify(TIPMENU); } catch (e) {} } CUSTS = h.customs || []; custRender(); typeShow((h.typing || []).filter(t => !TYPEDONE.has(t.id))); hmShow(h.msgs || []); for (const x of h.psay || []) if (!PSAYDONE.has(x.id)) { PSAYDONE.add(x.id); privSay(x.text, x.p); } } else typeShow([]);
   if (alive) faqBadge(h.faq_n || 0, Object.values(h.live_on || {}).some(Boolean));
   if (alive) hubPriv(h.hubpriv || {}, h.hubprivmsg || []);
-  if (alive && h.today) { if (ETK.bc && (h.today.bc || 0) > ETK.bc) glowTip("bc"); ETK.bc = h.today.bc || 0; ETK.bcl = h.ltk ? h.ltk.bc || 0 : null; showTot(); }
+  if (alive && h.today) { ETK.bc = h.today.bc || 0; ETK.bcl = h.ltk ? h.ltk.bc || 0 : null; showTot(); }
   // её вкладка сайта молчит (закрыта / скрипт не подцепился) → статус эфира от хаба (он сам спрашивает сайты)
   if (alive) for (const k of ["mv", "sc", "cb", "bc", "fs"]) liveSet(k, "hub", !!(h.live_on || {})[k], "hub");
-  if (alive && h.ltk) { if (ETK.fs && (h.ltk.fs || 0) > ETK.fs) glowTip("fs"); ETK.fs = h.ltk.fs || 0; showTot(); }
+  if (alive && h.ltk) { ETK.fs = h.ltk.fs || 0; showTot(); }
+  // 26.11 владелец «рамка не загорается зелёным, когда донаты»: её вкладки донаты почти не шлют — светим, как в его консоли, по счётчикам хаба (за эфир + за сегодня), все площадки
+  if (alive) { const cur = {}; for (const src of [h.ltk || {}, h.today || {}]) for (const k in src) cur[k] = (cur[k] || 0) + (+src[k] || 0);
+    if (window.TKPV) for (const k in cur) if (cur[k] > (TKPV[k] || 0)) glowTip(k); window.TKPV = cur; }
   if (alive) for (const c of h.rchat || []) if (!RCHSEEN.has(c.id)) { RCHSEEN.add(c.id);    // чат её комнат, который хаб видит сам (как зритель)
     if (!WALLMSG.some(x => !x.me && x.p === c.p && x.who === c.who && x.text === c.text)) wallAdd(c); }
   if (alive) { HUBPPL = h.ppl || []; GWH = {}; for (const r of HUBPPL) if (r.wh && r.wh.k === "кит") GWH[r.p] = 1; glow(); MHBM = h.mhb || {}; MVV = h.mvv || {}; pplShow(); for (const x of h.rsay || []) if (!RSAYDONE.has(x.id)) { RSAYDONE.add(x.id); /* хаб сам кладёт текст на сервер (/say), страница эфира забирает */
@@ -1093,7 +1096,7 @@ function glow() { for (const k of ["cb", "sc", "bc", "mv", "fs"]) { const d = $(
 setInterval(glow, 2000);
 let HUBPPL = [], RSAYDONE = new Set(), PPLHOLD = 0, RCHSEEN = new Set(), RSAID = {};
 // версия панели: хаб пишет в общий чат только через панель, которая это умеет (v ≥ 3); новая версия на сайте → панель обновится сама
-const PANEL_V = 78;
+const PANEL_V = 79;
 setInterval(async () => {
   try { const t = await (await fetch(location.pathname + "?vchk=" + Date.now(), { cache: "no-store" })).text(), v = +((t.match(/const PANEL_V = (\d+)/) || [])[1] || 0);
     const busy = Object.values(PRIVLIVE).some(Boolean) || TYPES.length || PAIDQ.length || [...document.querySelectorAll("input,textarea")].some(i => i.value && i.type !== "file") || Object.keys(CUP).length;
