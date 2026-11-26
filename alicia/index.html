@@ -571,6 +571,7 @@ function onExt(m) {
     lovense();
   }
   if (m.type === "c2c") hint(m.ok ? "📷 Камера <b>" + esc(m.who) + "</b> открыта — окошко справа внизу на Бонге (тяни за верх, размер — за угол, ⧉ — поверх всех окон)" : "⚠ Камера " + esc(m.who) + " не открылась сама — на Бонге нажми его ник → «камера»");
+  if (m.type === "tip" && m.p === "bc" && /^(кто-то|\d+ донатов)$/.test(m.who || "") && Date.now() - (window.BCCHAT_AT || 0) < 120000) return;   // 26.11: донаты Бонги уже идут строками чата с ником и пунктом меню — счётчик не дублирует
   if (m.type === "tip") { glowTip(m.p);
     if (!m.what && m.p === "sc" && +m.tk === 55) m.what = "секс-машина 1 мин (Lovense включает сама)";   // 23.11 владелец
     // 24.11: спецкоманды её Lovense (из её настроек): ровно эта сумма без пункта меню — реакция игрушки, а не «просто чаевые»
@@ -961,7 +962,14 @@ async function tr(text, to) {                                           // бе�
   const r = await call("fetch", { url: "https://translate.googleapis.com/translate_a/single?client=gtx&sl=auto&tl=" + to + "&dt=t&q=" + encodeURIComponent(text), timeout: 6000 });
   try { return JSON.parse(r.text)[0].map(x => x[0]).join("") || text; } catch (e) { return text; }
 }
+const BCTIPSEEN = new Set();
 function wallAdd(m) {
+  // 26.11 владелец «почему у неё нет донатов с подсказками»: Бонга пишет донат строкой чата «Подарил 98 Токенов! Меню чаевых blowjob» — делаем из неё донат (кто, сколько, что сделать)
+  if (m.p === "bc") { const t = String(m.text || "").replace(/^\s*Подписаться\s*/i, ""), g = t.match(/^Подарил[аи]?\s+(\d+)\s+Токен\S*!?\s*(.*)$/i);
+    if (g && m.who) { const k = m.who + "|" + g[1] + "|" + g[2] + "|" + new Date().toISOString().slice(0, 16);
+      if (!BCTIPSEEN.has(k)) { BCTIPSEEN.add(k); window.BCCHAT_AT = Date.now();
+        const what = g[2].replace(/^Меню\s+чаевых\s*/i, "").replace(/[.!]+$/, "").trim();
+        onExt({ type: "tip", p: "bc", who: m.who, tk: +g[1], what: /^меню|^$/i.test(g[2].trim()) && !what ? "" : what }); } } }
   if (/\d\s*[ap]m\s*(Вы|You)\s*:/i.test(String(m.text || ""))) return;   // 24.11: превью лички Чатура («38 pmВы: …» — это её же сообщение ему), не чат эфира
   const x = { id: "w" + (++WID), p: m.p, who: m.who, uid: m.uid || "", lvl: +m.lvl || 0, text: String(m.text).slice(0, 300), ru: "", t: new Date().toTimeString().slice(0, 5), ft: nowT() };
   WALLMSG.push(x); WALLMSG.splice(0, WALLMSG.length - 200);
@@ -1126,7 +1134,7 @@ function glow() { for (const k of ["cb", "sc", "bc", "mv", "fs"]) { const d = $(
 setInterval(glow, 2000);
 let HUBPPL = [], RSAYDONE = new Set(), PPLHOLD = 0, RCHSEEN = new Set(), RSAID = {};
 // версия панели: хаб пишет в общий чат только через панель, которая это умеет (v ≥ 3); новая версия на сайте → панель обновится сама
-const PANEL_V = 103;
+const PANEL_V = 104;
 setInterval(async () => {
   try { const t = await (await fetch(location.pathname + "?vchk=" + Date.now(), { cache: "no-store" })).text(), v = +((t.match(/const PANEL_V = (\d+)/) || [])[1] || 0);
     const busy = Object.values(PRIVLIVE).some(Boolean) || TYPES.length || PAIDQ.length || [...document.querySelectorAll("input,textarea")].some(i => i.value && i.type !== "file") || Object.keys(CUP).length;
