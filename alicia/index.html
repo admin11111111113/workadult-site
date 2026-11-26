@@ -268,7 +268,7 @@ function liveEval(p) {
   const fr = x => x && Date.now() - x.t < 45000, L = LV[p] || {}, srcs = ["tab", "obs", "hub"].filter(k => fr(L[k]));
   const onS = srcs.find(k => L[k].on), on = !!onS, was = LIVE[p] && LIVE[p].on;
   LIVE[p] = { on, st: (onS && L[onS].st) || (srcs[0] && L[srcs[0]].st) || "", src: onS || srcs[0] || "", t: srcs.length ? Date.now() : (LIVE[p] || {}).t || 0 };
-  if (!on && PRIVLIVE[p]) setTimeout(() => privOn(p, false), 0);       // эфир кончился — и приват тоже
+  if (!on && PRIVLIVE[p]) { admEv("🔓 приват " + (PN4[p] || p) + " закрыт: панель не видит эфир (вкладка/хаб/OBS молчат 45 с)"); setTimeout(() => privOn(p, false), 0); }       // эфир кончился — и приват тоже
   dot(p, on); if (p === "mv" || p === "bc" || p === "fs") $("#s-" + p).textContent = on ? "🟢 в эфире" : srcs.length ? "🔴 не в эфире" : "не видно";
   if (was !== on) showTot();
 }
@@ -587,7 +587,7 @@ function onExt(m) {
   if (m.type === "saidres") { const x = PRIVMSG.find(y => y.id === m.id); if (x) { x.st = m.ok ? "✓ ушло" : "⚠ " + (m.err || "не ушло"); privShowChat(); } }
   if (m.type === "privreq") privShow(m.p, m.text);
   if (m.type === "privgone" && PRIVREQ === m.p) privHide();
-  if (m.type === "private") { if (!m.on) delete PRIVIGN[m.p]; if (!(m.on && PRIVIGN[m.p])) privOn(m.p, m.on); }   // PRIVIGN: она сама нажала «приват закончился» — старый сигнал «идёт» не слушаем, пока сайт не скажет «кончился»
+  if (m.type === "private") { if (!m.on && PRIVLIVE[m.p]) admEv("🔓 приват " + (PN4[m.p] || m.p) + " кончился — так говорит сам сайт с её компа"); if (!m.on) delete PRIVIGN[m.p]; if (!(m.on && PRIVIGN[m.p])) privOn(m.p, m.on); }   // PRIVIGN: она сама нажала «приват закончился» — старый сигнал «идёт» не слушаем, пока сайт не скажет «кончился»
   if (m.type === "probe") admEv("🔎 " + (NAME[m.p] || m.p) + " " + m.text);   // разведка — только в журнал владельца
   // 24.11: Dream Bot пишет «tipped for → пункт» на ЛЮБЫЕ чаевые с такой суммой — это не выбор зрителя. Пункт засчитываем,
   // только если в самих чаевых есть подпись (он выбрал пункт в окне чаевых) — это ловит обработчик "tip" выше.
@@ -1117,7 +1117,7 @@ function glow() { for (const k of ["cb", "sc", "bc", "mv", "fs"]) { const d = $(
 setInterval(glow, 2000);
 let HUBPPL = [], RSAYDONE = new Set(), PPLHOLD = 0, RCHSEEN = new Set(), RSAID = {};
 // версия панели: хаб пишет в общий чат только через панель, которая это умеет (v ≥ 3); новая версия на сайте → панель обновится сама
-const PANEL_V = 88;
+const PANEL_V = 89;
 setInterval(async () => {
   try { const t = await (await fetch(location.pathname + "?vchk=" + Date.now(), { cache: "no-store" })).text(), v = +((t.match(/const PANEL_V = (\d+)/) || [])[1] || 0);
     const busy = Object.values(PRIVLIVE).some(Boolean) || TYPES.length || PAIDQ.length || [...document.querySelectorAll("input,textarea")].some(i => i.value && i.type !== "file") || Object.keys(CUP).length;
@@ -1129,7 +1129,7 @@ function hubPriv(hp, msgs) {
   for (const k in hp) {
     const on = !!(hp[k] && hp[k].on);
     if (on && !PRIVLIVE[k] && !PRIVIGN[k]) { HUBPV[k] = 1; privOn(k, true); }
-    else if (!on && HUBPV[k] && PRIVLIVE[k]) { delete HUBPV[k]; privOn(k, false); }
+    else if (!on && HUBPV[k] && PRIVLIVE[k]) { delete HUBPV[k]; admEv("🔓 приват " + (PN4[k] || k) + " закрыт по данным хаба"); privOn(k, false); }
     if (!on) delete PRIVIGN[k];
   }
   if (msgs.length) {
