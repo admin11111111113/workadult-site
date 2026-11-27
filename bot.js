@@ -31,6 +31,7 @@ async function sendToTelegram(type, text) {
 async function submitOrder(event) {
   event.preventDefault();
   const form = event.target;
+  const nick = tgNick(form); if (nick === null) return;
   const btn = form.querySelector("button[type=submit]");
   const originalBtnText = btn.textContent;
   btn.disabled = true; btn.textContent = "Отправляем...";
@@ -44,7 +45,7 @@ async function submitOrder(event) {
     `🎯 Тариф: <b>${product}</b>\n\n` +
     `💬 Chaturbate: ${data.chaturbate || "—"}\n` +
     `💬 Stripchat: ${data.stripchat || "—"}\n` +
-    `📱 Telegram: ${data.telegram}\n` +
+    (nick ? tgLine(nick) : `📱 Telegram: ${data.telegram || "—"}\n`) +
     `📅 Дата: ${data.date}\n` +
     `🕐 Время (МСК): ${data.time}\n\n` +
     `━━━━━━━━━━━━━━━━\n` +
@@ -82,11 +83,12 @@ async function submitOrder(event) {
 async function submitAnketa(event) {
   event.preventDefault();
   const form = event.target;
+  const nick = tgNick(form); if (nick === null) return;
   const btn = form.querySelector("button[type=submit]");
   btn.disabled = true; btn.textContent = "Отправляем...";
   const data = Object.fromEntries(new FormData(form));
   const text = `👤 <b>НОВАЯ АНКЕТА МОДЕЛИ</b>\n\n` +
-    `📱 Telegram: ${data.telegram}\n` +
+    tgLine(nick) +
     `🌍 Страна: ${data.country || "—"}\n` +
     `💬 Опыт: ${data.experience || "—"}\n` +
     (data.invited_by ? `🤝 Пригласила: ${data.invited_by}\n` : "") +
@@ -97,16 +99,29 @@ async function submitAnketa(event) {
   else alert("Ошибка. Напишите: @workadultpro");
 }
 
+// 27.11 владелец «вписали простое слово — написать невозможно»: ник Telegram проверяем по формату и шлём ссылкой t.me/ник
+function tgNick(form) {
+  const el = form.querySelector("[name=telegram]"); if (!el) return "";
+  let v = (el.value || "").trim().replace(/^(https?:\/\/)?(www\.)?(t\.me|telegram\.me)\//i, "").replace(/^@+/, "").replace(/[\/?#\s].*$/, "");
+  if (!/^[A-Za-z][A-Za-z0-9_]{3,31}$/.test(v) || /__/.test(v) || /_$/.test(v)) {
+    alert("Впиши свой ник из Telegram — он начинается с @ и пишется латиницей, например @anna_cam.\nГде найти: Telegram → Настройки → Имя пользователя.\nЕсли ника нет — создай его там же, это 10 секунд.");
+    el.focus(); return null;
+  }
+  el.value = "@" + v; return v;
+}
+function tgLine(v) { return `📱 Telegram: @${v} — <a href="https://t.me/${v}">написать</a>\n`; }
+
 // Вопрос/поддержка
 async function submitQuestion(event) {
   event.preventDefault();
   const form = event.target;
+  const nick = tgNick(form); if (nick === null) return;
   const btn = form.querySelector("button[type=submit]");
   btn.disabled = true; btn.textContent = "Отправляем...";
   const data = Object.fromEntries(new FormData(form));
   const text = `❓ <b>ВОПРОС / ПОДДЕРЖКА</b>\n\n` +
     `👤 Имя: ${data.name || "—"}\n` +
-    `📱 Telegram: ${data.telegram}\n` +
+    tgLine(nick) +
     `💬 Вопрос: ${data.question}` + srcTag();
   const ok = await sendToTelegram("feedback", text);
   btn.disabled = false; btn.textContent = "Отправить";
