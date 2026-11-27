@@ -687,7 +687,7 @@ async function admSend() {
   const card = k => ({ on: ($("#d-" + k) || {}).className || "", t: (($("#t-" + k) || $("#s-" + k)) || {}).textContent || "" });
   const ev = ADM_EV.splice(0);
   const st = { w: "alicia-panel", obs: ok, obsTxt: $("#s-obs").textContent, stream: $("#st").textContent, ext: $("#s-ext").textContent, lov: $("#s-lov").textContent,
-    sites: { cb: card("cb"), sc: card("sc"), bc: card("bc"), mv: card("mv") }, room: Object.values(ROOM).filter(x => Date.now() - x.t < 3600000), roomu: Object.fromEntries(Object.entries(ROOMU2).filter(([k, v]) => Date.now() - v.t < 180000)), tot: { ...TOT, ...ETK }, live: LIVE, priv: PRIVLIVE, privmsg: PRIVMSG.slice(-60).map(m => ({ me: !!m.me, by: m.by || "", p: m.p, who: m.who || "", text: m.text, out: m.out || "", t: m.t, st: m.st || "" })), hint: $("#hint").innerText, golog: GOLOG.slice(),
+    sites: { cb: card("cb"), sc: card("sc"), bc: card("bc"), mv: card("mv") }, room: Object.values(ROOM).filter(x => Date.now() - x.t < 3600000), bctips: BCT, roomu: Object.fromEntries(Object.entries(ROOMU2).filter(([k, v]) => Date.now() - v.t < 180000)), tot: { ...TOT, ...ETK }, live: LIVE, priv: PRIVLIVE, privmsg: PRIVMSG.slice(-60).map(m => ({ me: !!m.me, by: m.by || "", p: m.p, who: m.who || "", text: m.text, out: m.out || "", t: m.t, st: m.st || "" })), hint: $("#hint").innerText, golog: GOLOG.slice(),
     wall: [...document.querySelectorAll("#wall .tip")].slice(0, 15).map(e => e.innerText), chat: [...document.querySelectorAll("#rooms .chat")].slice(0, 25).map(e => e.innerText),
     shot: admShot(), events: ev, pv: PANEL_V, hv: HV, pc: PCINFO, rsaid: RSAID, lovctl: LOVCTL, ua: navigator.userAgent.slice(0, 80) };
   try { const r = await fetch(ADM_URL, { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify(st) }); if (!r.ok) throw 0; }
@@ -830,7 +830,7 @@ async function hubSync() {
     const pv = window.TKPV; if (pv) for (const k in cur) if (k !== "bc" && pv[k] != null && cur[k] > pv[k]) glowTip(k);   // 27.11 владелец «Бонга горит зелёным, когда нет донатов»: у Бонги счётчик дёргался от отчёта (отстаёт на час) и повторов — светим только по самим донатам из её чата   // 26.11: ключ пропал/появился (сбой счётчика) — не донат
     window.TKPV = { ...(pv || {}), ...cur }; }   // пропавший на миг ключ помним прежним; новый эфир/день — счёт с нуля
   if (alive) for (const c of h.rchat || []) if (!RCHSEEN.has(c.id)) { RCHSEEN.add(c.id);    // чат её комнат, который хаб видит сам (как зритель)
-    if (!WALLMSG.some(x => !x.me && x.p === c.p && x.who === c.who && x.text === c.text)) wallAdd(c); }
+    if (!WALLMSG.some(x => !x.me && x.p === c.p && x.who === c.who && x.text === c.text)) wallAdd({ ...c, fromHub: 1 }); }
   if (alive) { HUBPPL = h.ppl || []; GWH = {}; for (const r of HUBPPL) if (r.wh && r.wh.k === "кит") GWH[r.p] = 1; glow(); MHBM = h.mhb || {}; MVV = h.mvv || {}; pplShow(); for (const x of h.rsay || []) if (!RSAYDONE.has(x.id)) { RSAYDONE.add(x.id); /* хаб сам кладёт текст на сервер (/say), страница эфира забирает */
       // 24.11: что бот (или админ) написал в общий чат — тоже в ленту
       const d = x.at ? new Date(x.at * 1000) : new Date();
@@ -985,13 +985,15 @@ async function tr(text, to) {                                           // бе�
   const r = await call("fetch", { url: "https://translate.googleapis.com/translate_a/single?client=gtx&sl=auto&tl=" + to + "&dt=t&q=" + encodeURIComponent(text), timeout: 6000 });
   try { return JSON.parse(r.text)[0].map(x => x[0]).join("") || text; } catch (e) { return text; }
 }
-const BCTIPSEEN = new Set();
+const BCTIPSEEN = new Set(), BCTIPLAST = {}; let BCT = [];   // BCT — донаты Бонги со своим номером → хабу (считает каждый ровно раз)
 function wallAdd(m) {
   // 26.11 владелец «почему у неё нет донатов с подсказками»: Бонга пишет донат строкой чата «Подарил 98 Токенов! Меню чаевых blowjob» — делаем из неё донат (кто, сколько, что сделать)
   if (m.p === "bc") { const t = String(m.text || "").replace(/^\s*Подписаться\s*/i, ""), g = t.match(/^Подарил[аи]?\s+(\d+)\s+Токен\S*!?\s*(.*)$/i);
-    if (g && m.who) { const k = m.who + "|" + g[1] + "|" + g[2] + "|" + new Date().toISOString().slice(0, 16);
-      if (!BCTIPSEEN.has(k)) { BCTIPSEEN.add(k); window.BCCHAT_AT = Date.now();
+    if (g && m.who) { const k0 = m.who + "|" + g[1] + "|" + g[2], last = BCTIPLAST[k0] || 0;   // 27.11 владелец «4 раза + 1»: новый скрипт консоли (cv) шлёт только новые строки — верим каждой;
+      if (!m.cv) BCTIPLAST[k0] = Date.now();                                                       // старый/хаб — та же строка за 15 мин = перерисовка чата, не донат
+      if (m.cv || Date.now() - last > 900000) { window.BCCHAT_AT = Date.now();
         const what = g[2].replace(/^Меню\s+чаевых\s*/i, "").replace(/[.!]+$/, "").trim();
+        if (!m.fromHub) { BCT.push({ id: Date.now().toString(36) + Math.random().toString(36).slice(2, 7), who: m.who, tk: +g[1], what, t: Date.now() }); BCT = BCT.filter(x => Date.now() - x.t < 3600000).slice(-80); }
         onExt({ type: "tip", p: "bc", who: m.who, tk: +g[1], what: /^меню|^$/i.test(g[2].trim()) && !what ? "" : what }); } } }
   if (/\d\s*[ap]m\s*(Вы|You)\s*:/i.test(String(m.text || ""))) return;   // 24.11: превью лички Чатура («38 pmВы: …» — это её же сообщение ему), не чат эфира
   const x = { id: "w" + (++WID), p: m.p, who: m.who, uid: m.uid || "", lvl: +m.lvl || 0, text: String(m.text).slice(0, 300), ru: "", t: new Date().toTimeString().slice(0, 5), ft: nowT() };
@@ -1157,7 +1159,7 @@ function glow() { for (const k of ["cb", "sc", "bc", "mv", "fs"]) { const d = $(
 setInterval(glow, 2000);
 let HUBPPL = [], RSAYDONE = new Set(), PPLHOLD = 0, RCHSEEN = new Set(), RSAID = {};
 // версия панели: хаб пишет в общий чат только через панель, которая это умеет (v ≥ 3); новая версия на сайте → панель обновится сама
-const PANEL_V = 118;
+const PANEL_V = 119;
 setInterval(async () => {
   try { const t = await (await fetch(location.pathname + "?vchk=" + Date.now(), { cache: "no-store" })).text(), v = +((t.match(/const PANEL_V = (\d+)/) || [])[1] || 0);
     const busy = Object.values(PRIVLIVE).some(Boolean) || TYPES.length || PAIDQ.length || [...document.querySelectorAll("input,textarea")].some(i => i.value && i.type !== "file") || Object.keys(CUP).length;

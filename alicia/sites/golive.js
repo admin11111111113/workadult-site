@@ -173,7 +173,7 @@
       if (!cnt.size) return;                                                          // чат на миг пустой (перерисовка) — не сбрасываем счёт
       const now = Date.now();                                                         // счёт держим по максимуму: недорисованный чат (часть строк) не обнуляет его
       for (const [k, n] of cnt) { const h = prevCnt.get(k) || { n: 0 };
-        if (!first) for (let i = h.n; i < n; i++) { send({ type: "chat", p: P, ...rows.get(k) }); sent++; }
+        if (!first) for (let i = h.n; i < n; i++) { send({ type: "chat", p: P, ...rows.get(k), cv: 1 }); sent++; }
         prevCnt.set(k, { n: Math.max(h.n, n), t: now }); }
       for (const [k, h] of prevCnt) if (now - h.t > 600000) prevCnt.delete(k);        // строка 10 мин не видна — ушла из чата, забываем
       first = false;
