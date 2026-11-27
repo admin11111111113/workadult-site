@@ -19,7 +19,7 @@ body{font:16px/1.4 system-ui,-apple-system,Segoe UI,sans-serif;color:#fff;backgr
 @keyframes p{0%{box-shadow:0 0 0 0 #ff2d55aa}100%{box-shadow:0 0 0 16px #ff2d5500}}
 h1{font-size:26px;margin:12px 0 2px}
 .sub{color:#e6b3c9;font-size:14px}
-#live{display:none;margin:16px 0 4px;padding:12px;border-radius:14px;background:#ff2d55;font-weight:700;font-size:17px;text-decoration:none;color:#fff}
+#live{display:none;margin:16px 0 4px;padding:12px;border-radius:14px;background:#22c55e;font-weight:700;font-size:17px;text-decoration:none;color:#fff}
 #live.on{display:block;animation:b 1.2s infinite alternate}
 @keyframes b{to{background:#d6003a}}
 .sec{margin:22px 0 8px;font-size:12px;letter-spacing:.14em;color:#c98aa8;text-transform:uppercase}
@@ -27,9 +27,9 @@ a.b{display:flex;align-items:center;gap:12px;margin:10px 0;padding:14px 16px;bor
 a.b:hover{background:#ffffff22;transform:translateY(-1px)}
 a.b .n{flex:1;text-align:left}
 a.b .n small{display:block;font-weight:400;color:#d9a9bf;font-size:13px}
-.st{font-size:12px;font-weight:700;padding:4px 9px;border-radius:20px;background:#ffffff1a;color:#bbb;white-space:nowrap}
-.st.on{background:#ff2d55;color:#fff}
-a.b.on{border-color:#ff2d55;background:#ff2d5526}
+.st{font-size:12px;font-weight:700;padding:4px 9px;border-radius:20px;background:#ff2d5533;color:#ff6b81;white-space:nowrap}
+.st.on{background:#22c55e;color:#fff}
+a.b.on{border-color:#22c55e;background:#22c55e26}
 a.b.fs{background:linear-gradient(90deg,#2b7cff33,#ff4f9a33)}
 .g{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:8px}
 .g img{width:100%;aspect-ratio:3/4;object-fit:cover;border-radius:12px}
@@ -50,7 +50,7 @@ a.b.fs{background:linear-gradient(90deg,#2b7cff33,#ff4f9a33)}
   <img class="av" id="av" src="avatar.jpg?v=2" alt="Alicia">
   <h1>Petite Alicia 💋</h1>
   <div class="sub">petite, playful & a little naughty — come say hi 🌸</div>
-  <a id="live" target="_blank" rel="noopener">🔴 I'm LIVE now — come in!</a>
+  <a id="live" target="_blank" rel="noopener">🟢 I'm LIVE now — come in!</a>
 
   <div class="ab">Hi, I'm Alicia 🌸 I used to sell things in a boring little shop — one day I packed a bag and moved somewhere warm to start over. Now I'm a cam girl and I love it. Off cam I'm into flowers, engraving tiny gifts by hand, cute outfits and cozy movies. Single, a bit shy at first — but very naughty once we get to know each other 😈</div>
 
@@ -88,7 +88,7 @@ async function chk(){
   }
   const lv=document.getElementById("live");
   lv.classList.toggle("on",!!first);document.getElementById("av").classList.toggle("on",!!first);
-  if(first){lv.href=document.getElementById("p-"+first).href;lv.textContent="🔴 I'm LIVE now on "+NAMES[first]+" — come in!";
+  if(first){lv.href=document.getElementById("p-"+first).href;lv.textContent="🟢 I'm LIVE now on "+NAMES[first]+" — come in!";
     const box=document.getElementById("p-"+first);box.parentNode.insertBefore(box,document.getElementById("p-sc"));}
 }
 chk();setInterval(chk,30000);
