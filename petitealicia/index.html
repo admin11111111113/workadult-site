@@ -27,7 +27,8 @@ a.b{display:flex;align-items:center;gap:12px;margin:10px 0;padding:14px 16px;bor
 a.b:hover{background:#ffffff22;transform:translateY(-1px)}
 a.b .n{flex:1;text-align:left}
 a.b .n small{display:block;font-weight:400;color:#d9a9bf;font-size:13px}
-.st{font-size:12px;font-weight:700;padding:4px 9px;border-radius:20px;background:#ff2d5533;color:#ff6b81;white-space:nowrap}
+.st{font-size:12px;font-weight:700;padding:4px 9px;border-radius:20px;background:#ffffff1a;color:#bbb;white-space:nowrap}
+.st.off{background:#ff2d5533;color:#ff6b81}
 .st.on{background:#22c55e;color:#fff}
 a.b.on{border-color:#22c55e;background:#22c55e26}
 a.b.fs{background:linear-gradient(90deg,#2b7cff33,#ff4f9a33)}
@@ -55,10 +56,10 @@ a.b.fs{background:linear-gradient(90deg,#2b7cff33,#ff4f9a33)}
   <div class="ab">Hi, I'm Alicia 🌸 I used to sell things in a boring little shop — one day I packed a bag and moved somewhere warm to start over. Now I'm a cam girl and I love it. Off cam I'm into flowers, engraving tiny gifts by hand, cute outfits and cozy movies. Single, a bit shy at first — but very naughty once we get to know each other 😈</div>
 
   <div class="sec">Live cams</div>
-  <a class="b" id="p-sc" href="https://stripchat.com/_Skitlstrynka_/follow-me" target="_blank" rel="noopener"><span class="n">Stripchat<small>free to watch · interactive toy</small></span><span class="st">offline</span></a>
-  <a class="b" id="p-cb" href="https://chaturbate.com/_skitlstrynka_/" target="_blank" rel="noopener"><span class="n">Chaturbate<small>free to watch · tip menu</small></span><span class="st">offline</span></a>
-  <a class="b" id="p-bc" href="https://bongacams.com/AnalQueenKa?fuid=211674184" target="_blank" rel="noopener"><span class="n">BongaCams<small>free to watch · videos & photos</small></span><span class="st">offline</span></a>
-  <a class="b" id="p-mv" href="https://www.manyvids.com/live/cam/bad_secret" target="_blank" rel="noopener"><span class="n">ManyVids Live<small>free to watch</small></span><span class="st">offline</span></a>
+  <a class="b" id="p-sc" href="https://stripchat.com/_Skitlstrynka_/follow-me" target="_blank" rel="noopener"><span class="n">Stripchat<small>free to watch · interactive toy</small></span><span class="st off">offline</span></a>
+  <a class="b" id="p-cb" href="https://chaturbate.com/_skitlstrynka_/" target="_blank" rel="noopener"><span class="n">Chaturbate<small>free to watch · tip menu</small></span><span class="st off">offline</span></a>
+  <a class="b" id="p-bc" href="https://bongacams.com/AnalQueenKa?fuid=211674184" target="_blank" rel="noopener"><span class="n">BongaCams<small>free to watch · videos & photos</small></span><span class="st off">offline</span></a>
+  <a class="b" id="p-mv" href="https://www.manyvids.com/live/cam/bad_secret" target="_blank" rel="noopener"><span class="n">ManyVids Live<small>free to watch</small></span><span class="st off">offline</span></a>
 
   <div class="sec">Videos & more of me</div>
   <a class="b fs" href="https://fansly.com/AnalQueenKa" target="_blank" rel="noopener"><span class="n">Fansly 💙<small>my private page · posts every day</small></span><span class="st">join</span></a>
@@ -83,7 +84,7 @@ async function chk(){
   let first=null;
   for(const p of ["sc","cb","bc","mv"]){
     const a=document.getElementById("p-"+p),s=a.querySelector(".st"),on=!!L[p];
-    a.classList.toggle("on",on);s.classList.toggle("on",on);s.textContent=on?"● LIVE":"offline";
+    a.classList.toggle("on",on);s.classList.toggle("on",on);s.classList.toggle("off",!on);s.textContent=on?"● LIVE":"offline";
     if(on&&!first)first=p;
   }
   const lv=document.getElementById("live");
