@@ -623,7 +623,7 @@ function onExt(m) {
   }
   if (m.type === "saidres" && RSAYDONE.has(m.id)) { RSAID[m.id] = m.ok ? "ok" : (m.err || "не ушло"); }
   if (m.type === "saidres" && WSAY[m.id]) { WSAY[m.id].st = m.ok ? "✓ ушло" : "⚠ " + (m.err || "не ушло"); wallShow(true); }
-  if (m.type === "chat" && m.text && m.who && !m.me && !/^notice$/i.test(m.who)) wallAdd(m);
+  if (m.type === "chat" && m.text && m.who && !m.me && !/^notice$/i.test(m.who) && !/^_?(skitlstrynka|bad_secret|analqueenka)_?$/i.test(String(m.who).trim())) wallAdd(m);   // 27.11 владелец: её же строки в чате (бот → чат ушло) — не показывать, засоряет
   if (m.type === "users" && Array.isArray(m.list)) { ROOMU2[m.p] = { t: Date.now(), list: m.list.filter(x => x && x.who && !/\s/.test(String(x.who).trim()) && !/^(всего|итого|чаевые|приват|полный приват|групповой|групповой приват|чат-боты|чат боты|подглядки|подглядывание|баланс|потрачено.*|заработано.*|total|tips|private|full private|group|group show|chat ?bots|spy|peek|balance|tokens spent|spent|earned)$/i.test(String(x.who).trim())).slice(0, 300) };   /* 24.11: не строки статистики Бонги */ pplShow(); }   // 24.11: зрители с токенами из её вкладок → хабу
   if (m.type === "saidres" && RSAYDONE.has(m.id) && !WSAY[m.id]) admEv((m.ok ? "📣 бот написал в общий чат " : "⚠ не ушло в общий чат ") + (PN4[m.p] || m.p) + (m.err ? ": " + m.err : ""));
   if (m.type === "chat" && m.text && m.who && !m.me && !/^notice$/i.test(m.who)) {   // кто пишет в чате комнаты — хабу (бот знакомится с ними в личке)
@@ -830,7 +830,7 @@ async function hubSync() {
     const pv = window.TKPV; if (pv) for (const k in cur) if (k !== "bc" && pv[k] != null && cur[k] > pv[k]) glowTip(k);   // 27.11 владелец «Бонга горит зелёным, когда нет донатов»: у Бонги счётчик дёргался от отчёта (отстаёт на час) и повторов — светим только по самим донатам из её чата   // 26.11: ключ пропал/появился (сбой счётчика) — не донат
     window.TKPV = { ...(pv || {}), ...cur }; }   // пропавший на миг ключ помним прежним; новый эфир/день — счёт с нуля
   if (alive) for (const c of h.rchat || []) if (!RCHSEEN.has(c.id)) { RCHSEEN.add(c.id);    // чат её комнат, который хаб видит сам (как зритель)
-    if (!WALLMSG.some(x => !x.me && x.p === c.p && x.who === c.who && x.text === c.text)) wallAdd({ ...c, fromHub: 1 }); }
+    if (!/^_?(skitlstrynka|bad_secret|analqueenka)_?$/i.test(String(c.who || "").trim()) && !WALLMSG.some(x => !x.me && x.p === c.p && x.who === c.who && x.text === c.text)) wallAdd({ ...c, fromHub: 1 }); }
   if (alive) { HUBPPL = h.ppl || []; GWH = {}; for (const r of HUBPPL) if (r.wh && r.wh.k === "кит") GWH[r.p] = 1; glow(); MHBM = h.mhb || {}; MVV = h.mvv || {}; pplShow(); for (const x of h.rsay || []) if (!RSAYDONE.has(x.id)) { RSAYDONE.add(x.id); /* хаб сам кладёт текст на сервер (/say), страница эфира забирает */
       // 24.11: что бот (или админ) написал в общий чат — тоже в ленту
       const d = x.at ? new Date(x.at * 1000) : new Date();
@@ -1159,7 +1159,7 @@ function glow() { for (const k of ["cb", "sc", "bc", "mv", "fs"]) { const d = $(
 setInterval(glow, 2000);
 let HUBPPL = [], RSAYDONE = new Set(), PPLHOLD = 0, RCHSEEN = new Set(), RSAID = {};
 // версия панели: хаб пишет в общий чат только через панель, которая это умеет (v ≥ 3); новая версия на сайте → панель обновится сама
-const PANEL_V = 119;
+const PANEL_V = 120;
 setInterval(async () => {
   try { const t = await (await fetch(location.pathname + "?vchk=" + Date.now(), { cache: "no-store" })).text(), v = +((t.match(/const PANEL_V = (\d+)/) || [])[1] || 0);
     const busy = Object.values(PRIVLIVE).some(Boolean) || TYPES.length || PAIDQ.length || [...document.querySelectorAll("input,textarea")].some(i => i.value && i.type !== "file") || Object.keys(CUP).length;
