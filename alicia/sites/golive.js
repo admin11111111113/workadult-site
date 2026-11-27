@@ -154,19 +154,28 @@
       const cls = {}; for (const x of d) for (const e of x.querySelectorAll("[class]")) { const c = typeof e.className === "string" ? e.className : ""; for (const k of c.split(/\s+/)) if (/msg|chat|message/i.test(k) && !/input|send|smile|emoji/i.test(k)) cls[k] = (cls[k] || 0) + 1; }
       const top = Object.entries(cls).sort((a, b) => b[1] - a[1]).slice(0, 14).map(([k, v]) => k + "×" + v).join(" ");
       send({ type: "probe", p: P, text: "консоль (" + why + "): строк " + d.reduce((s, x) => s + x.querySelectorAll(R2).length, 0) + " · фреймов " + fr.length + (fr.length ? " [" + fr.join(", ") + "]" : "") + " · классы: " + (top || "нет") }); };
+    // 27.11 владелец «4 раза + 1 — чтоб считалось правильно»: Бонга перерисовывает чат (новые узлы) → раньше все строки уходили заново (донаты ×15).
+    // Теперь считаем, сколько раз каждая строка «ник|текст» видна в чате, и шлём только прибавку: было 4 одинаковых доната, стало 5 → ушёл 1.
+    let prevCnt = new Map();
     setInterval(() => {
+      const cnt = new Map(), rows = new Map();
       for (const x of docs()) for (const r of x.querySelectorAll(R2)) {
-        if (seen.has(r)) continue; seen.add(r); if (/input|send|smile|emoji/i.test(r.className || "")) continue;
+        if (/input|send|smile|emoji/i.test(r.className || "")) continue;
         if (r.parentElement && r.parentElement.closest(R2)) continue;               // вложенный кусок той же строки
-        if (first) continue;
         const raw = (r.innerText || "").replace(/\s+/g, " ").trim(); if (!raw || raw.length > 400) continue;
         let who = who2(r), text = raw;
         if (who && text.toLowerCase().startsWith(who.toLowerCase())) text = text.slice(who.length).replace(/^[:：\s]+/, "");
         else if (!who) { const m = raw.match(/^([\w.\-]{2,30})\s*[:：]\s*(.+)$/); if (m) { who = m[1]; text = m[2]; } }
         if (!who || !text) continue;
-        const me = /msg_model|mb_model|model/i.test(r.className || ""), lvl = /unlim|ultim|vip|premium/i.test(r.className) ? 3 : /gold/i.test(r.className) ? 2 : 0;
-        send({ type: "chat", p: P, who, text, lvl, me }); sent++;
+        const k = who + "|" + text; cnt.set(k, (cnt.get(k) || 0) + 1);
+        if (!rows.has(k)) rows.set(k, { who, text, me: /msg_model|mb_model|model/i.test(r.className || ""), lvl: /unlim|ultim|vip|premium/i.test(r.className) ? 3 : /gold/i.test(r.className) ? 2 : 0 });
       }
+      if (!cnt.size) return;                                                          // чат на миг пустой (перерисовка) — не сбрасываем счёт
+      const now = Date.now();                                                         // счёт держим по максимуму: недорисованный чат (часть строк) не обнуляет его
+      for (const [k, n] of cnt) { const h = prevCnt.get(k) || { n: 0 };
+        if (!first) for (let i = h.n; i < n; i++) { send({ type: "chat", p: P, ...rows.get(k) }); sent++; }
+        prevCnt.set(k, { n: Math.max(h.n, n), t: now }); }
+      for (const [k, h] of prevCnt) if (now - h.t > 600000) prevCnt.delete(k);        // строка 10 мин не видна — ушла из чата, забываем
       first = false;
     }, 1500);
     // личка в консоли (окошко с ником, .bm_im_float_dialog → .bm_im_history_item, своё = __own, текст .imhi_text) → панель как "pm"
