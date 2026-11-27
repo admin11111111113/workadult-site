@@ -1157,7 +1157,7 @@ function glow() { for (const k of ["cb", "sc", "bc", "mv", "fs"]) { const d = $(
 setInterval(glow, 2000);
 let HUBPPL = [], RSAYDONE = new Set(), PPLHOLD = 0, RCHSEEN = new Set(), RSAID = {};
 // версия панели: хаб пишет в общий чат только через панель, которая это умеет (v ≥ 3); новая версия на сайте → панель обновится сама
-const PANEL_V = 114;
+const PANEL_V = 115;
 setInterval(async () => {
   try { const t = await (await fetch(location.pathname + "?vchk=" + Date.now(), { cache: "no-store" })).text(), v = +((t.match(/const PANEL_V = (\d+)/) || [])[1] || 0);
     const busy = Object.values(PRIVLIVE).some(Boolean) || TYPES.length || PAIDQ.length || [...document.querySelectorAll("input,textarea")].some(i => i.value && i.type !== "file") || Object.keys(CUP).length;
@@ -1190,7 +1190,7 @@ function rdShow(p) {
   RD = p && p.url ? p : null; const b = $("#b-rd"); if (!b) return;
   b.style.display = RD ? "" : "none"; b.style.background = "#1f9d55";
 }
-function rdOpen() { if (RD) window.open(RD.url, "_blank"); }
+function rdOpen() { if (RD) { const w = window.open(RD.url, "alicia_reddit"); try { w && w.focus(); } catch (e) {} } }   // 27.11: одна вкладка Reddit, не плодить новые
 
 // ── 25.11 ВОПРОСЫ ФАНОВ: бот собирает, она отвечает — бот потом отвечает её словами
 let FAQ_N = 0, FAQ_WAS_LIVE = false, FAQ_SHOWN = false;

@@ -52,6 +52,17 @@
       fi.dispatchEvent(new Event("input", { bubbles: true, composed: true })); fi.dispatchEvent(new Event("change", { bubbles: true, composed: true }));
     } catch (e) { banner("Фото не загрузилось: " + e, false); return; }
     await sleep(2500); setTitle();                                   // после фото форма перерисовывается — заголовок ещё раз
+    // 27.11: на её ПК фото долго висит «Загрузка…» — ждём, пока Reddit дозагрузит, только потом «готово»
+    const uploading = (root = document) => {                        // видимая надпись «Загрузка…/Uploading…» (в т.ч. внутри shadow DOM)
+      for (const e of root.querySelectorAll("*")) {
+        if (e.shadowRoot && uploading(e.shadowRoot)) return true;
+        if (e.childElementCount === 0 && /^\s*(Загрузка|Uploading)/i.test(e.textContent || "") && e.getClientRects().length) return true;
+      }
+      return false;
+    };
+    for (let i = 0; i < 120 && uploading(); i++) { banner("Загружаю фото на Reddit… подожди " + (i < 20 ? "" : "(медленный интернет) ") + "⏳", true); await sleep(1000); }
+    if (uploading()) { banner("Фото так и не загрузилось — обнови страницу (F5)", false); return; }
+    setTitle();
     banner("✅ Всё заполнено — проверь фото и нажми «Опубликовать»", true);
     // после «Опубликовать» Reddit уводит на страницу поста (там отметим «готово»); на всякий — следим за адресом
     let last = location.href;
