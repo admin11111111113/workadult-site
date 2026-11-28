@@ -9,7 +9,7 @@
 #cam,#camv{background:#000;border-radius:12px;width:100%;aspect-ratio:16/9;object-fit:contain;max-height:40vh}
 .btns{display:flex;gap:8px;margin:8px 0;flex-wrap:wrap;align-items:center}button{font:inherit;font-weight:600;border:0;border-radius:10px;padding:12px 18px;cursor:pointer;background:#3d3d3d;color:#fff}
 .lov{background:#313131;border-radius:12px;padding:6px 10px;margin:0}.lov button{padding:8px 12px}#rooms{flex:1;display:grid;grid-template-columns:1fr;grid-template-rows:repeat(4,1fr);gap:6px;min-height:0}.room{display:flex;flex-direction:column;min-height:0}.room b{font-size:13px;color:#aab}
-.au{display:block;font-size:12px;font-weight:400;color:#cfd;cursor:pointer}.au input{width:auto;margin:0 4px 0 0}.go{background:#e8364f}.y{background:#c98a14}.g{background:#3a6}button:disabled{opacity:.4}
+.pzb{font-size:11px;padding:1px 7px;border-radius:6px;margin-top:2px;background:#555;color:#fff;border:0;cursor:pointer}.pzb.on{background:#c98a14}.pl.site.pz{outline:2px solid #c98a14}.au{display:block;font-size:12px;font-weight:400;color:#cfd;cursor:pointer}.au input{width:auto;margin:0 4px 0 0}.go{background:#e8364f}.y{background:#c98a14}.g{background:#3a6}button:disabled{opacity:.4}
 .nf{display:flex;gap:8px;align-items:flex-start;padding:8px 10px;margin-bottom:6px;border-radius:10px;background:#2a2410;font-size:15px}
 .nf .pf{background:#000a;border-radius:6px;padding:2px 7px;font-size:12px;font-weight:700;white-space:nowrap}.nf .wh{font-weight:700;color:#ffd76a;white-space:nowrap}
 .nf .tx{flex:1}.nf .tm{color:#889;font-size:12px;white-space:nowrap}.nf.bot{background:#333333}.nf.bot .wh{color:#9fbaff}.nf.pay{background:#16351f}.nf.pay .wh{color:#7ee08a}
@@ -51,9 +51,9 @@ input{font:inherit;padding:8px;border-radius:8px;border:1px solid #444;backgroun
 .pm{font-size:15px;line-height:1.35}
 </style></head><body>
 <div id="top">
- <div class="pl site"><span class="dot" id="d-cb"></span>Chaturbate<small id="t-cb">0 tk</small><label class="au"><input type="checkbox" id="a-cb" onchange="autoSet('cb',this.checked)"> авто</label></div>
- <div class="pl site"><span class="dot" id="d-sc"></span>Stripchat<small id="t-sc">0 tk</small><label class="au"><input type="checkbox" id="a-sc" onchange="autoSet('sc',this.checked)"> авто</label></div>
- <div class="pl site"><span class="dot" id="d-bc"></span>Bongacams<small id="s-bc">через OBS</small><small id="t-bc"></small><label class="au"><input type="checkbox" id="a-bc" onchange="autoSet('bc',this.checked)"> авто</label></div>
+ <div class="pl site"><span class="dot" id="d-cb"></span>Chaturbate<small id="t-cb">0 tk</small><label class="au"><input type="checkbox" id="a-cb" onchange="autoSet('cb',this.checked)"> авто</label><button class="pzb" id="pz-cb" onclick="sitePause('cb')">⏹ стоп</button></div>
+ <div class="pl site"><span class="dot" id="d-sc"></span>Stripchat<small id="t-sc">0 tk</small><label class="au"><input type="checkbox" id="a-sc" onchange="autoSet('sc',this.checked)"> авто</label><button class="pzb" id="pz-sc" onclick="sitePause('sc')">⏸ подглядывание</button></div>
+ <div class="pl site"><span class="dot" id="d-bc"></span>Bongacams<small id="s-bc">через OBS</small><small id="t-bc"></small><label class="au"><input type="checkbox" id="a-bc" onchange="autoSet('bc',this.checked)"> авто</label><button class="pzb" id="pz-bc" onclick="sitePause('bc')">⏸ приват</button></div>
  <div class="pl site"><span class="dot" id="d-mv"></span>ManyVids<small id="s-mv">эфир с сайта</small><small id="t-mv"></small><label class="au"><input type="checkbox" id="a-mv" onchange="autoSet('mv',this.checked)"> авто</label></div>
  <div class="pl site"><span class="dot" id="d-fs"></span>Fansly<small id="s-fs">через OBS</small><small id="t-fs"></small><label class="au"><input type="checkbox" id="a-fs" onchange="autoSet('fs',this.checked)"> авто</label></div>
  <span style="margin-left:auto"></span>
@@ -330,6 +330,76 @@ async function bcRelive(bo, n) {
   }
   if (n >= 5) setTimeout(() => { if (!(LIVE.bc && LIVE.bc.on)) { hint("⚠️ Bonga не поднимается 5 раз подряд — открой вкладку Bonga и нажми «Начать трансляцию» сама"); admEv("⚠ Bonga: 5 попыток не помогли — попросила её нажать самой"); } }, 60000);
 }
+// 28.11 владелец: «на Чатурбейте кое-какие шоу запрещены — приходится отключать, сам включать не надо; кнопку паузы отдельно для Чатура и Стрипа».
+// Пауза = в OBS выключаем только выход этой площадки (остальные идут), автозапуск её не трогает, OBS при перезапуске её не включит — пока не нажмёт «вернуть».
+const PZ = JSON.parse(localStorage.sitePause || "{}"), PZRE = { cb: /chaturbate|mmcdn|chatur/i, sc: /stripchat|stripcdn|doppiocdn|mywebcamroom|strip/i };
+const PZN = { cb: "Chaturbate", sc: "Stripchat" };
+async function siteOut(p) {
+  const ol = ((await req("GetOutputList")).outputs || []).filter(o => /rtmp|ffmpeg_mpegts|whip/i.test(o.outputKind || ""));
+  let main = false;
+  try { const sv = await req("GetStreamServiceSettings"); main = PZRE[p].test(JSON.stringify(sv || {})); } catch (e) {}
+  for (const o of ol) {
+    if (/^(simple|adv)_stream$/.test(o.outputName || "")) continue;
+    if (PZRE[p].test(o.outputName || "")) return { o, main };
+    try { const x = await req("GetOutputSettings", { outputName: o.outputName }); if (PZRE[p].test(JSON.stringify(x || {}))) return { o, main }; } catch (e) {}
+  }
+  return { o: null, main };
+}
+PZN.bc = "Bongacams";
+const PZL = { cb: "⏹ стоп", sc: "⏸ подглядывание", bc: "⏸ приват" };
+function pzUi() { for (const p of ["cb", "sc", "bc"]) { const b = $("#pz-" + p); if (!b) continue; b.classList.toggle("on", !!PZ[p]); b.textContent = PZ[p] ? "▶ вернуть" : PZL[p]; b.closest(".pl").classList.toggle("pz", !!PZ[p]); } }
+// 28.11 владелец: «на Бонге можно уйти в приват самой, в Стрипе кнопка (режим подглядывания)» — жмём их кнопку на её странице эфира
+const PZ_JS = `async (a) => {
+  const vis = e => e && e.getClientRects().length > 0 && !e.disabled;
+  const txt = e => (e.innerText || e.value || "").replace(/\\s+/g, " ").trim();
+  const all = () => [...document.querySelectorAll("button,a,[role=button],[class*=btn i]")].filter(vis);
+  const okDlg = async () => { for (let i = 0; i < 6; i++) { await new Promise(z => setTimeout(z, 500));
+    for (const b of all()) if (/^(ok|ок|да|yes|подтвердить|confirm|начать|start|продолжить|continue)$/i.test(txt(b)) && b.closest("[role=dialog],[class*=modal i],[class*=dialog i],[class*=popup i]")) { b.click(); return txt(b); } } return ""; };
+  if (a.p === "bc") {
+    const sw = [...document.querySelectorAll("button.bm_switch")].find(b => /^Приват/.test(txt(b)) && !/Микрофон/.test(txt(b)));
+    if (!sw) return { ok: false, err: "нет переключателя «Приват» в консоли Бонги" };
+    const isOn = /__swr_on/.test(sw.className);
+    if (isOn !== a.on) { sw.click(); await new Promise(z => setTimeout(z, 1200)); }
+    return { ok: /__swr_on/.test(sw.className) === a.on, was: isOn, dlg: await okDlg() };
+  }
+  if (a.p === "sc") {
+    const spy = all().find(b => /SpyShowButton/.test(b.className) || /^(режим подглядывания|spy mode|spy show)$/i.test(txt(b)));
+    const stop = all().find(b => /(выйти|завершить|закончить|остановить|отменить|stop|end|exit|leave).{0,30}(подгляд|spy)|^(вернуться в паблик|back to public|go public)$/i.test(txt(b)));
+    const b = a.on ? spy : (stop || spy);
+    if (!b) return { ok: false, err: a.on ? "нет кнопки «Режим подглядывания»" : "нет кнопки выхода из подглядывания", btns: all().map(txt).filter(t => t && t.length < 40).slice(0, 30) };
+    const t = txt(b); b.click();
+    return { ok: true, clicked: t, dlg: await okDlg() };
+  }
+  return { ok: false, err: "?" };
+}`;
+async function pzSite(p, on) {
+  const tabs = await call("api", { fn: "tabs.query", args: [{}] }); if (!Array.isArray(tabs)) return { ok: false, err: "помощник не ответил" };
+  const re = (SAY_RE.find(x => x[0] === p) || [])[1], t = re && tabs.find(t => !t.discarded && re.test(t.url || ""));
+  if (!t) return { ok: false, err: "не открыта страница эфира " + PZN[p] };
+  const code = "(async()=>{try{return await (" + PZ_JS + ")(" + JSON.stringify({ p, on }) + ")}catch(e){return {ok:false,err:String(e&&e.message||e)}}})()";
+  const r = await call("exec", { tab: t.id, world: "MAIN", code }, 20000), x = Array.isArray(r) ? r[0] : null;
+  return x && x.res && x.res[0] ? x.res[0] : { ok: false, err: (r && r.error) || "пустой ответ" };
+}
+async function sitePause(p) {
+  if (p === "sc" || p === "bc") {
+    const on = !PZ[p], r = await pzSite(p, on);
+    admEv((on ? "⏸ " : "▶ ") + PZN[p] + (p === "sc" ? " подглядывание: " : " приват: ") + JSON.stringify(r).slice(0, 300));
+    if (!r.ok) return hint("⚠️ " + PZN[p] + ": " + esc(r.err || "не вышло") + " — нажми сама на странице эфира");
+    if (on) PZ[p] = Date.now(); else delete PZ[p];
+    hint(on ? (p === "sc" ? "⏸ Stripchat: режим подглядывания включён" : "⏸ Bongacams: ушла в приват") + " — сама не верну, жми «▶ вернуть»" : "▶ " + PZN[p] + " снова в паблике");
+    localStorage.sitePause = JSON.stringify(PZ); return pzUi();
+  }
+  if (!ok) return hint("⚠️ OBS не подключён");
+  const on = !PZ[p], r = await siteOut(p);
+  if (!r.o) return hint(r.main ? "⚠️ " + PZN[p] + " идёт основным потоком OBS — отдельно его не выключить (выключатся все). Сделай его отдельной целью в «Множественный вывод»"
+                             : "⚠️ Не нашла в OBS отдельный выход " + PZN[p]);
+  if (on) { PZ[p] = Date.now(); await reqS("StopOutput", { outputName: r.o.outputName }); hint("⏹ " + PZN[p] + " остановлен — там видео выключено, остальные площадки идут. Сама не включу, жми «▶ вернуть»"); admEv("⏸ пауза " + PZN[p]); }
+  else { delete PZ[p]; const x = await reqS("StartOutput", { outputName: r.o.outputName }); hint((x.requestStatus || {}).result ? "▶ " + PZN[p] + " снова в эфире" : "⚠️ OBS не включил " + PZN[p] + ": " + esc((x.requestStatus || {}).comment || "")); admEv("▶ вернула " + PZN[p]); }
+  localStorage.sitePause = JSON.stringify(PZ); pzUi();
+}
+// OBS включили заново (цели с синхронным запуском стартуют сами) — площадку на паузе сразу гасим обратно
+setInterval(async () => { if (!ok) return; for (const p of Object.keys(PZ).filter(k => k === "cb")) { try { const r = await siteOut(p); if (r.o && r.o.outputActive) { await reqS("StopOutput", { outputName: r.o.outputName }); admEv("⏸ " + PZN[p] + " на паузе — OBS включил, выключила обратно"); } } catch (e) {} } }, 10000);
+setTimeout(pzUi, 0);
 async function goLive() {
   GOING = Date.now();
   call("openTab", { url: LOV_PAGE, prefix: "https://rugextension.lovense.com/", pinned: true });
@@ -365,7 +435,7 @@ let GO_UNTIL = 0; const GOLOG = [];
 // which: "pre" — до OBS (Bonga, ManyVids), "post" — после старта OBS (Chaturbate, Stripchat: перезагрузить и «ОК»/«Начать шоу»)
 async function sitesGo(which) {
   // сайт, который уже в эфире, не трогаем (не перезагружаем и не жмём)
-  const keys = (which === "pre" ? ["bc", "mv"] : ["cb", "sc"]).filter(k => !isLive(k));
+  const keys = (which === "pre" ? ["bc", "mv"] : ["cb", "sc"]).filter(k => !isLive(k) && !PZ[k]);   // 28.11: на паузе — не запускаем
   if (which === "pre") GO_UNTIL = Date.now() + 240000;
   if (keys.length) await pushScripts({ step1: keys.flatMap(k => GO_PAGES[k]) });    // перезагрузка нужных вкладок с включённым автозапуском
   await pushScripts();                                               // обычный набор (уже с GO_UNTIL), без перезагрузки
@@ -381,7 +451,7 @@ async function sitesGo(which) {
 let LIVE_T = 0;
 setInterval(() => {                                                 // через 60 сек после старта: какие сайты так и не увидели эфир
   if (!LIVE_T || Date.now() - LIVE_T < 60000) return; LIVE_T = 0;
-  const off = ["cb", "sc"].filter(p => LIVE[p] && !LIVE[p].on).map(p => p === "cb" ? "Chaturbate" : "Stripchat");
+  const off = ["cb", "sc"].filter(p => LIVE[p] && !LIVE[p].on && !PZ[p]).map(p => p === "cb" ? "Chaturbate" : "Stripchat");
   if (off.length) hint("⚠️ OBS шлёт, но " + off.join(" и ") + " эфир не видит. Открой страницу эфира и проверь, что там выбран OBS / внешний кодировщик и ключ совпадает");
 }, 5000);
 async function stopLive() { if (confirm("Закончить эфир?")) { await req("StopStream"); hint("Эфир закончен. Отдыхай 💜"); } }
@@ -689,7 +759,7 @@ async function admSend() {
   const st = { w: "alicia-panel", obs: ok, obsTxt: $("#s-obs").textContent, stream: $("#st").textContent, ext: $("#s-ext").textContent, lov: $("#s-lov").textContent,
     sites: { cb: card("cb"), sc: card("sc"), bc: card("bc"), mv: card("mv") }, room: Object.values(ROOM).filter(x => Date.now() - x.t < 3600000), bctips: BCT, roomu: Object.fromEntries(Object.entries(ROOMU2).filter(([k, v]) => Date.now() - v.t < 180000)), tot: { ...TOT, ...ETK }, live: LIVE, priv: PRIVLIVE, privmsg: PRIVMSG.slice(-60).map(m => ({ me: !!m.me, by: m.by || "", p: m.p, who: m.who || "", text: m.text, out: m.out || "", t: m.t, st: m.st || "" })), hint: $("#hint").innerText, golog: GOLOG.slice(),
     wall: [...document.querySelectorAll("#wall .tip")].slice(0, 15).map(e => e.innerText), chat: [...document.querySelectorAll("#rooms .chat")].slice(0, 25).map(e => e.innerText),
-    shot: admShot(), events: ev, pv: PANEL_V, hv: HV, pc: PCINFO, rsaid: RSAID, lovctl: LOVCTL, ua: navigator.userAgent.slice(0, 80) };
+    shot: admShot(), events: ev, pv: PANEL_V, pz: PZ, hv: HV, pc: PCINFO, rsaid: RSAID, lovctl: LOVCTL, ua: navigator.userAgent.slice(0, 80) };
   try { const r = await fetch(ADM_URL, { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify(st) }); if (!r.ok) throw 0; }
   catch (e) { ADM_EV.unshift(...ev); }                               // не ушло — события отправим в следующий раз
 }
@@ -1159,7 +1229,7 @@ function glow() { for (const k of ["cb", "sc", "bc", "mv", "fs"]) { const d = $(
 setInterval(glow, 2000);
 let HUBPPL = [], RSAYDONE = new Set(), PPLHOLD = 0, RCHSEEN = new Set(), RSAID = {};
 // версия панели: хаб пишет в общий чат только через панель, которая это умеет (v ≥ 3); новая версия на сайте → панель обновится сама
-const PANEL_V = 120;
+const PANEL_V = 121;
 setInterval(async () => {
   try { const t = await (await fetch(location.pathname + "?vchk=" + Date.now(), { cache: "no-store" })).text(), v = +((t.match(/const PANEL_V = (\d+)/) || [])[1] || 0);
     const busy = Object.values(PRIVLIVE).some(Boolean) || TYPES.length || PAIDQ.length || [...document.querySelectorAll("input,textarea")].some(i => i.value && i.type !== "file") || Object.keys(CUP).length;
