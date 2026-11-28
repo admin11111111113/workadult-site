@@ -773,7 +773,7 @@ if (window.chrome && chrome.runtime && chrome.runtime.connect) ext(); else dot("
 // 24.11: личка через её браузер (помощник 2.0). Хаб даёт задание «сходи в API сайта» → выполняем в её уже открытой вкладке
 // (Стрип/MV/Fansly/My.Club) тихо, без новых вкладок и кликов → итог обратно хабу. Нет 2.0 / нет вкладки — хаб всё делает по-старому.
 let RQ_H = null;
-const RQ_RE = [["sc", /^https:\/\/([^/]*\.)?(stripchat\.com|mywebcamroom\.com)\//], ["mv", /^https:\/\/www\.manyvids\.com\//], ["fs", /^https:\/\/fansly\.com\//], ["mc", /^https:\/\/my\.club\//], ["cb", /^https:\/\/([^/]*\.)?chaturbate\.com\//], ["bc", /^https:\/\/([^/]*\.)?bongamodels\.com\//], ["mhb", /^https:\/\/d\.modelshelperbot\.com\//], ["lov", /^https:\/\/rugextension\.lovense\.com\//]];   /* 26.11: настройки Lovense (Chatbox-переводчик) */   /* 24.11: mhb — проверка трат зрителя по нику (её вход в MHB) */   // cb/bc — только оплаты (отчёты API)
+const RQ_RE = [["sc", /^https:\/\/([^/]*\.)?(stripchat\.com|mywebcamroom\.com)\//], ["mv", /^https:\/\/www\.manyvids\.com\//], ["fs", /^https:\/\/fansly\.com\//], ["mc", /^https:\/\/my\.club\//], ["cb", /^https:\/\/([^/]*\.)?chaturbate\.com\//], ["bc", /^https:\/\/([^/]*\.)?bongamodels\.com\//], ["mhb", /^https:\/\/d\.modelshelperbot\.com\//], ["lov", /^https:\/\/rugextension\.lovense\.com\//], ["rd", /^https:\/\/(www|old|new)\.reddit\.com\//]];   /* 28.11: верификация в разделах Reddit — её вкладка reddit (вход только у неё) */   /* 26.11: настройки Lovense (Chatbox-переводчик) */   /* 24.11: mhb — проверка трат зрителя по нику (её вход в MHB) */   // cb/bc — только оплаты (отчёты API)
 const rqSleep = ms => new Promise(r => setTimeout(r, ms));
 function rqPost(rq, d) { return fetch(rq.url + "/rq/res?k=" + rq.k, { method: "POST", body: JSON.stringify(d) }).catch(() => {}); }
 async function rqRun(job, have, rq) {
@@ -1318,7 +1318,7 @@ function glow() { for (const k of ["cb", "sc", "bc", "mv", "fs"]) { const d = $(
 setInterval(glow, 2000);
 let HUBPPL = [], RSAYDONE = new Set(), PPLHOLD = 0, RCHSEEN = new Set(), RSAID = {};
 // версия панели: хаб пишет в общий чат только через панель, которая это умеет (v ≥ 3); новая версия на сайте → панель обновится сама
-const PANEL_V = 134;
+const PANEL_V = 135;
 setInterval(async () => {
   try { const t = await (await fetch(location.pathname + "?vchk=" + Date.now(), { cache: "no-store" })).text(), v = +((t.match(/const PANEL_V = (\d+)/) || [])[1] || 0);
     const busy = Object.values(PRIVLIVE).some(Boolean) || TYPES.length || PAIDQ.length || [...document.querySelectorAll("input,textarea")].some(i => i.value && i.type !== "file") || Object.keys(CUP).length;
