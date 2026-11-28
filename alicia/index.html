@@ -367,7 +367,7 @@ const PZI = {
 function pzUi() { for (const p of ["cb", "sc", "bc"]) { const b = $("#pz-" + p); if (!b) continue; const on = !!PZ[p];
   b.className = "pzb " + (p === "cb" ? (on ? "r" : "g") : (on ? "lit" : "n"));
   b.innerHTML = p === "cb" ? (on ? PZI.play : PZI.stop) : p === "sc" ? (on ? PZI.eye : PZI.eyeX) : (on ? PZI.lock : PZI.unlock);
-  b.title = p === "cb" ? (on ? "Chaturbate остановлен — нажми, чтобы вернуть" : "Стоп: выключить видео только на Chaturbate")
+  b.title = p === "cb" ? (on ? "Chaturbate: камера спрятана — нажми, чтобы показать" : "Спрятать камеру на Chaturbate (приложение hide cam)")
           : p === "sc" ? (on ? "Stripchat: режим подглядывания ВКЛ — нажми, чтобы вернуться в паблик" : "Включить режим подглядывания на Stripchat")
           : (on ? "Bongacams: в привате — нажми, чтобы вернуться" : "Уйти в приват на Bongacams");
   b.closest(".pl").classList.toggle("pz", on); } }
@@ -410,7 +410,22 @@ async function pzSite(p, on) {
   const r = await call("exec", { tab: t.id, world: "MAIN", code }, 20000), x = Array.isArray(r) ? r[0] : null;
   return x && x.res && x.res[0] ? x.res[0] : { ok: false, err: (r && r.error) || "пустой ответ" };
 }
+// 28.11 владелец: «на Чатуре пауза — бот, пишешь в чат стоп/старт». Приложение Chaturbate «hide cam» (amilybright, cb.limitCam):
+// её сообщение «!start» прячет камеру от всех, «!stop» — показывает. Команды можно поменять: localStorage.cbHideOn / cbHideOff.
+async function cbHide(on) {
+  const cmd = on ? (localStorage.cbHideOn || "!start") : (localStorage.cbHideOff || "!stop");
+  const r = await sayDirect("cb", cmd);
+  return r && r.ok !== false ? { ok: true, cmd } : { ok: false, err: (r && r.err) || "не отправилось в чат Chaturbate (открыта ли страница эфира?)", cmd };
+}
 async function sitePause(p) {
+  if (p === "cb") {
+    const on = !PZ[p], r = await cbHide(on);
+    admEv((on ? "⏹ Chaturbate спрятала камеру: " : "▶ Chaturbate показала камеру: ") + r.cmd + (r.ok ? "" : " — " + r.err));
+    if (!r.ok) return hint("⚠️ Chaturbate: " + esc(r.err));
+    if (on) PZ[p] = Date.now(); else delete PZ[p];
+    hint(on ? "⏹ Chaturbate: камера спрятана (написала в чат " + r.cmd + "). Если не спряталась — в комнате не запущено приложение «hide cam»" : "▶ Chaturbate: камеру видно (" + r.cmd + ")");
+    localStorage.sitePause = JSON.stringify(PZ); return pzUi();
+  }
   if (p === "sc" || p === "bc") {
     const on = !PZ[p], r = await pzSite(p, on);
     admEv((on ? "⏸ " : "▶ ") + PZN[p] + (p === "sc" ? " подглядывание: " : " приват: ") + JSON.stringify(r).slice(0, 300));
@@ -429,7 +444,7 @@ async function sitePause(p) {
   localStorage.sitePause = JSON.stringify(PZ); pzUi();
 }
 // OBS включили заново (цели с синхронным запуском стартуют сами) — площадку на паузе сразу гасим обратно
-setInterval(async () => { if (!ok) return; for (const p of Object.keys(PZ).filter(k => k === "cb")) { try { const r = await siteOut(p); if (r.o && r.o.outputActive) { await reqS("StopOutput", { outputName: r.o.outputName }); admEv("⏸ " + PZN[p] + " на паузе — OBS включил, выключила обратно"); } } catch (e) {} } }, 10000);
+setInterval(async () => { if (!ok) return; for (const p of Object.keys(PZ).filter(k => k === "__obs__")) { try { const r = await siteOut(p); if (r.o && r.o.outputActive) { await reqS("StopOutput", { outputName: r.o.outputName }); admEv("⏸ " + PZN[p] + " на паузе — OBS включил, выключила обратно"); } } catch (e) {} } }, 10000);
 setTimeout(pzUi, 0);
 setInterval(() => { if (ok) siteOut("__none__").catch(() => {}); }, 60000); setTimeout(() => { if (ok) siteOut("__none__").catch(() => {}); }, 8000);
 async function goLive() {
@@ -1261,7 +1276,7 @@ function glow() { for (const k of ["cb", "sc", "bc", "mv", "fs"]) { const d = $(
 setInterval(glow, 2000);
 let HUBPPL = [], RSAYDONE = new Set(), PPLHOLD = 0, RCHSEEN = new Set(), RSAID = {};
 // версия панели: хаб пишет в общий чат только через панель, которая это умеет (v ≥ 3); новая версия на сайте → панель обновится сама
-const PANEL_V = 129;
+const PANEL_V = 130;
 setInterval(async () => {
   try { const t = await (await fetch(location.pathname + "?vchk=" + Date.now(), { cache: "no-store" })).text(), v = +((t.match(/const PANEL_V = (\d+)/) || [])[1] || 0);
     const busy = Object.values(PRIVLIVE).some(Boolean) || TYPES.length || PAIDQ.length || [...document.querySelectorAll("input,textarea")].some(i => i.value && i.type !== "file") || Object.keys(CUP).length;
