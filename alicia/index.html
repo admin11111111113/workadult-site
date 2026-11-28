@@ -367,8 +367,15 @@ const PZ_JS = `async (a) => {
     const stop = all().find(b => /(выйти|завершить|закончить|остановить|отменить|stop|end|exit|leave).{0,30}(подгляд|spy)|^(вернуться в паблик|back to public|go public)$/i.test(txt(b)));
     const b = a.on ? spy : (stop || spy);
     if (!b) return { ok: false, err: a.on ? "нет кнопки «Режим подглядывания»" : "нет кнопки выхода из подглядывания", btns: all().map(txt).filter(t => t && t.length < 40).slice(0, 30) };
+    const st0 = (document.body.innerText.match(/СТАТУС:\\s*\\S+/) || [""])[0];
     const t = txt(b); b.click();
-    return { ok: true, clicked: t, dlg: await okDlg() };
+    let conf = "";                                                   // 28.11: Стрип спрашивает подтверждение (окно SpyShowModal, «8 тк/мин»)
+    for (let i = 0; i < 8 && a.on && !conf; i++) { await new Promise(z => setTimeout(z, 400));
+      const c = [...document.querySelectorAll("[class*=SpyShowModal__button]")].find(vis); if (c) { c.click(); conf = txt(c); } }
+    if (!conf) conf = await okDlg();
+    await new Promise(z => setTimeout(z, 2500));
+    const st1 = (document.body.innerText.match(/СТАТУС:\\s*\\S+/) || [""])[0];
+    return { ok: !a.on || !!conf, clicked: t, conf, st0, st1 };
   }
   return { ok: false, err: "?" };
 }`;
@@ -1229,7 +1236,7 @@ function glow() { for (const k of ["cb", "sc", "bc", "mv", "fs"]) { const d = $(
 setInterval(glow, 2000);
 let HUBPPL = [], RSAYDONE = new Set(), PPLHOLD = 0, RCHSEEN = new Set(), RSAID = {};
 // версия панели: хаб пишет в общий чат только через панель, которая это умеет (v ≥ 3); новая версия на сайте → панель обновится сама
-const PANEL_V = 123;
+const PANEL_V = 124;
 setInterval(async () => {
   try { const t = await (await fetch(location.pathname + "?vchk=" + Date.now(), { cache: "no-store" })).text(), v = +((t.match(/const PANEL_V = (\d+)/) || [])[1] || 0);
     const busy = Object.values(PRIVLIVE).some(Boolean) || TYPES.length || PAIDQ.length || [...document.querySelectorAll("input,textarea")].some(i => i.value && i.type !== "file") || Object.keys(CUP).length;
