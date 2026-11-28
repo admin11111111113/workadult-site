@@ -9,7 +9,7 @@
 #cam,#camv{background:#000;border-radius:12px;width:100%;aspect-ratio:16/9;object-fit:contain;max-height:40vh}
 .btns{display:flex;gap:8px;margin:8px 0;flex-wrap:wrap;align-items:center}button{font:inherit;font-weight:600;border:0;border-radius:10px;padding:12px 18px;cursor:pointer;background:#3d3d3d;color:#fff}
 .lov{background:#313131;border-radius:12px;padding:6px 10px;margin:0}.lov button{padding:8px 12px}#rooms{flex:1;display:grid;grid-template-columns:1fr;grid-template-rows:repeat(4,1fr);gap:6px;min-height:0}.room{display:flex;flex-direction:column;min-height:0}.room b{font-size:13px;color:#aab}
-#top .pl.site .au{display:inline-block}#top .pl.site:has(.pzb) .au{display:inline-block}.pzb{font-size:13px;padding:0 6px;border-radius:6px;margin:0 0 0 6px;vertical-align:middle;line-height:16px;background:#555;color:#fff;border:0;cursor:pointer}.pzb.on{background:#c98a14}.pl.site.pz{outline:2px solid #c98a14}.au{display:block;font-size:12px;font-weight:400;color:#cfd;cursor:pointer}.au input{width:auto;margin:0 4px 0 0}.go{background:#e8364f}.y{background:#c98a14}.g{background:#3a6}button:disabled{opacity:.4}
+#top .pl.site{position:relative}#top .pl.site:has(.pzb){padding-right:52px}.pzb{position:absolute;right:8px;top:50%;transform:translateY(-50%);width:38px;height:38px;font-size:20px;line-height:1;padding:0;border-radius:10px;background:#4a4a4a;color:#fff;border:1px solid #777;cursor:pointer;box-shadow:0 1px 3px #0006}.pzb:hover{background:#5c5c5c}.pzb.on{background:#c98a14;border-color:#e0a83a}.pl.site.pz{outline:2px solid #c98a14}.au{display:block;font-size:12px;font-weight:400;color:#cfd;cursor:pointer}.au input{width:auto;margin:0 4px 0 0}.go{background:#e8364f}.y{background:#c98a14}.g{background:#3a6}button:disabled{opacity:.4}
 .nf{display:flex;gap:8px;align-items:flex-start;padding:8px 10px;margin-bottom:6px;border-radius:10px;background:#2a2410;font-size:15px}
 .nf .pf{background:#000a;border-radius:6px;padding:2px 7px;font-size:12px;font-weight:700;white-space:nowrap}.nf .wh{font-weight:700;color:#ffd76a;white-space:nowrap}
 .nf .tx{flex:1}.nf .tm{color:#889;font-size:12px;white-space:nowrap}.nf.bot{background:#333333}.nf.bot .wh{color:#9fbaff}.nf.pay{background:#16351f}.nf.pay .wh{color:#7ee08a}
@@ -1236,7 +1236,7 @@ function glow() { for (const k of ["cb", "sc", "bc", "mv", "fs"]) { const d = $(
 setInterval(glow, 2000);
 let HUBPPL = [], RSAYDONE = new Set(), PPLHOLD = 0, RCHSEEN = new Set(), RSAID = {};
 // версия панели: хаб пишет в общий чат только через панель, которая это умеет (v ≥ 3); новая версия на сайте → панель обновится сама
-const PANEL_V = 124;
+const PANEL_V = 125;
 setInterval(async () => {
   try { const t = await (await fetch(location.pathname + "?vchk=" + Date.now(), { cache: "no-store" })).text(), v = +((t.match(/const PANEL_V = (\d+)/) || [])[1] || 0);
     const busy = Object.values(PRIVLIVE).some(Boolean) || TYPES.length || PAIDQ.length || [...document.querySelectorAll("input,textarea")].some(i => i.value && i.type !== "file") || Object.keys(CUP).length;
