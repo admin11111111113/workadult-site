@@ -99,7 +99,7 @@ input{font:inherit;padding:8px;border-radius:8px;border:1px solid #444;backgroun
   <!-- место под окно OBS «Проектор — предпросмотр» (видео в самой панели убрано — тормозило) -->
   <video id="camv" muted playsinline style="display:none;background:#000;border-radius:12px;width:100%;aspect-ratio:16/9;object-fit:contain"></video><img id="cam" alt="">
   <div class="btns"><button class="go" id="b-go" onclick="goLive()">▶ Начать эфир</button><button class="y" id="b-pause" onclick="pause()">⏸ Пауза</button>
-   <button onclick="stopLive()">⏹ Закончить</button><button class="g" id="b-rec" onclick="rec()">⏺ REC — записать видео</button><button id="b-rd" style="background:#444;display:none" onclick="rdOpen()" title="Reddit: нажми — бот сам опубликует по разделам, вкладку не закрывай">🟢 Reddit</button><span id="st"></span></div>
+   <button onclick="stopLive()">⏹ Закончить</button><button class="g" id="b-rec" onclick="rec()">⏺ REC</button><button id="b-rd" style="background:#444;display:none" onclick="rdOpen()" title="Reddit: нажми — бот сам опубликует по разделам, вкладку не закрывай">🟢 Reddit</button><span id="st"></span></div>
   <div class="btns lov"><b>🎀 Игрушка</b><span class="pl" style="cursor:pointer;padding:4px 10px;display:inline-flex;align-items:center;gap:6px" onclick="lovOpen()" title="Открыть панель Lovense"><span class="dot" id="d-lov"></span>Lovense<small id="s-lov" style="display:inline">…</small></span><button class="g" onclick="lovLink()">🔗 Ссылка управления</button><button onclick="lovTest()">📳 Тест</button>
    <button onclick="lovVib(5)">Слабо</button><button onclick="lovVib(12)">Средне</button><button onclick="lovVib(20)">Сильно</button><button onclick="lovVib(0)">⏹ Стоп</button></div>
   <div id="lovctl" style="display:none;align-items:center;gap:10px;background:#123224;border:2px solid #2ecc71;border-radius:12px;padding:8px 12px;font-size:17px">
@@ -256,7 +256,7 @@ setInterval(async () => { if (!ok) return; const st = await req("GetStreamStatus
   OBSWAS = !!st.outputActive;
   $("#st").textContent = (st.outputActive ? "● В ЭФИРЕ " + (st.outputTimecode || "").slice(0, 8) + " " + kb + " · потоков " + nOut + " из " + Math.max(ol.length, 1) : "эфир выключен") + (isPause(s) ? " · ПАУЗА" : "") + (r.outputActive ? " · 🔴 идёт запись видео (эфир не трогает)" : "");
   $("#b-go").disabled = !!st.outputActive; $("#b-pause").textContent = isPause(s) ? "▶ Вернуться" : "⏸ Пауза";
-  $("#b-rec").textContent = r.outputActive ? "⏹ Остановить запись · идёт " + (r.outputTimecode || "00:00:00").slice(0, 8) : "⏺ REC — записать видео"; }, 2000);   // 26.11 владелец: «Сохранить видео» непонятно — эфир не заканчивается, кончается только запись
+  }, 2000);   // 26.11 владелец: «Сохранить видео» непонятно — эфир не заканчивается, кончается только запись
 // 24.11 владелец: битрейт упал и эфир тупит ~30 сек подряд → подсказка «перезагрузи ПК и роутер» с кнопкой ОК (не во время привата, не чаще раза в 15 мин)
 let LOWN = 0, LOWAT = 0, PCINFO = null, AWAKE = null;
 // помощник 2.0: загрузка её ПК раз в 20 сек (видно владельцу) + не даём ПК/экрану уснуть, пока идёт эфир
@@ -540,9 +540,17 @@ async function pause() {
 // 27.11 владелец: «нажала REC — записалось и сразу у тебя», «музыку на эфире глушим — бери видео с эфира».
 // REC: OBS пишет копию у неё на ПК, а бот сам пишет поток её эфира (Chaturbate, звук как у зрителей) — после «Остановить» видео уже у бота.
 function recHub(on) { return fetch(HUB_URL, { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ w: "alicia-panel", rec: { on } }) }).catch(() => {}); }
-async function rec() { const r = await req("GetRecordStatus");
-  if (r.outputActive) { await req("StopRecord"); recHub(false); hint("Запись остановлена ✅ отправляю видео боту…"); admEv("⏹ запись остановлена"); }
-  else { await req("StartRecord"); recHub(true); hint("⏺ Запись пошла"); admEv("⏺ запись видео (бот пишет поток эфира)"); } }
+// 28.11 владелец: «REC как у меня» — пишет только бот (поток её эфира с Chaturbate, со звуком), кнопка «⏹ STOP мм:сс» как в его консоли; OBS ничего не пишет
+let HREC = { on: false, sec: 0, at: 0 }, HRECW = 0;
+function recBtn() { const b = $("#b-rec"); if (!b) return; const sec = HREC.on ? HREC.sec + Math.round((Date.now() - HREC.at) / 1000) : 0;
+  b.textContent = HRECW && Date.now() - HRECW < 8000 ? (HREC.on ? "сохраняю…" : "включаю…") : HREC.on ? "⏹ STOP " + String(Math.floor(sec / 60)).padStart(2, "0") + ":" + String(sec % 60).padStart(2, "0") : "⏺ REC";
+  b.style.background = HREC.on ? "#e74c3c" : ""; }
+setInterval(recBtn, 1000);
+async function rec() {
+  const on = !HREC.on; HRECW = Date.now(); recBtn(); await recHub(on);
+  if (on) { hint("⏺ Запись пошла — бот пишет твой эфир"); admEv("⏺ REC: бот пишет эфир"); }
+  else { hint("⏹ Запись остановлена ✅ видео уже у бота. Короткое (до 1 мин) — в «🔒 Верификация», длинное — в «📸 Фото и видео»"); admEv("⏹ REC остановлена"); }
+}
 obs();
 
 // ── помощник (расширение Alicia Helper 1.x — исполнитель; вся логика тут, на сайте)
@@ -947,6 +955,7 @@ async function hubSync() {
   if (alive) faqBadge(h.faq_n || 0, Object.values(h.live_on || {}).some(Boolean));
   if (alive) rdShow(h.rd || null);
   if (alive) hubPriv(h.hubpriv || {}, h.hubprivmsg || []);
+  if (alive && h.rec2 && h.rec2.ok !== false) { const was = HREC.on; HREC = { on: !!h.rec2.on, sec: h.rec2.sec || 0, at: Date.now() }; if (was !== HREC.on) HRECW = 0; recBtn(); }
   if (alive && h.today) { ETK.bc = h.today.bc || 0; ETK.bcl = h.ltk ? h.ltk.bc || 0 : null; showTot(); }
   // её вкладка сайта молчит (закрыта / скрипт не подцепился) → статус эфира от хаба (он сам спрашивает сайты)
   if (alive) for (const k of ["mv", "sc", "cb", "bc", "fs"]) liveSet(k, "hub", !!(h.live_on || {})[k], "hub");
@@ -1318,7 +1327,7 @@ function glow() { for (const k of ["cb", "sc", "bc", "mv", "fs"]) { const d = $(
 setInterval(glow, 2000);
 let HUBPPL = [], RSAYDONE = new Set(), PPLHOLD = 0, RCHSEEN = new Set(), RSAID = {};
 // версия панели: хаб пишет в общий чат только через панель, которая это умеет (v ≥ 3); новая версия на сайте → панель обновится сама
-const PANEL_V = 136;
+const PANEL_V = 137;
 setInterval(async () => {
   try { const t = await (await fetch(location.pathname + "?vchk=" + Date.now(), { cache: "no-store" })).text(), v = +((t.match(/const PANEL_V = (\d+)/) || [])[1] || 0);
     const busy = Object.values(PRIVLIVE).some(Boolean) || TYPES.length || PAIDQ.length || [...document.querySelectorAll("input,textarea")].some(i => i.value && i.type !== "file") || Object.keys(CUP).length;
