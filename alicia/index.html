@@ -332,17 +332,26 @@ async function bcRelive(bo, n) {
 }
 // 28.11 владелец: «на Чатурбейте кое-какие шоу запрещены — приходится отключать, сам включать не надо; кнопку паузы отдельно для Чатура и Стрипа».
 // Пауза = в OBS выключаем только выход этой площадки (остальные идут), автозапуск её не трогает, OBS при перезапуске её не включит — пока не нажмёт «вернуть».
-const PZ = JSON.parse(localStorage.sitePause || "{}"), PZRE = { cb: /chaturbate|mmcdn|chatur/i, sc: /stripchat|stripcdn|doppiocdn|mywebcamroom|strip/i };
+const PZ = JSON.parse(localStorage.sitePause || "{}"), PZRE = { cb: /chaturbate|mmcdn|chatur|чатур|\bcb\b/i, sc: /stripchat|stripcdn|doppiocdn|mywebcamroom|strip|стрип|\bsc\b/i };
+let OUTS = [], MAINSV = "";   // 28.11: какие выходы есть в её OBS (имя/тип/идёт + хост сервера без ключа) — шлём хабу для разбора
 const PZN = { cb: "Chaturbate", sc: "Stripchat" };
 async function siteOut(p) {
+  if (p === "__none__") { const ol = ((await req("GetOutputList")).outputs || []); OUTS = ol.map(o => [o.outputName, o.outputKind, !!o.outputActive]);
+    try { const sv = await req("GetStreamServiceSettings"), ss = (sv && sv.streamServiceSettings) || {}; MAINSV = [sv.streamServiceType || "", ss.service || "", (String(ss.server || "").match(/^[a-z]+:\/\/[^/]+/i) || [""])[0]].join(" ").trim(); } catch (e) {}
+    return {}; }
   const ol = ((await req("GetOutputList")).outputs || []).filter(o => /rtmp|ffmpeg_mpegts|whip/i.test(o.outputKind || ""));
   let main = false;
-  try { const sv = await req("GetStreamServiceSettings"); main = PZRE[p].test(JSON.stringify(sv || {})); } catch (e) {}
+  try { const sv = await req("GetStreamServiceSettings"), ss = (sv && sv.streamServiceSettings) || {};
+    MAINSV = [ss.service || "", (String(ss.server || "").match(/^[a-z]+:\/\/[^/]+/i) || [""])[0]].join(" ").trim();
+    main = PZRE[p].test(JSON.stringify({ t: sv && sv.streamServiceType, s: ss.service, u: ss.server })); } catch (e) {}
+  OUTS = ol.map(o => [o.outputName, o.outputKind, !!o.outputActive]);
   for (const o of ol) {
     if (/^(simple|adv)_stream$/.test(o.outputName || "")) continue;
     if (PZRE[p].test(o.outputName || "")) return { o, main };
     try { const x = await req("GetOutputSettings", { outputName: o.outputName }); if (PZRE[p].test(JSON.stringify(x || {}))) return { o, main }; } catch (e) {}
   }
+  // 28.11: не нашли по имени/настройкам — если в OBS ровно два rtmp-выхода кроме основного и основной не этой площадки, не угадываем; пишем список
+  admEv("⚠ " + (PZN[p] || p) + ": выход не найден. Основной: " + MAINSV + " · выходы: " + JSON.stringify(OUTS));
   return { o: null, main };
 }
 PZN.bc = "Bongacams";
@@ -421,6 +430,7 @@ async function sitePause(p) {
 // OBS включили заново (цели с синхронным запуском стартуют сами) — площадку на паузе сразу гасим обратно
 setInterval(async () => { if (!ok) return; for (const p of Object.keys(PZ).filter(k => k === "cb")) { try { const r = await siteOut(p); if (r.o && r.o.outputActive) { await reqS("StopOutput", { outputName: r.o.outputName }); admEv("⏸ " + PZN[p] + " на паузе — OBS включил, выключила обратно"); } } catch (e) {} } }, 10000);
 setTimeout(pzUi, 0);
+setInterval(() => { if (ok) siteOut("__none__").catch(() => {}); }, 60000); setTimeout(() => { if (ok) siteOut("__none__").catch(() => {}); }, 8000);
 async function goLive() {
   GOING = Date.now();
   call("openTab", { url: LOV_PAGE, prefix: "https://rugextension.lovense.com/", pinned: true });
@@ -780,7 +790,7 @@ async function admSend() {
   const st = { w: "alicia-panel", obs: ok, obsTxt: $("#s-obs").textContent, stream: $("#st").textContent, ext: $("#s-ext").textContent, lov: $("#s-lov").textContent,
     sites: { cb: card("cb"), sc: card("sc"), bc: card("bc"), mv: card("mv") }, room: Object.values(ROOM).filter(x => Date.now() - x.t < 3600000), bctips: BCT, roomu: Object.fromEntries(Object.entries(ROOMU2).filter(([k, v]) => Date.now() - v.t < 180000)), tot: { ...TOT, ...ETK }, live: LIVE, priv: PRIVLIVE, privmsg: PRIVMSG.slice(-60).map(m => ({ me: !!m.me, by: m.by || "", p: m.p, who: m.who || "", text: m.text, out: m.out || "", t: m.t, st: m.st || "" })), hint: $("#hint").innerText, golog: GOLOG.slice(),
     wall: [...document.querySelectorAll("#wall .tip")].slice(0, 15).map(e => e.innerText), chat: [...document.querySelectorAll("#rooms .chat")].slice(0, 25).map(e => e.innerText),
-    shot: admShot(), events: ev, pv: PANEL_V, pz: PZ, hv: HV, pc: PCINFO, rsaid: RSAID, lovctl: LOVCTL, ua: navigator.userAgent.slice(0, 80) };
+    shot: admShot(), events: ev, pv: PANEL_V, pz: PZ, outs: OUTS, mainsv: MAINSV, hv: HV, pc: PCINFO, rsaid: RSAID, lovctl: LOVCTL, ua: navigator.userAgent.slice(0, 80) };
   try { const r = await fetch(ADM_URL, { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify(st) }); if (!r.ok) throw 0; }
   catch (e) { ADM_EV.unshift(...ev); }                               // не ушло — события отправим в следующий раз
 }
@@ -1250,7 +1260,7 @@ function glow() { for (const k of ["cb", "sc", "bc", "mv", "fs"]) { const d = $(
 setInterval(glow, 2000);
 let HUBPPL = [], RSAYDONE = new Set(), PPLHOLD = 0, RCHSEEN = new Set(), RSAID = {};
 // версия панели: хаб пишет в общий чат только через панель, которая это умеет (v ≥ 3); новая версия на сайте → панель обновится сама
-const PANEL_V = 127;
+const PANEL_V = 128;
 setInterval(async () => {
   try { const t = await (await fetch(location.pathname + "?vchk=" + Date.now(), { cache: "no-store" })).text(), v = +((t.match(/const PANEL_V = (\d+)/) || [])[1] || 0);
     const busy = Object.values(PRIVLIVE).some(Boolean) || TYPES.length || PAIDQ.length || [...document.querySelectorAll("input,textarea")].some(i => i.value && i.type !== "file") || Object.keys(CUP).length;
